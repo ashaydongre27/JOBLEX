@@ -157,15 +157,15 @@ assert.ok(html.includes("document.getElementById('hero-role-preview-content')"),
 console.log('✓ Hero Role Switcher bracket preservation passed');
 
 // ==========================================
-// 4. Test SVG unopaq Laser Glow Filter & Cyber Button Secondary
 // ==========================================
-console.log('\n=== TEST 4: Cyber Button Laser Shader & Secondary Styling ===');
-assert.ok(html.includes('id="unopaq"'), 'SVG filter id="unopaq" must exist in index.html');
-assert.ok(html.includes('feColorMatrix'), 'SVG filter must have feColorMatrix');
-assert.ok(css.includes('url(#unopaq)'), 'css/styles.css must reference url(#unopaq) for laser glow');
-assert.ok(css.includes('.cyber-button.secondary'), '.cyber-button.secondary styling must exist in css/styles.css');
-assert.ok(html.includes('cyber-button secondary'), 'Secondary cyber button class must be used in index.html');
-console.log('✓ Cyber button shader filter and secondary styling passed');
+// 4. Test Modern Tactile Button Styling & Hero Actions
+// ==========================================
+console.log('\n=== TEST 4: Modern Tactile CTA Buttons & Styling ===');
+assert.ok(html.includes('Enter JOBLEX Portal'), 'Hero primary CTA button must exist in index.html');
+assert.ok(html.includes('Explore Capabilities'), 'Hero secondary button must exist in index.html');
+assert.ok(css.includes('.btn-primary-brand'), '.btn-primary-brand styling must exist in css/styles.css');
+assert.ok(css.includes('.tactile-btn'), '.tactile-btn styling must exist in css/styles.css');
+console.log('✓ Modern tactile button styling and hero actions passed');
 
 // ==========================================
 // 5. Test Floating Scroll Capsule & Arrow Rotation
@@ -206,12 +206,15 @@ assert.ok(crossDotCount >= 12, `Expected at least 12 cross-dots (4 per synergy c
 console.log('✓ Synergy inner frame cross-dots verified (found ' + crossDotCount + ')');
 
 // ==========================================
-// 8. Test Pre-Footer Button Group & Backdrop
+// 8. Test Pre-Footer Portal CTA Buttons & Comprehensive Footer
 // ==========================================
-console.log('\n=== TEST 8: Pre-Footer Button Group & Backdrop ===');
+console.log('\n=== TEST 8: Pre-Footer Portal CTA Buttons & Comprehensive Footer ===');
 const ctaSection = html.slice(html.indexOf('id="final-cta"'), html.indexOf('id="main-footer"'));
-assert.ok(ctaSection.includes('btn-group') && ctaSection.includes('class="backdrop"'), 'Final-CTA buttons must have btn-group and backdrop');
-console.log('✓ Pre-Footer button group & backdrop passed');
+assert.ok(ctaSection.includes('id="cta-student-btn"'), 'Final-CTA must have cta-student-btn');
+assert.ok(ctaSection.includes('id="cta-academy-btn"'), 'Final-CTA must have cta-academy-btn');
+assert.ok(ctaSection.includes('id="cta-industry-btn"'), 'Final-CTA must have cta-industry-btn');
+assert.ok(html.includes('id="main-footer"'), 'Restored comprehensive footer must exist');
+console.log('✓ Pre-Footer portal buttons & comprehensive footer passed');
 
 console.log('\n======================================================');
 console.log('ALL 8 INTERACTIVE DOM & ARCHITECTURAL CONTRACTS PASSED!');

@@ -77,111 +77,50 @@
   </div>
   <div id="three-canvas-container" style="display: none;"></div>
 
-  <!-- Sleek Liquid-Glass High-Tech Header -->
-  <header class="sticky top-0 z-50 w-full liquid-glass-nav transition-all duration-300">
+  <!-- Header / Navigation -->
+  <header id="site-header" class="sticky top-0 z-50 w-full bg-[#FAF8F5]/90 dark:bg-[#070709]/90 backdrop-blur-xl border-b border-stone-200/80 dark:border-white/[0.07] transition-colors duration-200">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       
       <!-- Brand -->
       <div class="flex items-center gap-4 sm:gap-6">
-        <a id="nav-brand-logo" href="index.html" class="flex items-center gap-2.5 cursor-pointer select-none group">
-          <div class="w-8 h-8 rounded-xl bg-[#2D5542]/10 dark:bg-[#4EBA87]/15 border border-[#2D5542]/20 dark:border-[#4EBA87]/30 flex items-center justify-center group-hover:scale-105 transition-transform">
-            <span class="material-symbols-outlined text-[#2D5542] dark:text-[#4EBA87] text-lg">hub</span>
-          </div>
-          <div class="flex items-center gap-1.5">
-            <span class="text-xl font-display font-bold tracking-tight text-stone-900 dark:text-stone-100 uppercase">JOBLEX</span>
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          </div>
+        <a id="header-brand-logo" href="index.html" class="flex items-center cursor-pointer select-none group">
+          <span class="text-xl font-display font-bold tracking-tight text-stone-900 dark:text-stone-100 uppercase">JOBLEX</span>
         </a>
       </div>
 
-      <!-- Quick Role Links & Auth Navigation -->
+      <!-- Links & Actions -->
       <div class="flex items-center gap-2 sm:gap-3">
-        <!-- Main Navigation Links -->
-        <nav id="header-main-nav" class="flex items-center gap-1 text-xs font-semibold text-stone-600 dark:text-stone-400">
-          <a id="nav-about-btn" href="about.html" class="px-2.5 sm:px-3 py-1.5 rounded-lg hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.05] transition">
+        <nav id="header-nav-items" class="flex items-center gap-1 text-xs font-semibold text-stone-600 dark:text-stone-400">
+          <a id="nav-home-link" href="index.html" class="px-2.5 sm:px-3 py-1.5 rounded-lg text-stone-900 dark:text-white bg-stone-200/70 dark:bg-white/[0.08] font-bold transition">
+            Home
+          </a>
+          <a id="nav-about-link" href="about.html" class="px-2.5 sm:px-3 py-1.5 rounded-lg hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.05] transition">
             About
           </a>
-          <a id="nav-pricing-btn" href="pricing.html" class="px-2.5 sm:px-3 py-1.5 rounded-lg hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.05] transition">
+          <a id="nav-pricing-link" href="pricing.html" class="px-2.5 sm:px-3 py-1.5 rounded-lg hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.05] transition">
             Pricing
           </a>
         </nav>
 
-        <!-- Quick Direct Portal Jump Buttons -->
-        <div class="hidden sm:flex items-center gap-1.5 text-xs font-semibold">
-          <button id="nav-portal-student-btn" onclick="JoblexApiClient.navigateToPortal('student')" class="px-3 py-1.5 rounded-xl text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.06] transition flex items-center gap-1.5 glass-pill">
-            <span class="w-1.5 h-1.5 rounded-full bg-[#2D5542] dark:bg-[#4EBA87]"></span>
-            <span>Student</span>
+        <div class="hidden sm:flex items-center gap-1 text-xs font-semibold text-stone-600 dark:text-stone-400">
+          <button id="nav-student-portal-btn" onclick="JoblexApiClient.navigateToPortal('student')" class="px-2.5 py-1.5 rounded-lg hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.05] transition">
+            Student
           </button>
-          <button id="nav-portal-academy-btn" onclick="JoblexApiClient.navigateToPortal('academy')" class="px-3 py-1.5 rounded-xl text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.06] transition flex items-center gap-1.5 glass-pill">
-            <span class="w-1.5 h-1.5 rounded-full bg-[#855828] dark:bg-[#D4973B]"></span>
-            <span>Academy</span>
+          <button id="nav-academy-portal-btn" onclick="JoblexApiClient.navigateToPortal('academy')" class="px-2.5 py-1.5 rounded-lg hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.05] transition">
+            Academy
           </button>
-          <button id="nav-portal-industry-btn" onclick="JoblexApiClient.navigateToPortal('industry')" class="px-3 py-1.5 rounded-xl text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.06] transition flex items-center gap-1.5 glass-pill">
-            <span class="w-1.5 h-1.5 rounded-full bg-[#944C23] dark:bg-[#E07A48]"></span>
-            <span>Company</span>
+          <button id="nav-industry-portal-btn" onclick="JoblexApiClient.navigateToPortal('industry')" class="px-2.5 py-1.5 rounded-lg hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.05] transition">
+            Industry
           </button>
         </div>
 
         <!-- Theme Toggle -->
-        <button id="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Theme" title="Toggle Light/Dark Theme" class="p-2.5 rounded-xl border border-stone-200/90 dark:border-white/[0.09] bg-white/80 dark:bg-white/[0.04] text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white transition flex items-center justify-center tactile-btn shadow-xs hover:scale-105">
+        <button id="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Theme" title="Toggle Light/Dark Theme" class="p-2 rounded-xl border border-stone-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.03] text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white transition flex items-center justify-center tactile-btn shadow-xs">
           <span id="theme-toggle-icon" class="material-symbols-outlined text-[18px]">dark_mode</span>
         </button>
 
         <!-- Account Container / Sign In -->
         <div class="nav-user-account-container relative"></div>
-
-        <!-- Mobile Menu Toggle Button -->
-        <button id="mobile-menu-toggle-btn" onclick="toggleMobileNav()" aria-label="Toggle Menu" class="sm:hidden p-2.5 rounded-xl border border-stone-200/90 dark:border-white/[0.09] bg-white/80 dark:bg-white/[0.04] text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white transition flex items-center justify-center tactile-btn shadow-xs">
-          <span id="mobile-menu-icon" class="material-symbols-outlined text-[18px]">menu</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Mobile Navigation Drawer -->
-    <div id="mobile-nav-drawer" class="hidden sm:hidden border-t border-stone-200/80 dark:border-white/[0.07] bg-[#FAF8F5]/95 dark:bg-[#070709]/95 backdrop-blur-2xl px-4 py-4 space-y-4">
-      <div class="grid grid-cols-2 gap-2 text-xs font-semibold">
-        <a id="mobile-drawer-about" href="about.html" class="p-2.5 rounded-xl border border-stone-200/80 dark:border-white/[0.08] bg-white/80 dark:bg-white/[0.03] text-stone-800 dark:text-stone-200 flex items-center gap-2">
-          <span class="material-symbols-outlined text-base text-[#2D5542] dark:text-[#4EBA87]">info</span>
-          <span>About JOBLEX</span>
-        </a>
-        <a id="mobile-drawer-pricing" href="pricing.html" class="p-2.5 rounded-xl border border-stone-200/80 dark:border-white/[0.08] bg-white/80 dark:bg-white/[0.03] text-stone-800 dark:text-stone-200 flex items-center gap-2">
-          <span class="material-symbols-outlined text-base text-[#944C23] dark:text-[#E07A48]">sell</span>
-          <span>Plans & Pricing</span>
-        </a>
-      </div>
-
-      <div class="pt-2 border-t border-stone-200/70 dark:border-white/[0.06] space-y-1.5">
-        <div class="text-[10px] font-mono font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 px-1">Dedicated Portals</div>
-        
-        <button id="mobile-drawer-portal-student" onclick="JoblexApiClient.navigateToPortal('student')" class="w-full text-left p-2.5 rounded-xl hover:bg-stone-100 dark:hover:bg-white/[0.05] text-xs font-bold text-stone-900 dark:text-stone-100 flex items-center justify-between border border-transparent hover:border-stone-200/60 dark:hover:border-white/[0.06]">
-          <span class="flex items-center gap-2.5">
-            <span class="w-7 h-7 rounded-lg bg-[#2D5542]/10 text-[#2D5542] dark:text-[#4EBA87] flex items-center justify-center">
-              <span class="material-symbols-outlined text-[16px]">school</span>
-            </span>
-            <span>Student Portal</span>
-          </span>
-          <span class="material-symbols-outlined text-sm text-stone-400">arrow_forward</span>
-        </button>
-
-        <button id="mobile-drawer-portal-academy" onclick="JoblexApiClient.navigateToPortal('academy')" class="w-full text-left p-2.5 rounded-xl hover:bg-stone-100 dark:hover:bg-white/[0.05] text-xs font-bold text-stone-900 dark:text-stone-100 flex items-center justify-between border border-transparent hover:border-stone-200/60 dark:hover:border-white/[0.06]">
-          <span class="flex items-center gap-2.5">
-            <span class="w-7 h-7 rounded-lg bg-[#855828]/10 text-[#855828] dark:text-[#D4973B] flex items-center justify-center">
-              <span class="material-symbols-outlined text-[16px]">account_balance</span>
-            </span>
-            <span>Academy Portal</span>
-          </span>
-          <span class="material-symbols-outlined text-sm text-stone-400">arrow_forward</span>
-        </button>
-
-        <button id="mobile-drawer-portal-company" onclick="JoblexApiClient.navigateToPortal('industry')" class="w-full text-left p-2.5 rounded-xl hover:bg-stone-100 dark:hover:bg-white/[0.05] text-xs font-bold text-stone-900 dark:text-stone-100 flex items-center justify-between border border-transparent hover:border-stone-200/60 dark:hover:border-white/[0.06]">
-          <span class="flex items-center gap-2.5">
-            <span class="w-7 h-7 rounded-lg bg-[#944C23]/10 text-[#944C23] dark:text-[#E07A48] flex items-center justify-center">
-              <span class="material-symbols-outlined text-[16px]">domain</span>
-            </span>
-            <span>Company Portal</span>
-          </span>
-          <span class="material-symbols-outlined text-sm text-stone-400">arrow_forward</span>
-        </button>
       </div>
     </div>
   </header>
@@ -293,29 +232,17 @@
               AI competency vector matching, dynamic syllabus modernization, and verified placement dossiers for students, academia, and industry across all academic disciplines.
             </p>
 
-            <!-- Cyber Button CTA Pair with Glowing Laser Tracks -->
-            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
-              <div class="relative flex items-center justify-center btn-group">
-                <div class="backdrop"></div>
-                <a href="auth.html" class="cyber-button w-full sm:w-auto">
-                  <div class="a l"></div><div class="a r"></div><div class="a t"></div><div class="a b"></div>
-                  <span class="text flex items-center gap-2">
-                    <span>Enter JOBLEX Portal // Access Roles</span>
-                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
-                  </span>
-                </a>
-              </div>
+            <!-- Modern Tactile Call to Action Buttons -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 pt-2">
+              <a href="auth.html" class="px-6 py-3.5 rounded-xl bg-[#2D5542] text-white dark:bg-[#4EBA87] dark:text-[#070709] font-bold text-xs sm:text-sm hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5 transition-all tactile-btn flex items-center justify-center gap-2 shadow-md">
+                <span>Enter JOBLEX Portal</span>
+                <span class="material-symbols-outlined text-base">arrow_forward</span>
+              </a>
 
-              <div class="relative flex items-center justify-center btn-group">
-                <div class="backdrop"></div>
-                <a href="#bento-showcase" class="cyber-button secondary w-full sm:w-auto">
-                  <div class="a l"></div><div class="a r"></div><div class="a t"></div><div class="a b"></div>
-                  <span class="text flex items-center gap-2">
-                    <span class="material-symbols-outlined text-sm text-[#2D5542] dark:text-[#A8C7FA]">tune</span>
-                    <span>Explore Live Capabilities</span>
-                  </span>
-                </a>
-              </div>
+              <a href="#bento-showcase" class="px-6 py-3.5 rounded-xl border border-stone-300/80 dark:border-white/[0.12] bg-white/90 dark:bg-white/[0.05] text-stone-800 dark:text-stone-200 font-bold text-xs sm:text-sm hover:bg-stone-100 dark:hover:bg-white/[0.09] hover:-translate-y-0.5 transition-all tactile-btn flex items-center justify-center gap-2 shadow-xs">
+                <span class="material-symbols-outlined text-base text-[#2D5542] dark:text-[#4EBA87]">tune</span>
+                <span>Explore Capabilities</span>
+              </a>
             </div>
 
             <!-- Micro Trust Telemetry Badges -->
@@ -338,25 +265,25 @@
 
           </div>
 
-          <!-- Col 8-12: Interactive Persona Switcher (Futuristic Bento HUD Card) -->
+          <!-- Col 8-12: Interactive Persona Switcher (High Opacity Card) -->
           <div class="lg:col-span-5 space-y-3.5 reveal-from-right delay-100">
             <div class="flex items-center justify-between">
-              <span class="text-[11px] font-mono uppercase tracking-wider text-stone-500 dark:text-neutral-400 font-bold">01 // Interactive Persona:</span>
-              <div class="inline-flex p-1 rounded-2xl bg-stone-200/70 dark:bg-white/[0.05] border border-stone-300/60 dark:border-white/[0.08] backdrop-blur-md">
-                <button id="hero-tab-student" onclick="selectHeroRole('student')" class="hero-role-tab active px-3.5 py-1.5 text-xs font-semibold rounded-xl">
+              <span class="text-[11px] font-mono uppercase tracking-wider text-stone-600 dark:text-stone-300 font-bold">01 // Interactive Persona:</span>
+              <div class="inline-flex p-1 rounded-2xl bg-white/95 dark:bg-[#161820] border border-stone-200 dark:border-white/[0.12] shadow-xs">
+                <button id="hero-tab-student" onclick="selectHeroRole('student')" class="hero-role-tab active px-3.5 py-1.5 text-xs font-semibold rounded-xl transition">
                   Student
                 </button>
-                <button id="hero-tab-academy" onclick="selectHeroRole('academy')" class="hero-role-tab px-3.5 py-1.5 text-xs font-semibold rounded-xl">
+                <button id="hero-tab-academy" onclick="selectHeroRole('academy')" class="hero-role-tab px-3.5 py-1.5 text-xs font-semibold rounded-xl transition">
                   Academy
                 </button>
-                <button id="hero-tab-company" onclick="selectHeroRole('company')" class="hero-role-tab px-3.5 py-1.5 text-xs font-semibold rounded-xl">
+                <button id="hero-tab-company" onclick="selectHeroRole('company')" class="hero-role-tab px-3.5 py-1.5 text-xs font-semibold rounded-xl transition">
                   Corporate
                 </button>
               </div>
             </div>
 
-            <!-- Dynamic Role Showcase Box (Liquid Glass HUD + Viewfinder Brackets) -->
-            <div id="hero-role-preview-card" class="liquid-glass tilt-card glow-border-hover p-6 sm:p-7 rounded-2xl relative overflow-hidden">
+            <!-- Dynamic Role Showcase Box (High Opacity & Elevated Focus) -->
+            <div id="hero-role-preview-card" class="bg-white dark:bg-[#111318] border border-stone-200/90 dark:border-white/[0.12] shadow-xl tilt-card glow-border-hover p-6 sm:p-7 rounded-2xl relative overflow-hidden">
               <!-- Viewfinder Reticle Brackets (permanently anchored) -->
               <div class="bracket bracket-tl"></div>
               <div class="bracket bracket-tr"></div>
@@ -386,9 +313,9 @@
 
                 <!-- Feature Pills Row -->
                 <div class="flex flex-wrap items-center gap-2 pb-3.5 text-[11px] font-mono text-stone-500 dark:text-stone-400">
-                  <span class="glass-pill px-2.5 py-1 rounded-lg text-stone-700 dark:text-stone-300">✓ Cosine Vectors</span>
-                  <span class="glass-pill px-2.5 py-1 rounded-lg text-stone-700 dark:text-stone-300">✓ 4-Year Roadmap</span>
-                  <span class="glass-pill px-2.5 py-1 rounded-lg text-stone-700 dark:text-stone-300">✓ Verified Dossiers</span>
+                  <span class="px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-white/[0.06] border border-stone-200/70 dark:border-white/[0.08] text-stone-700 dark:text-stone-300">✓ Cosine Vectors</span>
+                  <span class="px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-white/[0.06] border border-stone-200/70 dark:border-white/[0.08] text-stone-700 dark:text-stone-300">✓ 4-Year Roadmap</span>
+                  <span class="px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-white/[0.06] border border-stone-200/70 dark:border-white/[0.08] text-stone-700 dark:text-stone-300">✓ Verified Dossiers</span>
                 </div>
 
                 <div class="flex flex-wrap items-center gap-2.5 pt-2 border-t border-stone-200/50 dark:border-white/[0.05]">
@@ -396,7 +323,7 @@
                     <span>Enter Student Portal</span>
                     <span class="material-symbols-outlined text-sm">arrow_forward</span>
                   </button>
-                  <a href="src/students/student-resume.html" class="glass-pill px-3.5 py-2 rounded-xl hover:bg-stone-100 dark:hover:bg-white/[0.05] text-xs font-semibold text-stone-700 dark:text-stone-300 transition flex items-center gap-1.5">
+                  <a href="src/students/student-resume.html" class="px-3.5 py-2 rounded-xl border border-stone-300/80 dark:border-white/[0.1] bg-white dark:bg-white/[0.05] hover:bg-stone-100 dark:hover:bg-white/[0.09] text-xs font-semibold text-stone-700 dark:text-stone-300 transition flex items-center gap-1.5 shadow-xs">
                     <span class="material-symbols-outlined text-sm text-[#2D5542] dark:text-[#4EBA87]">description</span>
                     <span>Try AI Resume Analyzer</span>
                   </a>
@@ -1141,36 +1068,18 @@
             </p>
             
             <div class="flex flex-wrap items-center justify-center gap-4 pt-4">
-              <div class="relative flex items-center justify-center btn-group">
-                <div class="backdrop"></div>
-                <button onclick="JoblexApiClient.navigateToPortal('student')" class="cyber-button group">
-                  <div class="a l"></div><div class="a r"></div><div class="a t"></div><div class="a b"></div>
-                  <span class="text flex items-center gap-2">
-                    <span class="material-symbols-outlined text-[16px]">school</span>
-                    <span>Launch Student Area</span>
-                  </span>
-                </button>
-              </div>
-              <div class="relative flex items-center justify-center btn-group">
-                <div class="backdrop"></div>
-                <button onclick="JoblexApiClient.navigateToPortal('academy')" class="cyber-button group">
-                  <div class="a l"></div><div class="a r"></div><div class="a t"></div><div class="a b"></div>
-                  <span class="text flex items-center gap-2">
-                    <span class="material-symbols-outlined text-[16px]">account_balance</span>
-                    <span>University Hub</span>
-                  </span>
-                </button>
-              </div>
-              <div class="relative flex items-center justify-center btn-group">
-                <div class="backdrop"></div>
-                <button onclick="JoblexApiClient.navigateToPortal('industry')" class="cyber-button group">
-                  <div class="a l"></div><div class="a r"></div><div class="a t"></div><div class="a b"></div>
-                  <span class="text flex items-center gap-2">
-                    <span class="material-symbols-outlined text-[16px]">domain</span>
-                    <span>Corporate Pipeline</span>
-                  </span>
-                </button>
-              </div>
+              <button id="cta-student-btn" onclick="JoblexApiClient.navigateToPortal('student')" class="px-6 py-3.5 rounded-xl bg-[#2D5542] text-white dark:bg-[#4EBA87] dark:text-[#070709] font-bold text-xs sm:text-sm hover:opacity-90 hover:shadow-lg hover:-translate-y-0.5 transition-all tactile-btn shadow-md flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">school</span>
+                <span>Launch Student Area</span>
+              </button>
+              <button id="cta-academy-btn" onclick="JoblexApiClient.navigateToPortal('academy')" class="px-6 py-3.5 rounded-xl border border-stone-300 dark:border-white/[0.12] bg-white dark:bg-white/[0.04] text-stone-800 dark:text-stone-200 font-bold text-xs sm:text-sm hover:bg-stone-100 dark:hover:bg-white/[0.08] hover:-translate-y-0.5 transition-all tactile-btn shadow-xs flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px] text-[#855828] dark:text-[#D4973B]">account_balance</span>
+                <span>University Hub</span>
+              </button>
+              <button id="cta-industry-btn" onclick="JoblexApiClient.navigateToPortal('industry')" class="px-6 py-3.5 rounded-xl border border-stone-300 dark:border-white/[0.12] bg-white dark:bg-white/[0.04] text-stone-800 dark:text-stone-200 font-bold text-xs sm:text-sm hover:bg-stone-100 dark:hover:bg-white/[0.08] hover:-translate-y-0.5 transition-all tactile-btn shadow-xs flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px] text-[#944C23] dark:text-[#E07A48]">domain</span>
+                <span>Corporate Pipeline</span>
+              </button>
             </div>
           </div>
         </div>
@@ -1178,10 +1087,7 @@
     </section>
 
     <!-- Comprehensive Platform Footer with All Important Links -->
-    <footer id="main-footer" class="pt-20 pb-14 border-t border-stone-200/90 dark:border-white/[0.08] bg-[#FAF8F5]/90 dark:bg-[#070709]/90 bg-graph-footer backdrop-blur-xl text-xs text-stone-600 dark:text-stone-400 transition-colors duration-200 relative z-10">
-      <!-- Footer Perimeter Lines & Crosshairs -->
-      <div class="footer-frame-line absolute top-0 left-0 right-0 h-px"></div>
-      
+    <footer id="main-footer" class="pt-16 pb-12 border-t border-stone-200/90 dark:border-white/[0.08] bg-[#FAF8F5]/90 dark:bg-[#070709] text-xs text-stone-600 dark:text-stone-400 transition-colors duration-200">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         
         <!-- Top Grid: 3 Organized Column Sets -->
@@ -1192,42 +1098,42 @@
             <div class="flex items-center gap-2">
               <span class="text-xl font-display font-bold tracking-tight text-stone-900 dark:text-stone-100 uppercase">JOBLEX</span>
             </div>
-            <p class="font-space-mono text-xs text-stone-600 dark:text-stone-400 leading-relaxed max-w-sm">
+            <p class="text-xs text-stone-600 dark:text-stone-400 leading-relaxed max-w-sm">
               National unified academia-industry collaboration and placement architecture. Aligning dynamic collegiate curricula with live industrial competency vectors and NEP-2020 accreditation standards.
             </p>
-            <div class="pt-2 flex items-center gap-2 font-space-mono text-[11px] text-[#2D5542] dark:text-[#4EBA87]">
+            <div class="pt-2 flex items-center gap-2 text-[11px] font-mono text-[#2D5542] dark:text-[#4EBA87]">
               <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>CORE v2.4 ONLINE // 450+ UNIVERSITIES CONNECTED</span>
+              <span>Live Platform • 450+ Universities Connected</span>
             </div>
           </div>
 
           <!-- Col 2: Portals -->
           <div class="space-y-3">
-            <h4 class="font-space-mono text-xs font-bold uppercase tracking-wider text-stone-900 dark:text-stone-100">Portals</h4>
-            <ul class="space-y-2 font-space-mono text-xs">
-              <li><a id="footer-link-portal-student" href="student.html" class="term-link inline-flex items-center hover:text-stone-900 dark:hover:text-stone-100 transition"><span class="term-caret mr-1">›</span>Student Portal</a></li>
-              <li><a id="footer-link-portal-academy" href="academy.html" class="term-link inline-flex items-center hover:text-stone-900 dark:hover:text-stone-100 transition"><span class="term-caret mr-1">›</span>Academy Portal</a></li>
-              <li><a id="footer-link-portal-industry" href="industry.html" class="term-link inline-flex items-center hover:text-stone-900 dark:hover:text-stone-100 transition"><span class="term-caret mr-1">›</span>Company Portal</a></li>
+            <h4 class="text-xs font-mono font-bold uppercase tracking-wider text-stone-900 dark:text-stone-100">Portals</h4>
+            <ul class="space-y-2 text-xs">
+              <li><a id="footer-link-portal-student" href="student.html" class="hover:text-stone-900 dark:hover:text-stone-100 transition">Student Portal</a></li>
+              <li><a id="footer-link-portal-academy" href="academy.html" class="hover:text-stone-900 dark:hover:text-stone-100 transition">Academy Portal</a></li>
+              <li><a id="footer-link-portal-industry" href="industry.html" class="hover:text-stone-900 dark:hover:text-stone-100 transition">Company Portal</a></li>
             </ul>
           </div>
 
           <!-- Col 3: Pricing & Company -->
           <div class="space-y-3">
-            <h4 class="font-space-mono text-xs font-bold uppercase tracking-wider text-stone-900 dark:text-stone-100">Pricing & Company</h4>
-            <ul class="space-y-2 font-space-mono text-xs">
-              <li><a id="footer-link-home" href="index.html" class="term-link inline-flex items-center hover:text-stone-900 dark:hover:text-stone-100 transition"><span class="term-caret mr-1">›</span>Home</a></li>
-              <li><a id="footer-link-about" href="about.html" class="term-link inline-flex items-center hover:text-stone-900 dark:hover:text-stone-100 transition"><span class="term-caret mr-1">›</span>About Us & Goals</a></li>
-              <li><a id="footer-link-pricing" href="pricing.html" class="term-link inline-flex items-center hover:text-stone-900 dark:hover:text-stone-100 transition"><span class="term-caret mr-1">›</span>Pricing Overview</a></li>
-              <li><a id="footer-link-student-plans" href="pricing.html" class="term-link inline-flex items-center hover:text-stone-900 dark:hover:text-stone-100 transition"><span class="term-caret mr-1">›</span>Student Plans</a></li>
-              <li><a id="footer-link-uni-plans" href="pricing.html" class="term-link inline-flex items-center hover:text-stone-900 dark:hover:text-stone-100 transition"><span class="term-caret mr-1">›</span>University Plans</a></li>
-              <li><a id="footer-link-company-plan" href="pricing.html" class="term-link inline-flex items-center hover:text-stone-900 dark:hover:text-stone-100 transition"><span class="term-caret mr-1">›</span>Company Plans</a></li>
+            <h4 class="text-xs font-mono font-bold uppercase tracking-wider text-stone-900 dark:text-stone-100">Pricing & Company</h4>
+            <ul class="space-y-2 text-xs">
+              <li><a id="footer-link-home" href="index.html" class="hover:text-stone-900 dark:hover:text-stone-100 transition">Home</a></li>
+              <li><a id="footer-link-about" href="about.html" class="hover:text-stone-900 dark:hover:text-stone-100 transition">About Us & Goals</a></li>
+              <li><a id="footer-link-pricing" href="pricing.html" class="hover:text-stone-900 dark:hover:text-stone-100 transition">Pricing Overview</a></li>
+              <li><a id="footer-link-student-plans" href="pricing.html" class="hover:text-stone-900 dark:hover:text-stone-100 transition">Student Plans</a></li>
+              <li><a id="footer-link-uni-plans" href="pricing.html" class="hover:text-stone-900 dark:hover:text-stone-100 transition">University Plans</a></li>
+              <li><a id="footer-link-company-plan" href="pricing.html" class="hover:text-stone-900 dark:hover:text-stone-100 transition">Company Plans</a></li>
             </ul>
           </div>
 
         </div>
 
         <!-- Bottom Sub-Footer: Copyright, Standards, Legal -->
-        <div class="pt-8 border-t border-stone-200/60 dark:border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4 font-space-mono text-[11px] text-stone-500 dark:text-stone-500">
+        <div class="pt-8 border-t border-stone-200/60 dark:border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-stone-500 dark:text-stone-500">
           <div class="flex items-center gap-2">
             <span>&copy; 2026 JOBLEX Platform. All rights reserved.</span>
             <span>•</span>
@@ -1514,7 +1420,7 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-2 pb-3 text-[11px] font-mono text-stone-500 dark:text-stone-400">
-          ${data.pills.map(p => `<span class="glass-pill px-2.5 py-1 rounded-lg text-[11px] font-mono text-stone-700 dark:text-stone-300">${p}</span>`).join('')}
+          ${data.pills.map(p => `<span class="px-2.5 py-1 rounded-lg bg-stone-100 dark:bg-white/[0.06] border border-stone-200/70 dark:border-white/[0.08] text-stone-700 dark:text-stone-300">${p}</span>`).join('')}
         </div>
 
         <div class="flex flex-wrap items-center gap-2.5 pt-1 border-t border-stone-200/50 dark:border-white/[0.05]">
@@ -1522,7 +1428,7 @@
             <span>${data.primaryBtnText}</span>
             <span class="material-symbols-outlined text-sm">arrow_forward</span>
           </button>
-          <a href="${data.secondaryHref}" class="glass-pill px-3.5 py-2 rounded-xl hover:bg-stone-100 dark:hover:bg-white/[0.05] text-xs font-semibold text-stone-700 dark:text-stone-300 transition flex items-center gap-1.5">
+          <a href="${data.secondaryHref}" class="px-3.5 py-2 rounded-xl border border-stone-300/80 dark:border-white/[0.1] bg-white dark:bg-white/[0.05] hover:bg-stone-100 dark:hover:bg-white/[0.09] text-xs font-semibold text-stone-700 dark:text-stone-300 transition flex items-center gap-1.5 shadow-xs">
             <span class="material-symbols-outlined text-sm ${data.iconColor}">${data.secondaryIcon}</span>
             <span>${data.secondaryBtnText}</span>
           </a>
