@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Company Profile &amp; Tech Stack Management | Industry Portal</title>
+  <!-- Google Fonts Preconnect -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Google Material Symbols Outlined -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script src="/js/frontend/theme.js"></script>
+  <script src="/js/frontend/sidebar.js"></script>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            sans: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            serif: ['Newsreader', 'Georgia', 'serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          colors: {
+            bone: { 50: '#FAF9F6', 100: '#F4F2EC', 200: '#E8E5DC', 300: '#D7D2C5' },
+            obsidian: { 950: '#070709', 900: '#0C0D10', 800: '#111215', 700: '#16181D', 600: '#22252C' },
+            sage: { 50: '#F2F6F3', 100: '#E3EDE6', 500: '#3D7055', 600: '#2D5542', 700: '#1E3C2E', glow: '#4EBA87' },
+            terracotta: { 50: '#FAF4F0', 100: '#F4E7DF', 500: '#B85E2E', 600: '#944C23', glow: '#E07A48' },
+            ochre: { 50: '#FAF6EF', 100: '#F4EBDA', 500: '#A67332', 600: '#855828', glow: '#D4973B' }
+          }
+        }
+      }
+    };
+  </script>
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    .glass-card { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(16px); border: 1px solid rgba(59, 130, 246, 0.2); }
+  </style>
+</head>
+<body class="bg-[#FAF8F5] dark:bg-[#070709] text-[#1C1917] dark:text-[#F4F4F6] font-sans h-screen flex flex-col overflow-hidden portal-body antialiased transition-colors duration-200">
+
+<header class="sticky top-0 z-50 w-full bg-white/85 dark:bg-[#070709]/90 backdrop-blur-md border-b border-[#E7E4DC] dark:border-white/5 transition-colors duration-200">
+  <div class="w-full px-3 sm:px-6 py-2 flex items-center justify-between">
+    <!-- Mobile Hamburger + Brand Logo -->
+    <div class="flex items-center gap-3">
+      <button onclick="toggleIndustryMobileMenu()" class="lg:hidden p-2 rounded-xl text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 border border-slate-200 dark:border-gray-800 transition" aria-label="Toggle Navigation">
+        <span class="material-symbols-outlined text-[20px]">menu</span>
+      </button>
+      <a href="/industry.html" class="flex items-center gap-2.5 cursor-pointer select-none">
+        <div class="w-1.5 h-7 bg-[#B85E2E] dark:bg-[#E07A48] rounded-full"></div>
+        <span class="text-xl font-extrabold tracking-widest text-[#1C1917] dark:text-white uppercase block">JOBLEX <span class="text-xs text-blue-500 font-normal">Industry</span></span>
+      </a>
+    </div>
+
+    <!-- Header Tools -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      <span class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-mono text-xs font-bold border border-blue-200 dark:border-blue-800/60"><span class="material-symbols-outlined text-xs align-middle mr-1">apartment</span> Enterprise Network Node</span>
+      <button id="notification-bell-btn" type="button" aria-label="Open Notifications" class="relative p-2 rounded-xl text-[#6E6962] dark:text-gray-300 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 border border-[#E7E4DC] dark:border-white/10 transition">
+        <span class="material-symbols-outlined text-[20px]">notifications</span>
+        <span class="notification-badge-indicator hidden absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-[#944C23] dark:bg-[#E07A48] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">0</span>
+      </button>
+      <button id="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Light/Dark Theme" class="p-2 rounded-xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-white/5 text-[#6E6962] dark:text-gray-300 hover:text-[#1C1917] dark:hover:text-white transition flex items-center justify-center">
+        <span id="theme-toggle-icon" class="material-symbols-outlined text-[18px]">dark_mode</span>
+      </button>
+      <div class="nav-user-account-container"></div>
+    </div>
+  </div>
+</header>
+
+<!-- MOBILE DRAWER -->
+<div id="industry-mobile-drawer" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden lg:hidden">
+  <div class="fixed inset-y-0 left-0 w-72 bg-white dark:bg-[#101115] p-5 flex flex-col justify-between shadow-2xl border-r border-[#E7E4DC] dark:border-white/10 overflow-y-auto">
+    <div class="space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-gray-800">
+        <span class="text-xs uppercase tracking-wider text-blue-600 dark:text-blue-400 font-bold">Enterprise Navigation</span>
+        <button onclick="closeIndustryMobileMenu()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white" aria-label="Close menu"><span class="material-symbols-outlined text-lg">close</span></button>
+      </div>
+      <nav class="space-y-1 pt-1">
+        <a href="/industry.html" onclick="closeIndustryMobileMenu()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 transition"><span class="material-symbols-outlined text-base">apartment</span> <span>Talent Gateway</span></a>
+        <a href="/src/industry/industry-candidates.html" onclick="closeIndustryMobileMenu()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 transition"><span class="material-symbols-outlined text-base">group</span> <span>Candidate Dossiers</span></a>
+        <a href="/src/industry/industry-calibrator.html" onclick="closeIndustryMobileMenu()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 transition"><span class="material-symbols-outlined text-base shrink-0">track_changes</span> <span>AI Talent Calibrator</span></a>
+        <a href="/src/industry/industry-requisitions.html" onclick="closeIndustryMobileMenu()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 transition"><span class="material-symbols-outlined text-base">work</span> <span>Corporate Requisitions</span></a>
+        <a href="/src/industry/industry-mous.html" onclick="closeIndustryMobileMenu()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 transition"><span class="material-symbols-outlined text-base shrink-0">handshake</span> <span>Bilateral MoUs</span></a>
+        <a href="/src/industry/industry-bootcamps.html" onclick="closeIndustryMobileMenu()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 transition"><span class="material-symbols-outlined text-base shrink-0">rocket_launch</span> <span>Sponsored Bootcamps</span></a>
+        <a href="/src/industry/industry-grants.html" onclick="closeIndustryMobileMenu()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 transition"><span class="material-symbols-outlined text-base shrink-0">biotech</span> <span>Consultancy Grants</span></a>
+        <a href="/src/industry/industry-profile.html" onclick="closeIndustryMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold bg-[#0F172A] text-white dark:bg-white/10 dark:text-white shadow-sm">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-cyan-400 text-base">domain</span> <span>Company Profile &amp; Updates</span></span>
+          <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-blue-500 text-white font-bold">Active</span>
+        </a>
+      </nav>
+    </div>
+    <div class="pt-4 border-t border-slate-200 dark:border-gray-800">
+      <button onclick="JoblexApiClient.logout()" class="w-full py-2.5 rounded-xl text-center text-xs font-semibold text-slate-500 dark:text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-rose-400 text-base">logout</span> <span>Sign Out</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- LAYOUT BODY -->
+<div class="flex-1 flex overflow-hidden min-h-0">
+  <!-- DESKTOP SIDEBAR -->
+  <aside id="industry-sidebar" class="hidden lg:flex h-full w-64 bg-white/95 dark:bg-[#101115]/95 border-r border-[#E7E4DC] dark:border-white/5 backdrop-blur-md p-3.5 flex-col justify-between shrink-0 overflow-y-auto custom-scrollbar">
+    <div class="space-y-1">
+      <div class="sidebar-header flex items-center justify-between px-2 pb-2.5 mb-2 border-b border-slate-200 dark:border-gray-800/80">
+        <span class="sidebar-text-label text-[10px] uppercase tracking-wider text-blue-600 dark:text-blue-400 font-bold select-none">Enterprise Modules</span>
+        <button id="industry-sidebar-collapse-btn" onclick="toggleIndustrySidebarCollapse()" title="Minimize / Expand Sidebar" class="p-1.5 rounded-lg bg-slate-100 dark:bg-gray-900 border border-slate-200 dark:border-gray-800 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white text-xs transition flex items-center justify-center">
+          <span class="material-symbols-outlined text-[16px]">chevron_left</span>
+        </button>
+      </div>
+      <nav class="space-y-1">
+        <a href="/industry.html" title="Talent Gateway" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 transition">
+          <span class="material-symbols-outlined text-base shrink-0 text-indigo-400">apartment</span>
+          <span class="sidebar-text-label font-bold text-xs truncate">Talent Gateway</span>
+        </a>
+        <a href="/src/industry/industry-candidates.html" title="Candidate Dossiers" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 transition">
+          <span class="material-symbols-outlined text-base shrink-0 text-purple-400">group</span>
+          <span class="sidebar-text-label font-bold text-xs truncate">Candidate Dossiers</span>
+        </a>
+        <a href="/src/industry/industry-calibrator.html" title="AI Talent Calibrator" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 transition">
+          <span class="material-symbols-outlined text-base shrink-0 text-cyan-400">tune</span>
+          <span class="sidebar-text-label font-bold text-xs truncate">AI Talent Calibrator</span>
+        </a>
+        <a href="/src/industry/industry-requisitions.html" title="Corporate Requisitions" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 transition">
+          <span class="material-symbols-outlined text-base shrink-0 text-emerald-400">work_outline</span>
+          <span class="sidebar-text-label font-bold text-xs truncate">Corporate Requisitions</span>
+        </a>
+        <a href="/src/industry/industry-mous.html" title="Bilateral MoUs" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 transition">
+          <span class="material-symbols-outlined text-base shrink-0">handshake</span>
+          <span class="sidebar-text-label font-bold text-xs truncate">Bilateral MoUs</span>
+        </a>
+        <a href="/src/industry/industry-bootcamps.html" title="Sponsored Bootcamps" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 transition">
+          <span class="material-symbols-outlined text-base shrink-0">rocket_launch</span>
+          <span class="sidebar-text-label font-bold text-xs truncate">Sponsored Bootcamps</span>
+        </a>
+        <a href="/src/industry/industry-grants.html" title="Consultancy Grants" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 transition">
+          <span class="material-symbols-outlined text-base shrink-0">biotech</span>
+          <span class="sidebar-text-label font-bold text-xs truncate">Consultancy Grants</span>
+        </a>
+        <a href="/src/industry/industry-profile.html" title="Company Profile &amp; Updates" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[#0F172A] text-white dark:bg-white/10 dark:text-white shadow-sm transition">
+          <span class="material-symbols-outlined text-base shrink-0 text-cyan-400">domain</span>
+          <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+            <span class="font-bold text-xs truncate">Company Profile</span>
+            <span class="text-[10px] text-gray-300 dark:text-gray-400 truncate">Updates &amp; Tech Stack</span>
+          </div>
+        </a>
+      </nav>
+    </div>
+    <div class="mt-4 pt-3 border-t border-slate-200 dark:border-gray-800/80">
+      <button onclick="JoblexApiClient.logout()" class="w-full py-2 rounded-xl text-center text-xs font-semibold text-slate-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-base shrink-0">logout</span> <span class="sidebar-text-label">Sign Out</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- WORKSPACE -->
+  <main class="flex-1 overflow-y-auto min-h-0 px-4 sm:px-6 lg:px-8 py-6 custom-scrollbar space-y-6">
+    <!-- Hero Banner -->
+    <div class="p-8 rounded-3xl bg-gradient-to-r from-blue-950/60 via-indigo-950/40 to-gray-950 border border-blue-500/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div class="space-y-2">
+        <span class="px-3 py-1 rounded-full bg-blue-900/60 border border-blue-500/40 text-blue-200 text-xs font-mono uppercase tracking-wider font-bold">
+          🏢 Corporate Identity &amp; Student Reach Broadcast
+        </span>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-white">Company Profile, Tech Stack &amp; Updates Studio</h1>
+        <p class="text-xs sm:text-sm text-gray-300 max-w-2xl leading-relaxed">
+          Manage your enterprise profile, showcase the active tech stack &amp; lab infrastructure your teams use, and broadcast R&amp;D announcements directly to academic scholars.
+        </p>
+      </div>
+
+      <button onclick="openPublishUpdateModal()" class="px-6 py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-black text-xs uppercase tracking-wider shadow-lg transition hover:scale-105 shrink-0 flex items-center gap-2">
+        <span>📢</span> Broadcast Company Update
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Company Profile & Tech Stack Form (2 Cols) -->
+      <div class="lg:col-span-2 glass-card rounded-3xl p-6 sm:p-8 space-y-6">
+        <div class="flex justify-between items-center border-b border-gray-800 pb-4">
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <span>⚙️</span> Enterprise Profile &amp; Tech Stack Editor
+          </h2>
+          <span class="text-xs text-blue-400 font-mono" id="save-status-label">All Changes Saved</span>
+        </div>
+
+        <form id="company-profile-form" onsubmit="saveCompanyProfile(event)" class="space-y-5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Company Name</label>
+              <input type="text" id="cp-name" required placeholder="e.g. Dabur India Ltd." class="w-full px-4 py-3 rounded-xl bg-black/60 border border-gray-700 text-white text-sm focus:border-blue-500 focus:outline-none transition">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Industry Sector</label>
+              <input type="text" id="cp-sector" required placeholder="e.g. Pharmaceuticals &amp; FMCG" class="w-full px-4 py-3 rounded-xl bg-black/60 border border-gray-700 text-white text-sm focus:border-blue-500 focus:outline-none transition">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Headquarters / Location</label>
+              <input type="text" id="cp-location" required placeholder="e.g. Ghaziabad / Delhi-NCR" class="w-full px-4 py-3 rounded-xl bg-black/60 border border-gray-700 text-white text-sm focus:border-blue-500 focus:outline-none transition">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Official Website URL</label>
+              <input type="url" id="cp-website" placeholder="https://www.dabur.com" class="w-full px-4 py-3 rounded-xl bg-black/60 border border-gray-700 text-white text-sm focus:border-blue-500 focus:outline-none transition">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Company Tagline</label>
+            <input type="text" id="cp-tagline" placeholder="e.g. Science-Backed Natural Healthcare &amp; Consumer Goods Pioneer" class="w-full px-4 py-3 rounded-xl bg-black/60 border border-gray-700 text-white text-sm focus:border-blue-500 focus:outline-none transition">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Company Description &amp; Research Focus</label>
+            <textarea id="cp-description" rows="4" placeholder="Describe your company's mission, R&amp;D initiatives, and career growth environment..." class="w-full px-4 py-3 rounded-xl bg-black/60 border border-gray-700 text-white text-sm focus:border-blue-500 focus:outline-none transition"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Active Tech Stack &amp; Tools (Comma Separated)</label>
+            <input type="text" id="cp-techstack" placeholder="e.g. Python, HPTLC, In-Silico AutoDock, GLP Compliance, React" class="w-full px-4 py-3 rounded-xl bg-black/60 border border-gray-700 text-white text-sm focus:border-blue-500 focus:outline-none transition">
+            <p class="text-[11px] text-gray-400 mt-1">Students can search and filter your company based on these technologies.</p>
+          </div>
+
+          <div class="pt-4 border-t border-gray-800 flex justify-end">
+            <button type="submit" class="px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-extrabold text-xs uppercase tracking-wider shadow-lg transition hover:scale-105">
+              💾 Save Profile &amp; Tech Stack
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Published Updates Feed Stream (1 Col) -->
+      <div class="space-y-6">
+        <div class="glass-card rounded-3xl p-6 space-y-4">
+          <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+            <h3 class="font-bold text-base text-white flex items-center gap-2">
+              <span>📰</span> Broadcasted Company Updates
+            </h3>
+            <span class="text-xs font-mono text-cyan-400 font-bold" id="updates-count-badge">0 Updates</span>
+          </div>
+
+          <div id="company-updates-stream" class="space-y-3">
+            <!-- Dynamically rendered -->
+          </div>
+        </div>
+      </div>
+
+      <footer class="w-full text-center py-6 mt-8 border-t border-slate-200 dark:border-gray-800/80 text-xs text-[#6E6962] dark:text-gray-500">
+        JOBLEX Industry Portal &copy; 2026. All rights reserved.
+      </footer>
+    </div>
+  </main>
+</div>
+
+<!-- PUBLISH UPDATE MODAL -->
+<div id="publish-update-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+  <div class="glass-card w-full max-w-lg rounded-3xl p-6 sm:p-8 space-y-5 border border-blue-500/40 relative">
+    <div class="flex justify-between items-center border-b border-gray-800 pb-3">
+      <h3 class="text-lg font-bold text-white">Broadcast New Company Update</h3>
+      <button onclick="closePublishUpdateModal()" class="text-gray-400 hover:text-white">✕</button>
+    </div>
+
+    <form onsubmit="handlePostUpdate(event)" class="space-y-4">
+      <div>
+        <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Update Title</label>
+        <input type="text" id="up-title" required placeholder="e.g. Dabur R&amp;D Expands In-Silico Molecular Docking Lab" class="w-full px-4 py-3 rounded-xl bg-black/60 border border-gray-700 text-white text-sm focus:border-blue-500 focus:outline-none transition">
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Category</label>
+        <select id="up-category" class="w-full px-4 py-3 rounded-xl bg-black/60 border border-gray-700 text-white text-sm focus:border-blue-500 focus:outline-none transition">
+          <option value="Tech &amp; R&amp;D">Tech &amp; R&amp;D Breakthrough</option>
+          <option value="Hiring Event">Hiring &amp; Internship Event</option>
+          <option value="MoU &amp; Collaboration">MoU &amp; Institutional Partnership</option>
+          <option value="Announcement">General Corporate Announcement</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Update Content</label>
+        <textarea id="up-content" rows="4" required placeholder="Describe the announcement, new tech adoption, or open opportunities..." class="w-full px-4 py-3 rounded-xl bg-black/60 border border-gray-700 text-white text-sm focus:border-blue-500 focus:outline-none transition"></textarea>
+      </div>
+
+      <div class="pt-3 border-t border-gray-800 flex justify-end gap-3">
+        <button type="button" onclick="closePublishUpdateModal()" class="px-4 py-2.5 rounded-xl border border-gray-700 text-gray-400 text-xs font-bold hover:bg-gray-900">Cancel</button>
+        <button type="submit" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-bold text-xs shadow-lg transition">Publish Update ➔</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="/js/frontend/api-client.js"></script>
+<script src="/js/frontend/notifications.js"></script>
+<script>
+  let activeCompanyId = 'comp-dabur';
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    if (!JoblexApiClient.requireAuth('industry')) return;
+    const user = JoblexApiClient.getCurrentUser();
+    if (user && user.company) {
+      activeCompanyId = `comp-${user.company.toLowerCase().replace(/[^a-z0-9]/g, '')}`;
+    }
+    await loadProfileAndUpdates();
+  });
+
+  async function loadProfileAndUpdates() {
+    const res = await JoblexApiClient.getCompanyDetails(activeCompanyId);
+    if (res.success && res.company) {
+      const c = res.company;
+      document.getElementById('cp-name').value = c.name || '';
+      document.getElementById('cp-sector').value = c.industry_sector || '';
+      document.getElementById('cp-location').value = c.location || '';
+      document.getElementById('cp-website').value = c.website || '';
+      document.getElementById('cp-tagline').value = c.tagline || '';
+      document.getElementById('cp-description').value = c.description || '';
+      document.getElementById('cp-techstack').value = Array.isArray(c.tech_stack) ? c.tech_stack.join(', ') : '';
+
+      renderUpdatesStream(c.updates || []);
+    }
+  }
+
+  function renderUpdatesStream(updates) {
+    const container = document.getElementById('company-updates-stream');
+    const badge = document.getElementById('updates-count-badge');
+    if (!container) return;
+
+    if (badge) badge.innerText = `${updates.length} Updates`;
+
+    if (updates.length === 0) {
+      container.innerHTML = `
+        <div class="text-center py-8 text-xs text-gray-500 italic">
+          No updates broadcasted yet. Click "Broadcast Company Update" above to notify student scholars.
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = updates.map(u => `
+      <div class="p-4 rounded-2xl bg-black/40 border border-gray-800 space-y-1.5">
+        <div class="flex justify-between items-center text-[10px] text-gray-400 font-mono">
+          <span class="px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-500/30">${u.category || 'Announcement'}</span>
+          <span>${new Date(u.created_at).toLocaleDateString()}</span>
+        </div>
+        <h4 class="font-bold text-sm text-white">${u.title}</h4>
+        <p class="text-xs text-gray-300 leading-relaxed">${u.content}</p>
+      </div>
+    `).join('');
+  }
+
+  async function saveCompanyProfile(e) {
+    e.preventDefault();
+    const techStackStr = document.getElementById('cp-techstack').value;
+    const tech_stack = techStackStr.split(',').map(t => t.trim()).filter(Boolean);
+
+    const payload = {
+      name: document.getElementById('cp-name').value,
+      industry_sector: document.getElementById('cp-sector').value,
+      location: document.getElementById('cp-location').value,
+      website: document.getElementById('cp-website').value,
+      tagline: document.getElementById('cp-tagline').value,
+      description: document.getElementById('cp-description').value,
+      tech_stack
+    };
+
+    await JoblexApiClient.updateCompanyProfile(activeCompanyId, payload);
+    document.getElementById('save-status-label').innerText = '✓ Profile Saved!';
+    setTimeout(() => { document.getElementById('save-status-label').innerText = 'All Changes Saved'; }, 3000);
+  }
+
+  function openPublishUpdateModal() {
+    document.getElementById('publish-update-modal').classList.remove('hidden');
+  }
+
+  function closePublishUpdateModal() {
+    document.getElementById('publish-update-modal').classList.add('hidden');
+  }
+
+  async function handlePostUpdate(e) {
+    e.preventDefault();
+    const title = document.getElementById('up-title').value.trim();
+    const category = document.getElementById('up-category').value;
+    const content = document.getElementById('up-content').value.trim();
+    const companyName = document.getElementById('cp-name').value || 'Company';
+
+    await JoblexApiClient.postCompanyUpdate(activeCompanyId, { title, category, content, companyName });
+    closePublishUpdateModal();
+    document.getElementById('up-title').value = '';
+    document.getElementById('up-content').value = '';
+    await loadProfileAndUpdates();
+  }
+</script>
+<script src="/js/frontend/animations.js"></script>
+</body>
+</html>

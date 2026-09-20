@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>JOBLEX · AI Talent Calibrator · Reverse Headhunting</title>
+  <!-- Google Fonts Preconnect -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- High-Tech Editorial Typography: Space Grotesk, Outfit, JetBrains Mono -->
+    <!-- High-Tech Editorial Typography: Plus Jakarta Sans, Newsreader, JetBrains Mono -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Google Material Symbols Outlined -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%236366f1'>✦</text></svg>">
+  
+  <script src="/js/frontend/theme.js"></script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            sans: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            serif: ['Newsreader', 'Georgia', 'serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          colors: {
+            bone: { 50: '#FAF9F6', 100: '#F4F2EC', 200: '#E8E5DC', 300: '#D7D2C5' },
+            obsidian: { 950: '#070709', 900: '#0C0D10', 800: '#111215', 700: '#16181D', 600: '#22252C' },
+            sage: { 50: '#F2F6F3', 100: '#E3EDE6', 500: '#3D7055', 600: '#2D5542', 700: '#1E3C2E', glow: '#4EBA87' },
+            terracotta: { 50: '#FAF4F0', 100: '#F4E7DF', 500: '#B85E2E', 600: '#944C23', glow: '#E07A48' },
+            ochre: { 50: '#FAF6EF', 100: '#F4EBDA', 500: '#A67332', 600: '#855828', glow: '#D4973B' }
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="stylesheet" href="/css/styles.css">
+
+  
+</head>
+<body class="bg-[#FAF8F5] dark:bg-[#070709] text-[#1C1917] dark:text-[#F4F4F6] font-sans h-screen flex flex-col overflow-hidden portal-body antialiased transition-colors duration-200">
+
+  <!-- Header -->
+  <header class="shrink-0 z-50 w-full bg-white/85 dark:bg-[#070709]/90 backdrop-blur-md border-b border-[#E7E4DC] dark:border-white/5 transition-colors duration-200">
+    <div class="w-full px-4 sm:px-6 py-2 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <button onclick="toggleIndustryMobileMenu()" class="lg:hidden p-2 rounded-xl text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 border border-slate-200 dark:border-gray-800 transition" aria-label="Toggle Navigation">
+          <span class="material-symbols-outlined text-[20px]">menu</span>
+        </button>
+        <a href="/industry.html" class="flex items-center gap-2.5 cursor-pointer select-none">
+          <div class="w-1.5 h-7 bg-[#944C23] dark:bg-[#E07A48] rounded-full"></div>
+          <div>
+            <span class="text-xl font-extrabold tracking-widest text-[#1C1917] dark:text-white uppercase block leading-tight">JOBLEX</span>
+            
+          </div>
+        </a>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <span class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-mono text-xs font-bold border border-blue-200 dark:border-blue-800/60"><span class="material-symbols-outlined text-xs align-middle mr-1">apartment</span> Enterprise Network Node</span>
+        <button id="notification-bell-btn" type="button" aria-label="Open Notifications" class="relative p-2 rounded-xl text-[#6E6962] dark:text-gray-300 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 border border-[#E7E4DC] dark:border-white/10 transition">
+          <span class="material-symbols-outlined text-[20px]">notifications</span>
+          <span class="notification-badge-indicator hidden absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-[#944C23] dark:bg-[#E07A48] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">0</span>
+        </button>
+        <button id="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Light/Dark Theme" class="p-2 rounded-xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-white/5 text-[#6E6962] dark:text-gray-300 hover:text-[#1C1917] dark:hover:text-white transition flex items-center justify-center">
+          <span id="theme-toggle-icon" class="material-symbols-outlined text-[18px]">dark_mode</span>
+        </button>
+        <div class="nav-user-account-container"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Drawer -->
+  <div id="industry-mobile-drawer" onclick="if(event.target === this) closeIndustryMobileMenu()" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden lg:hidden">
+    <div class="fixed inset-y-0 left-0 w-72 bg-white dark:bg-[#101115] p-5 flex flex-col justify-between shadow-2xl border-r border-[#E7E4DC] dark:border-white/10 overflow-y-auto">
+      <div class="space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-gray-800">
+          <span class="text-xs uppercase tracking-wider text-blue-600 dark:text-blue-400 font-bold">Enterprise Navigation</span>
+          <button onclick="closeIndustryMobileMenu()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-900 dark:hover:text-white" aria-label="Close menu"><span class="material-symbols-outlined text-lg">close</span></button>
+        </div>
+        <nav class="space-y-1 pt-1">
+          <a href="/industry.html" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 transition"><span class="material-symbols-outlined text-base">apartment</span> <span>Talent Gateway</span></a>
+          <a href="/src/industry/industry-candidates.html" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 transition"><span class="material-symbols-outlined text-base">group</span> <span>Candidate Dossiers</span></a>
+          <a href="/src/industry/industry-calibrator.html" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold bg-[#0F172A] text-white dark:bg-white/10 dark:text-white shadow-sm">
+            <span class="flex items-center gap-3"><span class="material-symbols-outlined text-base shrink-0">track_changes</span> <span>AI Talent Calibrator</span></span>
+            <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-blue-500 text-white font-bold">Active</span>
+          </a>
+          <a href="/src/industry/industry-requisitions.html" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 transition"><span class="material-symbols-outlined text-base">work</span> <span>Corporate Requisitions</span></a>
+          <a href="/src/industry/industry-mous.html" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 transition"><span class="material-symbols-outlined text-base shrink-0">handshake</span> <span>Bilateral MoUs</span></a>
+          <a href="/src/industry/industry-bootcamps.html" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 transition"><span class="material-symbols-outlined text-base shrink-0">rocket_launch</span> <span>Sponsored Bootcamps</span></a>
+          <a href="/src/industry/industry-grants.html" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 transition"><span class="material-symbols-outlined text-base shrink-0">biotech</span> <span>Consultancy Grants</span></a>
+        </nav>
+      </div>
+      <div class="pt-4 border-t border-slate-200 dark:border-gray-800">
+        <button onclick="JoblexApiClient.logout()" class="w-full py-2.5 rounded-xl text-center text-xs font-semibold text-slate-500 dark:text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition flex items-center justify-center gap-2">
+          <span class="material-symbols-outlined text-rose-400 text-base">logout</span> <span>Sign Out</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layout Body -->
+  <div class="flex-1 flex overflow-hidden min-h-0">
+    <!-- Desktop Sidebar -->
+    <aside id="industry-sidebar" class="hidden lg:flex h-full w-64 bg-white/95 dark:bg-[#101115]/95 border-r border-[#E7E4DC] dark:border-white/5 backdrop-blur-md p-3.5 flex-col justify-between shrink-0 overflow-y-auto custom-scrollbar transition-all duration-300">
+      <div class="space-y-1">
+        <div class="sidebar-header flex items-center justify-between px-2 pb-2.5 mb-2 border-b border-slate-200 dark:border-gray-800/80">
+          <span class="sidebar-text-label text-[10px] uppercase tracking-wider text-blue-600 dark:text-blue-400 font-bold select-none">Enterprise Modules</span>
+          <button id="industry-sidebar-collapse-btn" onclick="toggleIndustrySidebarCollapse()" title="Minimize / Expand Sidebar" class="p-1.5 rounded-lg bg-slate-100 dark:bg-gray-900 border border-slate-200 dark:border-gray-800 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white text-xs transition flex items-center justify-center">
+            <span class="material-symbols-outlined text-[16px]">chevron_left</span>
+          </button>
+        </div>
+        <nav class="space-y-1">
+          <a href="/industry.html" title="Talent Gateway" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 transition">
+            <span class="material-symbols-outlined text-base shrink-0 text-indigo-400">apartment</span>
+            <span class="sidebar-text-label font-bold text-xs truncate">Talent Gateway</span>
+          </a>
+          <a href="/src/industry/industry-candidates.html" title="Candidate Dossiers" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 transition">
+            <span class="material-symbols-outlined text-base shrink-0 text-purple-400">group</span>
+            <span class="sidebar-text-label font-bold text-xs truncate">Candidate Dossiers</span>
+          </a>
+          <a href="/src/industry/industry-calibrator.html" title="AI Talent Calibrator" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[#0F172A] text-white dark:bg-white/10 dark:text-white shadow-sm transition">
+            <span class="material-symbols-outlined text-base shrink-0 text-cyan-400">tune</span>
+            <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+              <span class="font-bold text-xs truncate">AI Talent Calibrator</span>
+              <span class="text-[10px] text-gray-300 dark:text-gray-400 truncate">Reverse Headhunting</span>
+            </div>
+          </a>
+          <a href="/src/industry/industry-requisitions.html" title="Corporate Requisitions" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 transition">
+            <span class="material-symbols-outlined text-base shrink-0 text-emerald-400">work_outline</span>
+            <span class="sidebar-text-label font-bold text-xs truncate">Corporate Requisitions</span>
+          </a>
+          <a href="/src/industry/industry-mous.html" title="Bilateral MoUs" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 transition">
+            <span class="material-symbols-outlined text-base shrink-0">handshake</span>
+            <span class="sidebar-text-label font-bold text-xs truncate">Bilateral MoUs</span>
+          </a>
+          <a href="/src/industry/industry-bootcamps.html" title="Sponsored Bootcamps" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 transition">
+            <span class="material-symbols-outlined text-base shrink-0 text-amber-400">biotech</span>
+            <span class="sidebar-text-label font-bold text-xs truncate">Sponsored Bootcamps</span>
+          </a>
+          <a href="/src/industry/industry-profile.html" title="Company Profile & Updates" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 transition">
+            <span class="material-symbols-outlined text-base shrink-0 text-blue-400">apartment</span>
+            <span class="sidebar-text-label font-bold text-xs truncate">Company Profile & Updates</span>
+          </a>
+          <a href="/src/industry/industry-grants.html" title="Consultancy Grants" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2 rounded-xl text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 transition">
+            <span class="material-symbols-outlined text-base shrink-0">biotech</span>
+            <span class="sidebar-text-label font-bold text-xs truncate">Consultancy Grants</span>
+          </a>
+        </nav>
+      </div>
+      <div class="mt-4 pt-3 border-t border-slate-200 dark:border-gray-800/80">
+        <button onclick="JoblexApiClient.logout()" title="Sign Out" class="sidebar-nav-btn w-full py-2 px-3 rounded-xl text-xs font-semibold text-slate-500 dark:text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition flex items-center gap-2">
+          <span class="material-symbols-outlined text-base shrink-0">logout</span>
+          <span class="sidebar-text-label truncate">Sign Out</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 overflow-y-auto min-h-0 px-4 sm:px-6 lg:px-8 py-6 custom-scrollbar">
+      <div class="w-full max-w-6xl mx-auto flex flex-col gap-6">
+
+        <!-- Breadcrumb -->
+        <nav aria-label="Breadcrumb" class="bg-white dark:bg-white/[0.03] shadow-sm border border-[#E7E4DC] dark:border-white/10 rounded-xl p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div class="flex items-center space-x-1 text-[11px] font-semibold uppercase tracking-wider text-[#6E6962] dark:text-gray-400">
+            <a href="/industry.html" class="hover:text-blue-500 transition">Corporate Gateway</a>
+            <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+            <span class="text-[#1C1917] dark:text-white font-semibold">AI Talent Calibrator &amp; Skill ROI Engine</span>
+          </div>
+          <span class="inline-flex items-center px-2 py-0.5 rounded border border-[#E7E4DC] dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] font-mono text-xs text-[#1C1917] dark:text-white">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span> NATIONAL LEDGER SYNC
+          </span>
+        </nav>
+
+        <!-- Main Module Workspace -->
+        <section id="skill-calibrator-section" class="bg-white dark:bg-white/[0.03] shadow-sm border border-[#E7E4DC] dark:border-white/10 rounded-xl p-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-[#E7E4DC] dark:border-white/10">
+            <div>
+              <h1 class="text-xl font-bold text-[#1C1917] dark:text-white">Reverse Headhunting &amp; Skill Match ROI</h1>
+              <p class="text-xs text-[#6E6962] dark:text-gray-400 mt-0.5">Project recruitment cost savings and calibrate institutional curriculum requirements</p>
+            </div>
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-mono text-xs font-bold border border-blue-200 dark:border-blue-800/60">
+              <span class="material-symbols-outlined text-sm align-middle mr-1">tune</span> Calibrator Active
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+            <div class="space-y-4">
+              <h2 class="text-xs font-semibold text-[#1C1917] dark:text-white uppercase tracking-wider">Skill Gap Impact Analysis</h2>
+              <div id="skill-roi-breakdown" class="space-y-3">
+                <!-- Rendered by industry-ui.js -->
+              </div>
+            </div>
+            <div class="bg-slate-50 dark:bg-white/[0.02] border border-[#E7E4DC] dark:border-white/10 rounded-lg p-5 space-y-3">
+              <h2 class="text-xs font-semibold text-[#1C1917] dark:text-white uppercase tracking-wider">Projected Cost Savings</h2>
+              <p class="text-xs text-[#6E6962] dark:text-gray-400">By recruiting directly through Joblex AIIA Verified Ledgers, average onboarding time drops from 42 days to 9 days.</p>
+              <div class="p-3.5 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 rounded text-emerald-800 dark:text-emerald-300 text-xs font-mono">
+                Estimated Industry Net ROI: +₹1.48L per hired scholar
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+
+      </div>
+    </main>
+  </div>
+
+  
+    <script src="/js/frontend/api-client.js"></script>
+  <script src="/js/frontend/notifications.js"></script>
+  <script src="/js/frontend/industry-ui.js"></script>
+  <script>
+    function toggleIndustryMobileMenu() {
+      const drawer = document.getElementById('industry-mobile-drawer');
+      if (drawer) drawer.classList.toggle('hidden');
+    }
+    function closeIndustryMobileMenu() {
+      const drawer = document.getElementById('industry-mobile-drawer');
+      if (drawer) drawer.classList.add('hidden');
+    }
+    document.addEventListener('DOMContentLoaded', async () => {
+      const user = await requireAuth(['industry']);
+      if (user) {
+        JoblexApiClient.renderUserNavbar();
+      }
+    });
+  </script>
+<script src="../../js/frontend/animations.js"></script>
+</body>
+</html>

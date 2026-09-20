@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JOBLEX | Student Overview & Command Dashboard</title>
+  <!-- Google Fonts Preconnect -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- High-Tech Editorial Typography: Space Grotesk, Outfit, JetBrains Mono -->
+    <!-- High-Tech Editorial Typography: Plus Jakarta Sans, Newsreader, JetBrains Mono -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Google Material Symbols Outlined -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script src="/js/frontend/theme.js"></script>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            sans: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            serif: ['Newsreader', 'Georgia', 'serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          colors: {
+            bone: { 50: '#FAF9F6', 100: '#F4F2EC', 200: '#E8E5DC', 300: '#D7D2C5' },
+            obsidian: { 950: '#070709', 900: '#0C0D10', 800: '#111215', 700: '#16181D', 600: '#22252C' },
+            sage: { 50: '#F2F6F3', 100: '#E3EDE6', 500: '#3D7055', 600: '#2D5542', 700: '#1E3C2E', glow: '#4EBA87' },
+            terracotta: { 50: '#FAF4F0', 100: '#F4E7DF', 500: '#B85E2E', 600: '#944C23', glow: '#E07A48' },
+            ochre: { 50: '#FAF6EF', 100: '#F4EBDA', 500: '#A67332', 600: '#855828', glow: '#D4973B' }
+          }
+        }
+      }
+    };
+  </script>
+  <!-- Custom Styles (Relative Path) -->
+  <link rel="stylesheet" href="/css/styles.css">
+  
+</head>
+<body class="bg-[#FAF8F5] dark:bg-[#070709] text-[#1C1917] dark:text-[#F4F4F6] font-sans h-screen flex flex-col overflow-hidden portal-body antialiased transition-colors duration-200">
+
+<header class="sticky top-0 z-50 w-full bg-white/85 dark:bg-[#070709]/90 backdrop-blur-md border-b border-[#E7E4DC] dark:border-white/5 transition-colors duration-200">
+  <div class="w-full px-3 sm:px-6 py-2 flex items-center justify-between">
+    <!-- Mobile Hamburger + Brand Logo -->
+    <div class="flex items-center gap-3">
+      <button onclick="toggleMobileMenu()" class="lg:hidden p-2 rounded-xl text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 border border-slate-200 dark:border-gray-800 transition" aria-label="Toggle Navigation">
+        <span class="material-symbols-outlined text-[20px]">menu</span>
+      </button>
+      <a href="student.html" class="flex items-center gap-2.5 cursor-pointer select-none">
+        <div class="w-1.5 h-7 bg-[#2D5542] dark:bg-[#4EBA87] rounded-full"></div>
+        <span class="text-xl font-extrabold tracking-widest text-[#1C1917] dark:text-white uppercase block">JOBLEX</span>
+      </a>
+    </div>
+
+    <!-- Student Stats + Notifications + Theme Toggle + Avatar -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      <!-- Live Metrics -->
+      <span id="header-xp-badge" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-mono text-xs font-bold border border-purple-200 dark:border-purple-800/60">
+        <span class="material-symbols-outlined text-purple-500 text-sm align-middle mr-1">bolt</span>0 XP
+      </span>
+      <span id="header-streak-badge" class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-mono text-xs font-bold border border-emerald-200 dark:border-emerald-800/60">
+        <span class="material-symbols-outlined text-amber-500 text-sm align-middle mr-1">local_fire_department</span>0-Day Streak
+      </span>
+
+      <!-- Notification Bell -->
+      <button id="notification-bell-btn" type="button" aria-label="Open Notifications" class="relative p-2 rounded-xl text-[#6E6962] dark:text-gray-300 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 border border-[#E7E4DC] dark:border-white/10 transition-colors">
+        <span class="material-symbols-outlined text-[20px]">notifications</span>
+        <span class="notification-badge-indicator hidden absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-[#2D5542] dark:bg-[#4EBA87] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">
+          0
+        </span>
+      </button>
+
+      <!-- Theme Switcher -->
+      <button id="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Light/Dark Theme" title="Toggle Light/Dark Theme" class="p-2 rounded-xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-white/5 text-[#6E6962] dark:text-gray-300 hover:text-[#1C1917] dark:hover:text-white transition-colors duration-150 flex items-center justify-center">
+        <span id="theme-toggle-icon" class="material-symbols-outlined text-[18px]">dark_mode</span>
+      </button>
+
+      <div class="nav-user-account-container relative"></div>
+    </div>
+  </div>
+</header>
+
+<!-- MOBILE SLIDE-OUT DRAWER -->
+<div id="mobile-drawer" onclick="if(event.target === this) closeMobileMenu()" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden lg:hidden">
+  <div class="fixed inset-y-0 left-0 w-72 bg-white dark:bg-[#101115] p-5 flex flex-col justify-between shadow-2xl border-r border-[#E7E4DC] dark:border-white/10 overflow-y-auto">
+    <div class="space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-gray-800">
+        <span class="text-xs uppercase tracking-wider text-purple-600 dark:text-purple-400 font-bold">Student Navigation</span>
+        <button onclick="closeMobileMenu()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white"><span class="material-symbols-outlined text-lg">close</span></button>
+      </div>
+      <div class="space-y-1 pt-1">
+        <a href="student.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs transition bg-[#0F172A] text-white dark:bg-white/10 dark:text-white font-bold">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-purple-400 text-base">grid_view</span> <span>Student Overview</span></span>
+          <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-500 text-white font-bold">Active</span>
+        </a>
+        <a href="src/students/student-roadmap.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-cyan-400 text-base">alt_route</span> <span>Career Roadmap</span></span>
+        </a>
+        <a href="src/students/student-resume.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-blue-400 text-base">document_scanner</span> <span>AI Resume Analyzer</span></span>
+        </a>
+        <a href="src/students/student-quiz.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-amber-400 text-base">quiz</span> <span>Quiz Arena</span></span>
+        </a>
+        <a href="src/students/student-internships.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-emerald-400 text-base">work_outline</span> <span>Apply for Internships</span></span>
+        </a>
+        <a href="src/students/student-jobs.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-indigo-400 text-base">apartment</span> <span>Apply for Jobs</span></span>
+        </a>
+        <a href="src/students/student-zulu.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-pink-400 text-base">smart_toy</span> <span>Zulu AI Companion</span></span>
+        </a>
+        <a href="src/students/student-skilltree.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-teal-400 text-base">hub</span> <span>Skill Constellation</span></span>
+        </a>
+        <a href="src/students/student-portfolio.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-yellow-400 text-base">verified</span> <span>Verified Portfolio</span></span>
+        </a>
+      </div>
+    </div>
+    <div class="pt-4 border-t border-slate-200 dark:border-gray-800">
+      <button onclick="JoblexApiClient.logout()" class="w-full py-2.5 rounded-xl text-center text-xs font-semibold text-slate-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-rose-400 text-base">logout</span> <span>Sign Out</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="flex-1 flex overflow-hidden min-h-0">
+  <!-- COLLAPSIBLE SIDEBAR -->
+  <aside id="student-sidebar" class="hidden lg:flex w-64 bg-white/80 dark:bg-[#101115]/90 border-r border-[#E7E4DC] dark:border-white/5 backdrop-blur-md p-3.5 flex-col justify-between shrink-0 transition-all duration-300">
+    <div class="space-y-1">
+      <div class="flex items-center justify-between px-2 pb-2 mb-2 border-b border-slate-200 dark:border-gray-800/80">
+        <span class="sidebar-text-label text-[10px] uppercase tracking-wider text-purple-600 dark:text-purple-400 font-bold">Student Modules</span>
+        <button id="sidebar-collapse-btn" onclick="toggleSidebarCollapse()" title="Minimize / Expand Sidebar" class="p-1.5 rounded-lg bg-slate-100 dark:bg-gray-900 border border-slate-200 dark:border-gray-800 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white text-xs transition">
+          <span class="material-symbols-outlined text-xs">chevron_left</span>
+        </button>
+      </div>
+      <a href="student.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all bg-[#0F172A] text-white dark:bg-white/10 dark:text-white shadow-sm">
+        <span class="material-symbols-outlined text-base shrink-0 text-purple-400">grid_view</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">Student Overview</span>
+          <span class="text-[10px] text-gray-300 dark:text-gray-400 truncate">Central Dashboard</span>
+        </div>
+      </a>
+      <a href="src/students/student-roadmap.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 border border-transparent">
+        <span class="material-symbols-outlined text-base shrink-0 text-cyan-400">alt_route</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">Career Roadmap</span>
+          <span class="text-[10px] text-[#6E6962] dark:text-gray-500 truncate">4-Phase Progression</span>
+        </div>
+      </a>
+      <a href="src/students/student-resume.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 border border-transparent">
+        <span class="material-symbols-outlined text-base shrink-0 text-blue-400">document_scanner</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">AI Resume Analyzer</span>
+          <span class="text-[10px] text-[#6E6962] dark:text-gray-500 truncate">Skill Gap Discovery</span>
+        </div>
+      </a>
+      <a href="src/students/student-quiz.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 border border-transparent">
+        <span class="material-symbols-outlined text-base shrink-0 text-amber-400">quiz</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">Quiz Arena</span>
+          <span class="text-[10px] text-[#6E6962] dark:text-gray-500 truncate">Knowledge Validation</span>
+        </div>
+      </a>
+      <a href="src/students/student-internships.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 border border-transparent">
+        <span class="material-symbols-outlined text-base shrink-0 text-emerald-400">work_outline</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">Apply for Internships</span>
+          <span class="text-[10px] text-[#6E6962] dark:text-gray-500 truncate">Fellowships &amp; Bounties</span>
+        </div>
+      </a>
+      <a href="src/students/student-jobs.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 border border-transparent">
+        <span class="material-symbols-outlined text-base shrink-0 text-indigo-400">apartment</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">Apply for Jobs</span>
+          <span class="text-[10px] text-[#6E6962] dark:text-gray-500 truncate">Corporate Placements</span>
+        </div>
+      </a>
+      <a href="src/students/student-zulu.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 border border-transparent">
+        <span class="material-symbols-outlined text-base shrink-0 text-pink-400">smart_toy</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">Zulu AI Companion</span>
+          <span class="text-[10px] text-[#6E6962] dark:text-gray-500 truncate">Career Counselor</span>
+        </div>
+      </a>
+      <a href="src/students/student-skilltree.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 border border-transparent">
+        <span class="material-symbols-outlined text-base shrink-0 text-teal-400">hub</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">Skill Constellation</span>
+          <span class="text-[10px] text-[#6E6962] dark:text-gray-500 truncate">Interactive 2D Map</span>
+        </div>
+      </a>
+      <a href="src/students/student-portfolio.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 border border-transparent">
+        <span class="material-symbols-outlined text-base shrink-0 text-yellow-400">verified</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">Verified Portfolio</span>
+          <span class="text-[10px] text-[#6E6962] dark:text-gray-500 truncate">Tamper-Proof Ledger</span>
+        </div>
+      </a>
+    </div>
+    <div class="mt-4 pt-3 border-t border-slate-200 dark:border-gray-800/80">
+      <button onclick="JoblexApiClient.logout()" class="w-full py-2 rounded-xl text-center text-xs font-semibold text-slate-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-base shrink-0">logout</span> <span class="sidebar-text-label">Sign Out</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- WORKSPACE -->
+  <main class="flex-1 overflow-y-auto min-h-0 px-4 sm:px-6 lg:px-8 py-6 custom-scrollbar">
+    <div class="w-full max-w-6xl mx-auto">
+
+      <!-- WELCOME HERO BANNER -->
+      <div class="rounded-2xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-white/[0.03] p-6 sm:p-8 shadow-sm mb-8 relative overflow-hidden">
+        <div class="absolute -right-16 -top-16 w-64 h-64 bg-purple-500/10 dark:bg-purple-500/5 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
+          <div class="space-y-2">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-semibold border border-emerald-200 dark:border-emerald-800/60">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Verified Scholar · Anti-Decay Freeze Active
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#1C1917] dark:text-white">
+              Welcome back, <span class="user-name-display text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-indigo-600 to-cyan-500 dark:from-purple-400 dark:via-indigo-300 dark:to-cyan-400">Scholar</span>
+            </h1>
+            <p class="text-sm text-[#6E6962] dark:text-gray-300 max-w-2xl leading-relaxed">
+              <span class="user-dept-display">Higher Education &amp; Research</span> · <span class="user-inst-display">Institutional Scholar Portal</span>. Your verified institutional dossier is synced with NAAC Criterion 3.4 &amp; Corporate Mandates.
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center gap-3">
+            <a href="src/students/student-roadmap.html" class="px-5 py-2.5 rounded-xl bg-[#0F172A] hover:bg-[#1E293B] dark:bg-white/10 dark:hover:bg-white/20 text-white font-semibold text-sm transition-colors shadow-sm flex items-center gap-2">
+              <span>Continue Roadmap</span>
+              <span class="material-symbols-outlined text-sm align-middle">arrow_forward</span>
+            </a>
+            <a href="src/students/student-zulu.html" class="px-5 py-2.5 rounded-xl border border-[#E7E4DC] dark:border-white/10 bg-transparent hover:bg-slate-50 dark:hover:bg-white/5 text-[#1C1917] dark:text-white font-semibold text-sm transition-colors flex items-center gap-2">
+              <span class="inline-flex items-center gap-1.5"><span class="material-symbols-outlined text-base">smart_toy</span> Ask Zulu AI</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 KPI STATS -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+        <div class="rounded-2xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-white/[0.03] p-5 shadow-sm space-y-1">
+          <div class="flex items-center justify-between text-xs text-[#6E6962] dark:text-gray-400">
+            <span class="uppercase tracking-wider font-semibold">Mastered Skills</span>
+            <span class="material-symbols-outlined text-[18px] text-purple-600 dark:text-purple-400">verified</span>
+          </div>
+          <div id="stat-skills-count" class="text-3xl font-extrabold text-[#1C1917] dark:text-white font-mono">0</div>
+          <div id="stat-skills-sub" class="text-xs text-emerald-600 dark:text-emerald-400 font-medium">0 Verified Skills</div>
+        </div>
+
+        <div class="rounded-2xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-white/[0.03] p-5 shadow-sm space-y-1">
+          <div class="flex items-center justify-between text-xs text-[#6E6962] dark:text-gray-400">
+            <span class="uppercase tracking-wider font-semibold">Assessments</span>
+            <span class="material-symbols-outlined text-[18px] text-cyan-600 dark:text-cyan-400">bolt</span>
+          </div>
+          <div id="stat-assessments-count" class="text-3xl font-extrabold text-[#1C1917] dark:text-white font-mono">0</div>
+          <div id="stat-assessments-sub" class="text-xs text-purple-600 dark:text-purple-400 font-medium">0 XP Earned</div>
+        </div>
+
+        <div class="rounded-2xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-white/[0.03] p-5 shadow-sm space-y-1">
+          <div class="flex items-center justify-between text-xs text-[#6E6962] dark:text-gray-400">
+            <span class="uppercase tracking-wider font-semibold">Applications</span>
+            <span class="material-symbols-outlined text-[18px] text-blue-600 dark:text-blue-400">work</span>
+          </div>
+          <div id="stat-applications-count" class="text-3xl font-extrabold text-[#1C1917] dark:text-white font-mono">0</div>
+          <div id="stat-applications-sub" class="text-xs text-blue-600 dark:text-blue-400 font-medium">0 Active</div>
+        </div>
+
+        <div class="rounded-2xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-white/[0.03] p-5 shadow-sm space-y-1">
+          <div class="flex items-center justify-between text-xs text-[#6E6962] dark:text-gray-400">
+            <span class="uppercase tracking-wider font-semibold">Readiness Index</span>
+            <span class="material-symbols-outlined text-[18px] text-emerald-600 dark:text-emerald-400">trending_up</span>
+          </div>
+          <div id="stat-readiness-index" class="text-3xl font-extrabold text-[#1C1917] dark:text-white font-mono">0%</div>
+          <div id="stat-readiness-sub" class="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Diagnostic Pending</div>
+        </div>
+      </div>
+
+      <!-- MODULAR STUDENT PORTAL NAVIGATOR (8 HUBS) -->
+      <div class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-xl sm:text-2xl font-bold text-[#1C1917] dark:text-white">Academic &amp; Placement Modules</h2>
+            <p class="text-xs sm:text-sm text-[#6E6962] dark:text-gray-400">Direct access to career roadmaps, AI diagnostics, assessment arenas, and corporate recruitment.</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Card 1: Roadmap -->
+          <a href="src/students/student-roadmap.html" class="portal-card rounded-2xl p-5 group flex flex-col justify-between">
+            <div>
+              <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-3 group-hover:scale-105 transition-transform"><span class="material-symbols-outlined text-2xl">alt_route</span></div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1">Career Roadmap</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">4-Phase milestone tracker from core academic foundations to advanced industry practice.</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 dark:border-white/[0.06] flex items-center justify-between text-xs text-blue-600 dark:text-blue-400 font-semibold">
+              <span>Phase 01 Active</span>
+              <span class="material-symbols-outlined text-sm align-middle group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </div>
+          </a>
+
+          <!-- Card 2: Resume Analyzer -->
+          <a href="src/students/student-resume.html" class="portal-card rounded-2xl p-5 group flex flex-col justify-between">
+            <div>
+              <div class="w-10 h-10 rounded-xl bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800/60 flex items-center justify-center text-cyan-600 dark:text-cyan-400 mb-3 group-hover:scale-105 transition-transform"><span class="material-symbols-outlined text-2xl">description</span></div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1">AI Resume Analyzer</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">Benchmark credentials against corporate mandates &amp; research job descriptions.</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 dark:border-white/[0.06] flex items-center justify-between text-xs text-cyan-600 dark:text-cyan-400 font-semibold">
+              <span id="card-resume-status">Upload Resume</span>
+              <span class="material-symbols-outlined text-sm align-middle group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </div>
+          </a>
+
+          <!-- Card 3: Quiz Arena -->
+          <a href="src/students/student-quiz.html" class="portal-card rounded-2xl p-5 group flex flex-col justify-between">
+            <div>
+              <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 flex items-center justify-center text-amber-600 dark:text-amber-400 mb-3 group-hover:scale-105 transition-transform"><span class="material-symbols-outlined text-2xl">bolt</span></div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1">Quiz Arena</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">Validate technical, analytical, and domain competencies to earn verified XP.</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 dark:border-white/[0.06] flex items-center justify-between text-xs text-amber-600 dark:text-amber-400 font-semibold">
+              <span>Take Quiz</span>
+              <span class="material-symbols-outlined text-sm align-middle group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </div>
+          </a>
+
+          <!-- Card 4: Internships & Gigs -->
+          <a href="src/students/student-internships.html" class="portal-card rounded-2xl p-5 group flex flex-col justify-between">
+            <div>
+              <div class="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-3 group-hover:scale-105 transition-transform"><span class="material-symbols-outlined text-2xl">work</span></div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1">Apply for Internships</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">Funded research fellowships and task bounties with institutional stipend.</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 dark:border-white/[0.06] flex items-center justify-between text-xs text-blue-600 dark:text-blue-400 font-semibold">
+              <span id="internship-opportunity-count">0 Opportunities</span>
+              <span class="material-symbols-outlined text-sm align-middle group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </div>
+          </a>
+
+          <!-- Card 5: Corporate Jobs -->
+          <a href="src/students/student-jobs.html" class="portal-card rounded-2xl p-5 group flex flex-col justify-between">
+            <div>
+              <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-3 group-hover:scale-105 transition-transform"><span class="material-symbols-outlined text-2xl">apartment</span></div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1">Apply for Jobs</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">Full-time corporate placements and institutional partnerships (₹8.5 - 18 LPA).</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 dark:border-white/[0.06] flex items-center justify-between text-xs text-indigo-600 dark:text-indigo-400 font-semibold">
+              <span>Verified Mandates</span>
+              <span class="material-symbols-outlined text-sm align-middle group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </div>
+          </a>
+
+          <!-- Card 6: Zulu AI Companion -->
+          <a href="src/students/student-zulu.html" class="portal-card rounded-2xl p-5 group flex flex-col justify-between">
+            <div>
+              <div class="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800/60 flex items-center justify-center text-rose-600 dark:text-rose-400 mb-3 group-hover:scale-105 transition-transform"><span class="material-symbols-outlined text-2xl">smart_toy</span></div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1">Zulu AI Companion</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">Interactive AI career counselor tuned across multi-disciplinary academic &amp; industry pathways.</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 dark:border-white/[0.06] flex items-center justify-between text-xs text-rose-600 dark:text-rose-400 font-semibold">
+              <span>Ready to Advise</span>
+              <span class="material-symbols-outlined text-sm align-middle group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </div>
+          </a>
+
+          <!-- Card 7: Skill Constellation -->
+          <a href="src/students/student-skilltree.html" class="portal-card rounded-2xl p-5 group flex flex-col justify-between">
+            <div>
+              <div class="w-10 h-10 rounded-xl bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-800/60 flex items-center justify-center text-teal-600 dark:text-teal-400 mb-3 group-hover:scale-105 transition-transform"><span class="material-symbols-outlined text-2xl">hub</span></div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1">Skill Constellation</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">2D interactive canvas visualizing competencies and dependency graphs.</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 dark:border-white/[0.06] flex items-center justify-between text-xs text-teal-600 dark:text-teal-400 font-semibold">
+              <span>Interactive View</span>
+              <span class="material-symbols-outlined text-sm align-middle group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </div>
+          </a>
+
+          <!-- Card 8: Verified Portfolio -->
+          <a href="src/students/student-portfolio.html" class="portal-card rounded-2xl p-5 group flex flex-col justify-between">
+            <div>
+              <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-3 group-hover:scale-105 transition-transform"><span class="material-symbols-outlined text-2xl">emoji_events</span></div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1">Verified Portfolio</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">Institutional credentials and tamper-proof digital portfolio dossier.</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 dark:border-white/[0.06] flex items-center justify-between text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
+              <span>Ledger Synced</span>
+              <span class="material-symbols-outlined text-sm align-middle group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- ACTIVE MILESTONE + RECOMMENDED SPLIT ROW -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Roadmap Milestone Snapshot (2 Cols) -->
+        <div class="lg:col-span-2 rounded-2xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-white/[0.03] p-6 shadow-sm space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-[10px] uppercase font-bold text-purple-600 dark:text-purple-400 tracking-wider">Active Milestone Progression</span>
+              <h3 id="active-milestone-title" class="text-lg font-bold text-[#1C1917] dark:text-white">Phase 01: Core Fundamentals &amp; Technical Standards</h3>
+            </div>
+            <span id="active-milestone-badge" class="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60">
+              0 / 3 Tasks (0%)
+            </span>
+          </div>
+
+          <div class="w-full bg-slate-100 dark:bg-gray-800 rounded-full h-2 overflow-hidden">
+            <div id="active-milestone-bar" class="bg-gradient-to-r from-purple-600 to-indigo-600 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+          </div>
+
+          <div id="active-milestone-tasks" class="space-y-2 pt-1">
+            <div class="flex items-center justify-between p-3 rounded-xl bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800/40">
+              <div class="flex items-center gap-3">
+                <span class="w-2 h-2 rounded-full bg-purple-600 animate-ping"></span>
+                <span class="text-xs font-semibold text-[#1C1917] dark:text-white">Step 1: Complete Foundational Competency Assessment</span>
+              </div>
+              <span class="text-[10px] font-mono font-bold text-purple-600 dark:text-purple-400">+50 XP</span>
+            </div>
+          </div>
+
+          <div class="pt-2 flex justify-end">
+            <a href="src/students/student-roadmap.html" class="text-xs font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 flex items-center gap-1 transition-colors">
+              <span>Open Detailed Interactive Roadmap</span>
+              <span class="material-symbols-outlined text-sm align-middle">arrow_forward</span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- FEATURE 1 & 4: CONTEXTUAL TO-DO ENGINE & VIRTUAL WORKSHOPS SPLIT ROW -->
+      <!-- ===================================================================== -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        
+        <!-- FEATURE 1: Student Contextual To-Do Engine (2 Cols) -->
+        <div class="lg:col-span-2 rounded-2xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-[#101115] p-6 shadow-sm space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#E7E4DC] dark:border-white/5">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-[#2D5542] dark:bg-[#4EBA87]"></span>
+                <span class="text-[10px] uppercase font-bold text-[#2D5542] dark:text-[#4EBA87] tracking-wider">Daily Execution Hub</span>
+              </div>
+              <h3 class="text-lg font-bold text-[#1C1917] dark:text-white mt-0.5">Contextual Action &amp; To-Do Docket</h3>
+            </div>
+            
+            <div class="flex items-center gap-2">
+              <span id="todo-completion-count" class="text-xs font-mono font-bold px-2.5 py-1 rounded-full bg-[#2D5542]/10 dark:bg-[#4EBA87]/15 text-[#2D5542] dark:text-[#4EBA87] border border-[#2D5542]/20 dark:border-[#4EBA87]/30">
+                0/0 Done (+10 XP/task)
+              </span>
+              <button onclick="openAddTodoModal()" class="px-3 py-1.5 rounded-xl bg-[#2D5542] dark:bg-[#4EBA87] hover:bg-[#234233] text-white font-semibold text-xs transition-colors flex items-center gap-1 shadow-sm">
+                <span class="material-symbols-outlined text-sm">add</span>
+                <span>Add Task</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter Tabs -->
+          <div class="flex flex-wrap items-center gap-1.5 text-xs pt-1">
+            <button onclick="filterTodos('All')" class="todo-tab-btn px-3 py-1 rounded-lg font-bold transition bg-[#1C1917] text-white dark:bg-white dark:text-[#070709]" data-category="All">All</button>
+            <button onclick="filterTodos('Academic')" class="todo-tab-btn px-3 py-1 rounded-lg font-medium transition text-[#6E6962] dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/5" data-category="Academic">Academic</button>
+            <button onclick="filterTodos('Application')" class="todo-tab-btn px-3 py-1 rounded-lg font-medium transition text-[#6E6962] dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/5" data-category="Application">Applications</button>
+            <button onclick="filterTodos('Roadmap')" class="todo-tab-btn px-3 py-1 rounded-lg font-medium transition text-[#6E6962] dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/5" data-category="Roadmap">Roadmap</button>
+            <button onclick="filterTodos('Personal')" class="todo-tab-btn px-3 py-1 rounded-lg font-medium transition text-[#6E6962] dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/5" data-category="Personal">Personal</button>
+          </div>
+
+          <!-- Dynamic Tasks List -->
+          <div id="student-todos-list" class="space-y-2.5 max-h-80 overflow-y-auto pr-1">
+            <!-- Rendered dynamically by JavaScript -->
+            <div class="py-8 text-center text-xs text-[#6E6962] dark:text-gray-400">Loading daily action items...</div>
+          </div>
+        </div>
+
+        <!-- FEATURE 4: Corporate Masterclasses & Virtual Workshops (1 Col) -->
+        <div class="rounded-2xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-[#101115] p-6 shadow-sm flex flex-col justify-between space-y-4">
+          <div>
+            <div class="flex justify-between items-start pb-3 border-b border-[#E7E4DC] dark:border-white/5">
+              <div>
+                <span class="text-[10px] uppercase font-bold text-[#944C23] dark:text-[#E07A48] tracking-wider">Industry Gateway</span>
+                <h3 class="text-base font-bold text-[#1C1917] dark:text-white mt-0.5">Corporate Masterclasses</h3>
+              </div>
+              <span class="px-2 py-0.5 text-[10px] font-mono font-bold rounded-full bg-[#944C23]/10 dark:bg-[#E07A48]/15 text-[#944C23] dark:text-[#E07A48]">
+                Bilateral
+              </span>
+            </div>
+
+            <div id="student-workshops-list" class="space-y-3 mt-3">
+              <!-- Rendered via JS -->
+              <div class="py-6 text-center text-xs text-[#6E6962] dark:text-gray-400">Loading scheduled workshops...</div>
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-[#E7E4DC] dark:border-white/5 flex items-center justify-between text-[11px] text-[#6E6962] dark:text-gray-400">
+            <span class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm text-[#2D5542] dark:text-[#4EBA87]">verified</span>
+              Academic &amp; Industry MoUs
+            </span>
+            <span class="font-mono text-[10px]">Auto-Synced to Calendar</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================================================================== -->
+      <!-- FEATURE 5 & 7: HOLISTIC APTITUDE CREDENTIALS & COMPANY QUIZ BADGES    -->
+      <!-- ===================================================================== -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        
+        <!-- FEATURE 5: Holistic Competency & Aptitude Assessment Card -->
+        <div class="rounded-2xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-[#101115] p-6 shadow-sm space-y-5">
+          <div class="flex items-start justify-between pb-3 border-b border-[#E7E4DC] dark:border-white/5">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-lg text-[#855828] dark:text-[#D4973B]">psychology</span>
+                <span class="text-[10px] uppercase font-bold text-[#855828] dark:text-[#D4973B] tracking-wider">Holistic Co-Curricular Readiness</span>
+              </div>
+              <h3 class="text-lg font-bold text-[#1C1917] dark:text-white mt-1">National Foundational Aptitude (NFAT)</h3>
+              <p class="text-xs text-[#6E6962] dark:text-gray-400 mt-1">
+                Evaluation across Quantitative, Logical, Verbal, and Professional Ethical competencies beyond academic marks.
+              </p>
+            </div>
+            <div class="text-right">
+              <span class="text-2xl font-extrabold text-[#1C1917] dark:text-white font-mono" id="aptitude-percentile-badge">0%</span>
+              <div id="aptitude-rank-sub" class="text-[10px] text-[#855828] dark:text-[#D4973B] font-bold">Diagnostic Assessment Pending</div>
+            </div>
+          </div>
+
+          <!-- 5-Domain Progress Meters -->
+          <div class="space-y-2.5">
+            <div>
+              <div class="flex justify-between text-xs font-semibold mb-1">
+                <span class="text-[#1C1917] dark:text-white">Quantitative &amp; Analytical Problem Solving</span>
+                <span id="nfat-score-quant" class="font-mono text-[#2D5542] dark:text-[#4EBA87]">--%</span>
+              </div>
+              <div class="w-full bg-slate-100 dark:bg-gray-800 rounded-full h-1.5 overflow-hidden">
+                <div id="nfat-bar-quant" class="bg-[#2D5542] dark:bg-[#4EBA87] h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs font-semibold mb-1">
+                <span class="text-[#1C1917] dark:text-white">Logical Reasoning &amp; Algorithmic Thinking</span>
+                <span id="nfat-score-logic" class="font-mono text-[#2D5542] dark:text-[#4EBA87]">--%</span>
+              </div>
+              <div class="w-full bg-slate-100 dark:bg-gray-800 rounded-full h-1.5 overflow-hidden">
+                <div id="nfat-bar-logic" class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs font-semibold mb-1">
+                <span class="text-[#1C1917] dark:text-white">Technical Verbal &amp; Communication</span>
+                <span id="nfat-score-verbal" class="font-mono text-[#855828] dark:text-[#D4973B]">--%</span>
+              </div>
+              <div class="w-full bg-slate-100 dark:bg-gray-800 rounded-full h-1.5 overflow-hidden">
+                <div id="nfat-bar-verbal" class="bg-[#855828] dark:bg-[#D4973B] h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs font-semibold mb-1">
+                <span class="text-[#1C1917] dark:text-white">Professional Standards &amp; Industry Ethics</span>
+                <span id="nfat-score-ethics" class="font-mono text-[#944C23] dark:text-[#E07A48]">--%</span>
+              </div>
+              <div class="w-full bg-slate-100 dark:bg-gray-800 rounded-full h-1.5 overflow-hidden">
+                <div id="nfat-bar-ethics" class="bg-[#944C23] dark:bg-[#E07A48] h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-2 flex items-center justify-between">
+            <span id="nfat-status-label" class="text-[11px] text-[#6E6962] dark:text-gray-400 flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm text-[#855828] dark:text-[#D4973B]">pending</span>
+              Assessment Ready for 2026-27
+            </span>
+            <button onclick="openAptitudeModal()" class="px-4 py-2 rounded-xl bg-[#1C1917] dark:bg-white text-white dark:text-[#070709] font-bold text-xs transition-colors hover:opacity-90 flex items-center gap-1.5 shadow-sm cursor-pointer">
+              <span class="material-symbols-outlined text-sm">play_arrow</span>
+              <span id="nfat-btn-label">Start Assessment (30 Qs)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- FEATURE 7: Company Skill Certification Quizzes & Verifiable Badges -->
+        <div class="rounded-2xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-[#101115] p-6 shadow-sm space-y-5">
+          <div class="flex items-start justify-between pb-3 border-b border-[#E7E4DC] dark:border-white/5">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-lg text-[#2D5542] dark:text-[#4EBA87]">military_tech</span>
+                <span class="text-[10px] uppercase font-bold text-[#2D5542] dark:text-[#4EBA87] tracking-wider">Corporate Skill Endorsements</span>
+              </div>
+              <h3 class="text-lg font-bold text-[#1C1917] dark:text-white mt-1">Company-Verified Credentials</h3>
+              <p class="text-xs text-[#6E6962] dark:text-gray-400 mt-1">
+                Direct skill evaluations authored by Dabur, Patanjali &amp; Himalaya. Badges are cryptographically signed and prioritized by recruiters.
+              </p>
+            </div>
+            <span class="px-2.5 py-1 text-[11px] font-mono font-bold rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
+              1 Verified
+            </span>
+          </div>
+
+          <!-- Badges & Quizzes Container -->
+          <div id="student-certifications-list" class="space-y-3">
+            <!-- Rendered via JS -->
+            <div class="py-6 text-center text-xs text-[#6E6962] dark:text-gray-400">Loading corporate certifications...</div>
+          </div>
+
+          <div class="pt-2 flex items-center justify-between">
+            <span class="text-[11px] text-[#6E6962] dark:text-gray-400">Passing score: &ge; 75% for verified badge</span>
+            <button onclick="openSkillQuizModal('quiz-dabur-01')" class="px-4 py-2 rounded-xl bg-[#2D5542] dark:bg-[#4EBA87] hover:bg-[#234233] text-white font-bold text-xs transition-colors flex items-center gap-1.5 shadow-sm">
+              <span class="material-symbols-outlined text-sm">quiz</span>
+              <span>Browse All Quizzes</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PEER BENCHMARKING COMPONENT -->
+      <div id="peer-benchmarking-card"></div>
+    
+    </div>
+  </main>
+</div>
+
+<!-- ===================================================================== -->
+<!-- INTERACTIVE MODALS FOR 7 FEATURES                                     -->
+<!-- ===================================================================== -->
+
+<!-- Modal 1: Add New To-Do Task -->
+<div id="add-todo-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-[#101115] border border-[#E7E4DC] dark:border-white/10 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+    <div class="flex items-center justify-between pb-3 border-b border-[#E7E4DC] dark:border-white/10">
+      <h3 class="text-base font-bold text-[#1C1917] dark:text-white flex items-center gap-2">
+        <span class="material-symbols-outlined text-[#2D5542] dark:text-[#4EBA87]">add_task</span>
+        Create New Docket Task
+      </h3>
+      <button onclick="closeAddTodoModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white transition">✕</button>
+    </div>
+
+    <form onsubmit="submitNewTodo(event)" class="space-y-3">
+      <div>
+        <label class="block text-xs font-semibold text-[#1C1917] dark:text-gray-300 mb-1">Task Title *</label>
+        <input id="todo-input-title" type="text" required placeholder="e.g. Standardize withanolide extraction solvent" class="w-full px-3 py-2 rounded-xl border border-[#E7E4DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-white/5 text-sm text-[#1C1917] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2D5542]">
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-[#1C1917] dark:text-gray-300 mb-1">Description</label>
+        <textarea id="todo-input-desc" rows="2" placeholder="Key deliverables or reference materials..." class="w-full px-3 py-2 rounded-xl border border-[#E7E4DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-white/5 text-sm text-[#1C1917] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2D5542]"></textarea>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-semibold text-[#1C1917] dark:text-gray-300 mb-1">Category</label>
+          <select id="todo-input-category" class="w-full px-3 py-2 rounded-xl border border-[#E7E4DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-white/5 text-sm text-[#1C1917] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2D5542]">
+            <option value="Academic">Academic</option>
+            <option value="Application">Application</option>
+            <option value="Roadmap">Roadmap</option>
+            <option value="Skill">Skill</option>
+            <option value="Personal" selected>Personal</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-[#1C1917] dark:text-gray-300 mb-1">Priority</label>
+          <select id="todo-input-priority" class="w-full px-3 py-2 rounded-xl border border-[#E7E4DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-white/5 text-sm text-[#1C1917] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2D5542]">
+            <option value="Low">Low</option>
+            <option value="Medium" selected>Medium</option>
+            <option value="High">High</option>
+            <option value="Urgent">Urgent</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-[#1C1917] dark:text-gray-300 mb-1">Due Date</label>
+        <input id="todo-input-due" type="datetime-local" class="w-full px-3 py-2 rounded-xl border border-[#E7E4DC] dark:border-white/10 bg-[#FAF8F5] dark:bg-white/5 text-sm text-[#1C1917] dark:text-white focus:outline-none focus:ring-2 focus:ring-[#2D5542]">
+      </div>
+
+      <div class="pt-3 flex items-center justify-end gap-2 border-t border-[#E7E4DC] dark:border-white/10">
+        <button type="button" onclick="closeAddTodoModal()" class="px-4 py-2 rounded-xl border border-[#E7E4DC] dark:border-white/10 text-xs font-semibold text-[#6E6962] dark:text-gray-400 hover:bg-slate-50 dark:hover:bg-white/5 transition">Cancel</button>
+        <button type="submit" class="px-5 py-2 rounded-xl bg-[#2D5542] dark:bg-[#4EBA87] text-white text-xs font-bold transition shadow-sm hover:opacity-90">Save Task</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal 2: Aptitude Assessment Test Runner Modal -->
+<div id="aptitude-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-6">
+  <div class="bg-white dark:bg-[#101115] border border-[#E7E4DC] dark:border-white/10 rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+    <div class="p-4 sm:p-5 border-b border-[#E7E4DC] dark:border-white/10 flex items-center justify-between bg-slate-50/50 dark:bg-white/[0.02]">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-[#855828] dark:text-[#D4973B]">psychology</span>
+        <div>
+          <h3 class="text-sm sm:text-base font-bold text-[#1C1917] dark:text-white">National Foundational Aptitude (NFAT)</h3>
+          <p class="text-[11px] text-[#6E6962] dark:text-gray-400">Timed 30-Question Assessment · 5 Competency Domains</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div id="aptitude-timer" class="font-mono text-xs font-extrabold px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60">
+          29:45 Left
+        </div>
+        <button onclick="closeAptitudeModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white">✕</button>
+      </div>
+    </div>
+
+    <!-- Scrollable Question Runner -->
+    <div id="aptitude-questions-container" class="p-5 sm:p-6 overflow-y-auto flex-1 space-y-6">
+      <div class="text-center py-12 text-sm text-[#6E6962] dark:text-gray-400">Initializing question paper from secure question bank...</div>
+    </div>
+
+    <div class="p-4 border-t border-[#E7E4DC] dark:border-white/10 flex items-center justify-between bg-slate-50/50 dark:bg-white/[0.02]">
+      <span class="text-xs text-[#6E6962] dark:text-gray-400" id="aptitude-answered-count">0 of 30 Answered</span>
+      <button onclick="submitAptitudeTest()" class="px-6 py-2.5 rounded-xl bg-[#2D5542] dark:bg-[#4EBA87] text-white font-bold text-xs transition shadow-sm hover:opacity-90">
+        Submit &amp; Calculate Percentile (+200 XP)
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 3: Company Skill Certification Quiz Modal -->
+<div id="quiz-runner-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-3 sm:p-6">
+  <div class="bg-white dark:bg-[#101115] border border-[#E7E4DC] dark:border-white/10 rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+    <div class="p-4 sm:p-5 border-b border-[#E7E4DC] dark:border-white/10 flex items-center justify-between bg-slate-50/50 dark:bg-white/[0.02]">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-[#2D5542] dark:text-[#4EBA87]">verified</span>
+        <div>
+          <h3 id="quiz-modal-title" class="text-sm sm:text-base font-bold text-[#1C1917] dark:text-white">Dabur Formulation Certification</h3>
+          <p id="quiz-modal-subtitle" class="text-[11px] text-[#6E6962] dark:text-gray-400">Pass mark: 75% · Verified Digital Badge</p>
+        </div>
+      </div>
+      <button onclick="closeSkillQuizModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white">✕</button>
+    </div>
+
+    <div id="quiz-questions-body" class="p-5 sm:p-6 overflow-y-auto flex-1 space-y-6">
+      <!-- Rendered via JS -->
+    </div>
+
+    <div class="p-4 border-t border-[#E7E4DC] dark:border-white/10 flex items-center justify-between bg-slate-50/50 dark:bg-white/[0.02]">
+      <span class="text-xs text-[#6E6962] dark:text-gray-400">Cryptographically verifiable on completion</span>
+      <button onclick="submitSkillQuiz()" class="px-6 py-2.5 rounded-xl bg-[#2D5542] dark:bg-[#4EBA87] text-white font-bold text-xs transition shadow-sm hover:opacity-90">
+        Submit Quiz for Badge
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal 4: Digital Credential Public Verification Modal -->
+<div id="credential-viewer-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-4">
+  <div class="bg-white dark:bg-[#101115] border border-[#E7E4DC] dark:border-white/10 rounded-2xl max-w-lg w-full shadow-2xl p-6 space-y-4">
+    <div class="flex items-center justify-between pb-3 border-b border-[#E7E4DC] dark:border-white/10">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-[#855828] dark:text-[#D4973B]">military_tech</span>
+        <h3 class="text-base font-bold text-[#1C1917] dark:text-white">Digital Credential Certificate</h3>
+      </div>
+      <button onclick="closeCredentialModal()" class="text-slate-400 hover:text-slate-700 dark:hover:text-white">✕</button>
+    </div>
+
+    <div class="p-5 rounded-2xl border-2 border-[#855828]/30 dark:border-[#D4973B]/40 bg-[#FAF8F5] dark:bg-white/[0.02] text-center space-y-3">
+      <div class="w-14 h-14 rounded-full bg-[#855828]/10 dark:bg-[#D4973B]/20 text-[#855828] dark:text-[#D4973B] mx-auto flex items-center justify-center">
+        <span class="material-symbols-outlined text-3xl">verified</span>
+      </div>
+      <div>
+        <h4 id="cred-badge-title" class="text-base font-extrabold text-[#1C1917] dark:text-white">Dabur Certified Herbal Formulation Specialist</h4>
+        <p id="cred-issued-to" class="text-xs text-[#6E6962] dark:text-gray-300 mt-1">Conferred upon Verified Scholar</p>
+      </div>
+
+      <div class="text-xs space-y-1 pt-2 font-mono text-[#6E6962] dark:text-gray-400">
+        <div>Score Attained: <span id="cred-score" class="font-bold text-emerald-600 dark:text-emerald-400">100%</span></div>
+        <div>Issuing Authority: <span id="cred-issuer" class="font-bold text-[#1C1917] dark:text-white">Dabur India Ltd. R&amp;D</span></div>
+        <div class="truncate text-[10px]">Verification Token: <span id="cred-token" class="text-purple-600 dark:text-purple-400">db-9f28...</span></div>
+      </div>
+
+      <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold border border-emerald-200 dark:border-emerald-800">
+        <span class="material-symbols-outlined text-xs">lock</span>
+        Cryptographically Verified via SHA-256 HMAC
+      </div>
+    </div>
+
+    <div class="flex justify-end pt-2">
+      <button onclick="closeCredentialModal()" class="px-5 py-2 rounded-xl bg-[#1C1917] dark:bg-white text-white dark:text-[#070709] text-xs font-bold">
+        Close Certificate
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts (Relative Paths) -->
+<script src="js/frontend/api-client.js"></script>
+<script src="js/frontend/notifications.js"></script>
+<script src="js/frontend/student-ui.js"></script>
+<script src="/js/frontend/animations.js"></script>
+
+<!-- 7-Feature Integrated Client Logic -->
+<script>
+// ============================================================================
+// FEATURE 1: Contextual To-Do Engine Logic
+// ============================================================================
+let studentTodos = [];
+let activeTodoCategory = 'All';
+
+async function fetchStudentTodos() {
+  try {
+    const user = JoblexApiClient.getCurrentUser();
+    const sId = user ? (user.id || user.email) : 'guest';
+    const res = await fetch(`/api/todos?studentId=${encodeURIComponent(sId)}`);
+    const data = await res.json();
+    if (data.success && Array.isArray(data.todos)) {
+      studentTodos = data.todos;
+      renderTodosList();
+    }
+  } catch (err) {
+    console.warn('[Fetch Todos Error]:', err.message);
+  }
+}
+
+function filterTodos(category) {
+  activeTodoCategory = category;
+  document.querySelectorAll('.todo-tab-btn').forEach(btn => {
+    if (btn.getAttribute('data-category') === category) {
+      btn.className = 'todo-tab-btn px-3 py-1 rounded-lg font-bold transition bg-[#1C1917] text-white dark:bg-white dark:text-[#070709]';
+    } else {
+      btn.className = 'todo-tab-btn px-3 py-1 rounded-lg font-medium transition text-[#6E6962] dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/5';
+    }
+  });
+  renderTodosList();
+}
+
+function renderTodosList() {
+  const container = document.getElementById('student-todos-list');
+  if (!container) return;
+
+  const filtered = activeTodoCategory === 'All'
+    ? studentTodos
+    : studentTodos.filter(t => t.category === activeTodoCategory);
+
+  const completedCount = studentTodos.filter(t => t.isCompleted).length;
+  const countEl = document.getElementById('todo-completion-count');
+  if (countEl) {
+    countEl.innerText = `${completedCount}/${studentTodos.length} Done (+10 XP/task)`;
+  }
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="py-8 text-center text-xs text-[#6E6962] dark:text-gray-400">
+        No tasks in "${activeTodoCategory}" category. Click "+ Add Task" to create one!
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filtered.map(t => {
+    const priorityColor = t.priority === 'Urgent' ? 'border-l-4 border-l-[#944C23] bg-rose-50/20' : (t.priority === 'High' ? 'border-l-2 border-l-[#855828]' : '');
+    const priorityBadge = t.priority === 'Urgent' ? 'text-rose-600 bg-rose-50 dark:bg-rose-950/40' : (t.priority === 'High' ? 'text-amber-600 bg-amber-50 dark:bg-amber-950/40' : 'text-slate-500 bg-slate-100 dark:bg-white/5');
+
+    return `
+      <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50/70 dark:bg-white/[0.02] border border-[#E7E4DC] dark:border-white/5 transition-all hover:bg-white dark:hover:bg-white/[0.04] ${priorityColor}">
+        <div class="flex items-start gap-3 flex-1 min-w-0 pr-3">
+          <button onclick="toggleTodo('${t.id}')" class="mt-0.5 w-5 h-5 rounded-md border ${t.isCompleted ? 'bg-[#2D5542] border-[#2D5542] text-white' : 'border-slate-300 dark:border-gray-600 hover:border-[#2D5542]'} flex items-center justify-center shrink-0 transition">
+            ${t.isCompleted ? '<span class="material-symbols-outlined text-sm">check</span>' : ''}
+          </button>
+          <div class="min-w-0">
+            <h4 class="text-xs font-semibold ${t.isCompleted ? 'line-through text-[#6E6962] dark:text-gray-500' : 'text-[#1C1917] dark:text-white'} truncate">${t.title}</h4>
+            ${t.description ? `<p class="text-[11px] text-[#6E6962] dark:text-gray-400 line-clamp-1 mt-0.5">${t.description}</p>` : ''}
+            <div class="flex items-center gap-2 mt-1 text-[10px]">
+              <span class="px-1.5 py-0.5 rounded font-mono font-bold ${priorityBadge}">${t.priority}</span>
+              <span class="text-[#6E6962] dark:text-gray-400 font-medium">${t.category}</span>
+              ${t.dueDate ? `<span class="text-slate-400 dark:text-gray-500 font-mono">· Due ${new Date(t.dueDate).toLocaleDateString()}</span>` : ''}
+            </div>
+          </div>
+        </div>
+
+        <button onclick="deleteTodo('${t.id}')" class="text-slate-400 hover:text-rose-500 p-1 rounded transition shrink-0" title="Delete Task">
+          <span class="material-symbols-outlined text-sm">delete</span>
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+
+async function toggleTodo(id) {
+  try {
+    const res = await fetch(`/api/todos/${id}/toggle`, { method: 'PATCH' });
+    const data = await res.json();
+    if (data.success) {
+      const todo = studentTodos.find(t => t.id === id);
+      if (todo) {
+        todo.isCompleted = data.todo.isCompleted;
+      }
+      renderTodosList();
+      if (window.showToast) {
+        window.showToast(data.message, 'To-Do Engine', 'success');
+      }
+    }
+  } catch (err) {
+    console.error('[Toggle Todo Error]:', err);
+  }
+}
+
+async function deleteTodo(id) {
+  try {
+    const res = await fetch(`/api/todos/${id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.success) {
+      studentTodos = studentTodos.filter(t => t.id !== id);
+      renderTodosList();
+      if (window.showToast) window.showToast('Task removed from docket.', 'To-Do Engine', 'info');
+    }
+  } catch (err) {
+    console.error('[Delete Todo Error]:', err);
+  }
+}
+
+function openAddTodoModal() {
+  document.getElementById('add-todo-modal')?.classList.remove('hidden');
+}
+function closeAddTodoModal() {
+  document.getElementById('add-todo-modal')?.classList.add('hidden');
+}
+
+async function submitNewTodo(e) {
+  e.preventDefault();
+  const title = document.getElementById('todo-input-title').value;
+  const description = document.getElementById('todo-input-desc').value;
+  const category = document.getElementById('todo-input-category').value;
+  const priority = document.getElementById('todo-input-priority').value;
+  const dueDate = document.getElementById('todo-input-due').value;
+
+  try {
+    const user = JoblexApiClient.getCurrentUser();
+    const sId = user ? (user.id || user.email) : 'guest';
+    const res = await fetch('/api/todos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ studentId: sId, title, description, category, priority, dueDate })
+    });
+    const data = await res.json();
+    if (data.success) {
+      studentTodos.unshift(data.todo);
+      renderTodosList();
+      closeAddTodoModal();
+      document.getElementById('todo-input-title').value = '';
+      document.getElementById('todo-input-desc').value = '';
+      if (window.showToast) window.showToast(`Task "${title}" created!`, 'To-Do Engine', 'success');
+    }
+  } catch (err) {
+    console.error('[Submit Todo Error]:', err);
+  }
+}
+
+// ============================================================================
+// FEATURE 4: Corporate Masterclasses & Workshops Logic
+// ============================================================================
+let studentWorkshops = [];
+
+async function fetchStudentWorkshops() {
+  try {
+    const user = JoblexApiClient.getCurrentUser();
+    const sId = user ? (user.id || user.email) : 'guest';
+    const res = await fetch(`/api/assessment/workshops?studentId=${encodeURIComponent(sId)}`);
+    const data = await res.json();
+    if (data.success && Array.isArray(data.workshops)) {
+      studentWorkshops = data.workshops;
+      renderWorkshopsList();
+    }
+  } catch (err) {
+    console.warn('[Fetch Workshops Error]:', err.message);
+  }
+}
+
+function renderWorkshopsList() {
+  const container = document.getElementById('student-workshops-list');
+  if (!container) return;
+
+  if (studentWorkshops.length === 0) {
+    container.innerHTML = `<div class="py-6 text-center text-xs text-[#6E6962]">No workshops scheduled currently.</div>`;
+    return;
+  }
+
+  container.innerHTML = studentWorkshops.slice(0, 2).map(w => `
+    <div class="p-3.5 rounded-xl border border-[#E7E4DC] dark:border-white/5 bg-[#FAF8F5]/60 dark:bg-white/[0.02] space-y-2.5">
+      <div class="flex items-start justify-between gap-2">
+        <h4 class="text-xs font-bold text-[#1C1917] dark:text-white leading-snug">${w.title}</h4>
+        <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 shrink-0">
+          ${w.durationMinutes || 90}m Live
+        </span>
+      </div>
+      <p class="text-[11px] text-[#6E6962] dark:text-gray-400 line-clamp-2 leading-relaxed">
+        Speaker: <span class="font-semibold text-[#1C1917] dark:text-white">${w.speakerName}</span> (${w.hostCompanyName})
+      </p>
+      <div class="flex items-center justify-between pt-1">
+        <span class="text-[10px] font-mono text-[#6E6962] dark:text-gray-400">
+          ${w.enrolledCount || 0}/${w.maxSeats || 250} Seats Taken
+        </span>
+        <button onclick="rsvpWorkshop('${w.id}')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition ${w.isEnrolled ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-[#944C23] text-white hover:bg-[#7a3e1c]'}">
+          ${w.isEnrolled ? '✓ Registered' : 'RSVP - 1 Click'}
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function rsvpWorkshop(wspId) {
+  try {
+    const user = JoblexApiClient.getCurrentUser();
+    const sId = user ? (user.id || user.email) : 'guest';
+    const res = await fetch(`/api/assessment/workshops/${wspId}/rsvp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ studentId: sId })
+    });
+    const data = await res.json();
+    if (data.success) {
+      const wsp = studentWorkshops.find(w => w.id === wspId);
+      if (wsp) {
+        wsp.isEnrolled = true;
+        wsp.enrolledCount = (wsp.enrolledCount || 0) + 1;
+      }
+      renderWorkshopsList();
+      fetchStudentTodos(); // Refresh todos since RSVP injects a task
+      if (window.showToast) window.showToast(data.message, 'Workshop Gateway', 'success');
+    } else {
+      if (window.showToast) window.showToast(data.error || 'Already registered.', 'Workshop Gateway', 'info');
+    }
+  } catch (err) {
+    console.error('[RSVP Error]:', err);
+  }
+}
+
+// ============================================================================
+// FEATURE 5: Aptitude Test Runner Modal Logic
+// ============================================================================
+let aptitudeQuestions = [];
+let aptitudeUserAnswers = {};
+
+async function openAptitudeModal() {
+  document.getElementById('aptitude-modal')?.classList.remove('hidden');
+  const container = document.getElementById('aptitude-questions-container');
+  if (container) container.innerHTML = '<div class="py-12 text-center text-xs text-[#6E6962]">Loading 30 multi-domain questions...</div>';
+
+  try {
+    const res = await fetch('/api/assessment/aptitude/questions');
+    const data = await res.json();
+    if (data.success && Array.isArray(data.questions)) {
+      aptitudeQuestions = data.questions;
+      aptitudeUserAnswers = {};
+      renderAptitudeQuestions();
+    }
+  } catch (err) {
+    console.error('[Load Aptitude Error]:', err);
+  }
+}
+
+function closeAptitudeModal() {
+  document.getElementById('aptitude-modal')?.classList.add('hidden');
+}
+
+function renderAptitudeQuestions() {
+  const container = document.getElementById('aptitude-questions-container');
+  if (!container) return;
+
+  container.innerHTML = aptitudeQuestions.map((q, qIdx) => `
+    <div class="p-4 rounded-xl border border-[#E7E4DC] dark:border-white/5 bg-[#FAF8F5]/60 dark:bg-white/[0.02] space-y-3">
+      <div class="flex items-center justify-between gap-2">
+        <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-[#855828]/10 text-[#855828] dark:text-[#D4973B]">
+          Q${qIdx + 1} · ${q.domain}
+        </span>
+        <span class="text-[10px] font-mono text-slate-400">${q.difficulty}</span>
+      </div>
+      <p class="text-xs font-semibold text-[#1C1917] dark:text-white leading-relaxed">${q.questionText}</p>
+      <div class="space-y-1.5 pt-1">
+        ${(q.options || []).map((opt, optIdx) => `
+          <label class="flex items-center gap-3 p-2.5 rounded-lg border border-[#E7E4DC] dark:border-white/5 hover:bg-white dark:hover:bg-white/[0.04] cursor-pointer transition text-xs text-[#1C1917] dark:text-gray-300">
+            <input type="radio" name="q_${q.id}" value="${optIdx}" onchange="recordAptitudeAnswer('${q.id}', ${optIdx})" class="text-[#2D5542] focus:ring-[#2D5542]">
+            <span>${opt}</span>
+          </label>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function recordAptitudeAnswer(qId, optIdx) {
+  aptitudeUserAnswers[qId] = optIdx;
+  const count = Object.keys(aptitudeUserAnswers).length;
+  const el = document.getElementById('aptitude-answered-count');
+  if (el) el.innerText = `${count} of ${aptitudeQuestions.length} Answered`;
+}
+
+async function submitAptitudeTest() {
+  try {
+    const user = JoblexApiClient.getCurrentUser();
+    const sId = user ? (user.id || user.email) : 'guest';
+    const res = await fetch('/api/assessment/aptitude/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        studentId: sId,
+        answers: aptitudeUserAnswers
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      closeAptitudeModal();
+      const pctBadge = document.getElementById('aptitude-percentile-badge');
+      if (pctBadge && data.session) {
+        pctBadge.innerText = `${data.session.percentile}%`;
+      }
+      if (window.showToast) window.showToast(data.message, 'Aptitude Engine', 'success');
+    }
+  } catch (err) {
+    console.error('[Submit Aptitude Error]:', err);
+  }
+}
+
+// ============================================================================
+// FEATURE 7: Company Skill Certification Quizzes & Verifications Logic
+// ============================================================================
+let activeQuizId = null;
+let currentQuizData = null;
+let quizAnswers = {};
+
+async function fetchCertifications() {
+  try {
+    const user = JoblexApiClient.getCurrentUser();
+    const sId = user ? (user.id || user.email) : 'guest';
+    const res = await fetch(`/api/assessment/certifications?studentId=${encodeURIComponent(sId)}`);
+    const data = await res.json();
+    if (data.success && Array.isArray(data.certifications)) {
+      renderCertificationsList(data.certifications);
+    }
+  } catch (err) {
+    console.warn('[Fetch Certs Error]:', err);
+  }
+}
+
+function renderCertificationsList(certs) {
+  const container = document.getElementById('student-certifications-list');
+  if (!container) return;
+
+  if (certs.length === 0) {
+    container.innerHTML = `<div class="py-6 text-center text-xs text-[#6E6962]">Take a skill quiz to earn verified company badges.</div>`;
+    return;
+  }
+
+  container.innerHTML = certs.map(c => `
+    <div class="p-3.5 rounded-xl border border-[#2D5542]/20 dark:border-[#4EBA87]/20 bg-[#2D5542]/5 dark:bg-[#4EBA87]/5 flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-[#2D5542] dark:bg-[#4EBA87] text-white flex items-center justify-center shrink-0 shadow-sm">
+          <span class="material-symbols-outlined text-xl">verified</span>
+        </div>
+        <div>
+          <h4 class="text-xs font-bold text-[#1C1917] dark:text-white">${c.badgeTitle}</h4>
+          <p class="text-[11px] text-[#6E6962] dark:text-gray-400">Issued by ${c.companyName} · Score: ${c.scorePercentage}%</p>
+        </div>
+      </div>
+      <button onclick="viewCredentialDetails('${c.verificationToken}')" class="px-3 py-1.5 rounded-lg border border-[#2D5542] dark:border-[#4EBA87] text-[#2D5542] dark:text-[#4EBA87] font-bold text-[11px] hover:bg-[#2D5542] hover:text-white transition">
+        View Credential
+      </button>
+    </div>
+  `).join('');
+}
+
+async function openSkillQuizModal(quizId) {
+  activeQuizId = quizId || 'quiz-dabur-01';
+  document.getElementById('quiz-runner-modal')?.classList.remove('hidden');
+  const body = document.getElementById('quiz-questions-body');
+  if (body) body.innerHTML = '<div class="py-12 text-center text-xs text-[#6E6962]">Loading certification questions...</div>';
+
+  try {
+    const res = await fetch(`/api/assessment/quiz/${activeQuizId}`);
+    const data = await res.json();
+    if (data.success && data.quiz) {
+      currentQuizData = data.quiz;
+      quizAnswers = {};
+      document.getElementById('quiz-modal-title').innerText = data.quiz.badgeTitle;
+      document.getElementById('quiz-modal-subtitle').innerText = `Issued by ${data.quiz.companyName} · Passing: ${data.quiz.passingPercentage}%`;
+
+      body.innerHTML = (data.quiz.questions || []).map((q, idx) => `
+        <div class="p-4 rounded-xl border border-[#E7E4DC] dark:border-white/5 bg-[#FAF8F5]/60 dark:bg-white/[0.02] space-y-2.5">
+          <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300">
+            Question ${idx + 1}
+          </span>
+          <p class="text-xs font-semibold text-[#1C1917] dark:text-white leading-relaxed">${q.question}</p>
+          <div class="space-y-1.5 pt-1">
+            ${(q.options || []).map((opt, optIdx) => `
+              <label class="flex items-center gap-3 p-2.5 rounded-lg border border-[#E7E4DC] dark:border-white/5 hover:bg-white dark:hover:bg-white/[0.04] cursor-pointer transition text-xs text-[#1C1917] dark:text-gray-300">
+                <input type="radio" name="qz_${q.id}" value="${optIdx}" onchange="quizAnswers['${q.id}'] = ${optIdx}" class="text-[#2D5542] focus:ring-[#2D5542]">
+                <span>${opt}</span>
+              </label>
+            `).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+  } catch (err) {
+    console.error('[Load Quiz Error]:', err);
+  }
+}
+
+function closeSkillQuizModal() {
+  document.getElementById('quiz-runner-modal')?.classList.add('hidden');
+}
+
+async function submitSkillQuiz() {
+  if (!activeQuizId) return;
+  try {
+    const user = JoblexApiClient.getCurrentUser();
+    const sId = user ? (user.id || user.email) : 'guest';
+    const res = await fetch(`/api/assessment/quiz/${activeQuizId}/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        studentId: sId,
+        answers: quizAnswers
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      closeSkillQuizModal();
+      fetchCertifications();
+      if (window.showToast) {
+        window.showToast(data.message, 'Skill Certification', data.passed ? 'success' : 'warning');
+      }
+    }
+  } catch (err) {
+    console.error('[Submit Quiz Error]:', err);
+  }
+}
+
+async function viewCredentialDetails(token) {
+  try {
+    const res = await fetch(`/api/assessment/verify/${token}`);
+    const data = await res.json();
+    if (data.success && data.credential) {
+      document.getElementById('cred-badge-title').innerText = data.credential.badgeTitle;
+      document.getElementById('cred-issued-to').innerText = `Conferred upon ${data.credential.recipientName}`;
+      document.getElementById('cred-score').innerText = data.credential.scoreAttained;
+      document.getElementById('cred-issuer').innerText = data.credential.issuingOrganization;
+      document.getElementById('cred-token').innerText = data.credential.verificationToken;
+      document.getElementById('credential-viewer-modal')?.classList.remove('hidden');
+    }
+  } catch (err) {
+    console.error('[Verify Credential Error]:', err);
+  }
+}
+
+function closeCredentialModal() {
+  document.getElementById('credential-viewer-modal')?.classList.add('hidden');
+}
+
+// Startup initializations
+document.addEventListener('DOMContentLoaded', () => {
+  fetchStudentTodos();
+  fetchStudentWorkshops();
+  fetchCertifications();
+});
+</script>
+</body>
+</html>

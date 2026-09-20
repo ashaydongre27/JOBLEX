@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JOBLEX</title>
+  <meta name="description" content="Academia-Industry Collaboration & Placement Portal with AI competency vector matching, dynamic syllabus modernization, and verified placement dossiers.">
+  <meta property="og:title" content="JOBLEX">
+  <meta property="og:description" content="Academia-Industry Collaboration & Placement Portal with AI competency vector matching, dynamic syllabus modernization, and verified placement dossiers.">
+  <!-- Google Fonts Preconnect -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- High-Tech Editorial Typography: Geist, Plus Jakarta Sans, Newsreader, Space Mono, JetBrains Mono -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/geist@1.0.3/dist/fonts/geist-sans/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Google Material Symbols Outlined -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  
+  <!-- Theme Handler -->
+  <script src="js/frontend/theme.js"></script>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Geist', 'Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            sans: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            serif: ['Newsreader', 'Georgia', 'serif'],
+            mono: ['Space Mono', 'JetBrains Mono', 'monospace'],
+            editorial: ['Newsreader', 'Georgia', 'serif'],
+            geist: ['Geist', 'sans-serif'],
+            newsreader: ['Newsreader', 'serif'],
+            'space-mono': ['Space Mono', 'monospace']
+          },
+          colors: {
+            bone: { 50: '#FAF9F6', 100: '#F4F2EC', 200: '#E8E5DC', 300: '#D7D2C5' },
+            obsidian: { 950: '#030303', 900: '#070709', 800: '#0C0D10', 700: '#111215', 600: '#16181D' },
+            sage: { 50: '#F2F6F3', 100: '#E3EDE6', 500: '#3D7055', 600: '#2D5542', 700: '#1E3C2E', glow: '#4EBA87' },
+            terracotta: { 50: '#FAF4F0', 100: '#F4E7DF', 500: '#B85E2E', 600: '#944C23', glow: '#E07A48' },
+            ochre: { 50: '#FAF6EF', 100: '#F4EBDA', 500: '#A67332', 600: '#855828', glow: '#D4973B' },
+            techblue: '#A8C7FA',
+            techgold: '#E2D3B6',
+            techrose: '#F1C6D4'
+          }
+        }
+      }
+    };
+  </script>
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-[#FAF8F5] dark:bg-[#070709] text-[#1C1917] dark:text-[#F4F4F6] font-sans min-h-screen flex flex-col antialiased transition-colors duration-200">
+
+  <!-- Futuristic SVG Shader Matrix for Laser Glows -->
+  <svg style="position: absolute; width: 0; height: 0; pointer-events: none;" aria-hidden="true">
+    <filter width="3000%" x="-1000%" height="3000%" y="-1000%" id="unopaq">
+      <feColorMatrix values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 3 0"/>
+    </filter>
+  </svg>
+
+  <!-- Fixed Top Scroll Progress Bar -->
+  <div id="scroll-progress-bar" class="fixed top-0 left-0 h-[2.5px] bg-gradient-to-r from-[#2D5542] via-[#855828] to-[#944C23] dark:from-[#4EBA87] dark:via-[#D4973B] dark:to-[#E07A48] z-[70] transition-all duration-75 pointer-events-none" style="width: 0%;"></div>
+
+  <!-- Floating Ambient Glow Orbs (Sage, Ochre, Terracotta) -->
+  <div class="ambient-glow-orb-1"></div>
+  <div class="ambient-glow-orb-2"></div>
+  <div class="ambient-glow-orb-3"></div>
+
+  <!-- 3D Background Starfield Canvas -->
+  <div id="three-canvas-container"></div>
+
+  <!-- Sleek Liquid-Glass High-Tech Header -->
+  <header class="sticky top-0 z-50 w-full liquid-glass-nav transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Brand -->
+      <div class="flex items-center gap-4 sm:gap-6">
+        <a id="nav-brand-logo" href="index.html" class="flex items-center gap-2.5 cursor-pointer select-none group">
+          <div class="w-8 h-8 rounded-xl bg-[#2D5542]/10 dark:bg-[#4EBA87]/15 border border-[#2D5542]/20 dark:border-[#4EBA87]/30 flex items-center justify-center group-hover:scale-105 transition-transform">
+            <span class="material-symbols-outlined text-[#2D5542] dark:text-[#4EBA87] text-lg">hub</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-xl font-display font-bold tracking-tight text-stone-900 dark:text-stone-100 uppercase">JOBLEX</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          </div>
+        </a>
+      </div>
+
+      <!-- Quick Role Links & Auth Navigation -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Main Navigation Links -->
+        <nav id="header-main-nav" class="flex items-center gap-1 text-xs font-semibold text-stone-600 dark:text-stone-400">
+          <a id="nav-about-btn" href="about.html" class="px-2.5 sm:px-3 py-1.5 rounded-lg hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.05] transition">
+            About
+          </a>
+          <a id="nav-pricing-btn" href="pricing.html" class="px-2.5 sm:px-3 py-1.5 rounded-lg hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.05] transition">
+            Pricing
+          </a>
+        </nav>
+
+        <!-- Quick Direct Portal Jump Buttons -->
+        <div class="hidden sm:flex items-center gap-1.5 text-xs font-semibold">
+          <button id="nav-portal-student-btn" onclick="JoblexApiClient.navigateToPortal('student')" class="px-3 py-1.5 rounded-xl text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.06] transition flex items-center gap-1.5 glass-pill">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#2D5542] dark:bg-[#4EBA87]"></span>
+            <span>Student</span>
+          </button>
+          <button id="nav-portal-academy-btn" onclick="JoblexApiClient.navigateToPortal('academy')" class="px-3 py-1.5 rounded-xl text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.06] transition flex items-center gap-1.5 glass-pill">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#855828] dark:bg-[#D4973B]"></span>
+            <span>Academy</span>
+          </button>
+          <button id="nav-portal-industry-btn" onclick="JoblexApiClient.navigateToPortal('industry')" class="px-3 py-1.5 rounded-xl text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.06] transition flex items-center gap-1.5 glass-pill">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#944C23] dark:bg-[#E07A48]"></span>
+            <span>Company</span>
+          </button>
+        </div>
+
+        <!-- Theme Toggle -->
+        <button id="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Theme" title="Toggle Light/Dark Theme" class="p-2.5 rounded-xl border border-stone-200/90 dark:border-white/[0.09] bg-white/80 dark:bg-white/[0.04] text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white transition flex items-center justify-center tactile-btn shadow-xs hover:scale-105">
+          <span id="theme-toggle-icon" class="material-symbols-outlined text-[18px]">dark_mode</span>
+        </button>
+
+        <!-- Account Container / Sign In -->
+        <div class="nav-user-account-container relative"></div>
+
+        <!-- Mobile Menu Toggle Button -->
+        <button id="mobile-menu-toggle-btn" onclick="toggleMobileNav()" aria-label="Toggle Menu" class="sm:hidden p-2.5 rounded-xl border border-stone-200/90 dark:border-white/[0.09] bg-white/80 dark:bg-white/[0.04] text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white transition flex items-center justify-center tactile-btn shadow-xs">
+          <span id="mobile-menu-icon" class="material-symbols-outlined text-[18px]">menu</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Navigation Drawer -->
+    <div id="mobile-nav-drawer" class="hidden sm:hidden border-t border-stone-200/80 dark:border-white/[0.07] bg-[#FAF8F5]/95 dark:bg-[#070709]/95 backdrop-blur-2xl px-4 py-4 space-y-4">
+      <div class="grid grid-cols-2 gap-2 text-xs font-semibold">
+        <a id="mobile-drawer-about" href="about.html" class="p-2.5 rounded-xl border border-stone-200/80 dark:border-white/[0.08] bg-white/80 dark:bg-white/[0.03] text-stone-800 dark:text-stone-200 flex items-center gap-2">
+          <span class="material-symbols-outlined text-base text-[#2D5542] dark:text-[#4EBA87]">info</span>
+          <span>About JOBLEX</span>
+        </a>
+        <a id="mobile-drawer-pricing" href="pricing.html" class="p-2.5 rounded-xl border border-stone-200/80 dark:border-white/[0.08] bg-white/80 dark:bg-white/[0.03] text-stone-800 dark:text-stone-200 flex items-center gap-2">
+          <span class="material-symbols-outlined text-base text-[#944C23] dark:text-[#E07A48]">sell</span>
+          <span>Plans & Pricing</span>
+        </a>
+      </div>
+
+      <div class="pt-2 border-t border-stone-200/70 dark:border-white/[0.06] space-y-1.5">
+        <div class="text-[10px] font-mono font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 px-1">Dedicated Portals</div>
+        
+        <button id="mobile-drawer-portal-student" onclick="JoblexApiClient.navigateToPortal('student')" class="w-full text-left p-2.5 rounded-xl hover:bg-stone-100 dark:hover:bg-white/[0.05] text-xs font-bold text-stone-900 dark:text-stone-100 flex items-center justify-between border border-transparent hover:border-stone-200/60 dark:hover:border-white/[0.06]">
+          <span class="flex items-center gap-2.5">
+            <span class="w-7 h-7 rounded-lg bg-[#2D5542]/10 text-[#2D5542] dark:text-[#4EBA87] flex items-center justify-center">
+              <span class="material-symbols-outlined text-[16px]">school</span>
+            </span>
+            <span>Student Portal</span>
+          </span>
+          <span class="material-symbols-outlined text-sm text-stone-400">arrow_forward</span>
+        </button>
+
+        <button id="mobile-drawer-portal-academy" onclick="JoblexApiClient.navigateToPortal('academy')" class="w-full text-left p-2.5 rounded-xl hover:bg-stone-100 dark:hover:bg-white/[0.05] text-xs font-bold text-stone-900 dark:text-stone-100 flex items-center justify-between border border-transparent hover:border-stone-200/60 dark:hover:border-white/[0.06]">
+          <span class="flex items-center gap-2.5">
+            <span class="w-7 h-7 rounded-lg bg-[#855828]/10 text-[#855828] dark:text-[#D4973B] flex items-center justify-center">
+              <span class="material-symbols-outlined text-[16px]">account_balance</span>
+            </span>
+            <span>Academy Portal</span>
+          </span>
+          <span class="material-symbols-outlined text-sm text-stone-400">arrow_forward</span>
+        </button>
+
+        <button id="mobile-drawer-portal-company" onclick="JoblexApiClient.navigateToPortal('industry')" class="w-full text-left p-2.5 rounded-xl hover:bg-stone-100 dark:hover:bg-white/[0.05] text-xs font-bold text-stone-900 dark:text-stone-100 flex items-center justify-between border border-transparent hover:border-stone-200/60 dark:hover:border-white/[0.06]">
+          <span class="flex items-center gap-2.5">
+            <span class="w-7 h-7 rounded-lg bg-[#944C23]/10 text-[#944C23] dark:text-[#E07A48] flex items-center justify-center">
+              <span class="material-symbols-outlined text-[16px]">domain</span>
+            </span>
+            <span>Company Portal</span>
+          </span>
+          <span class="material-symbols-outlined text-sm text-stone-400">arrow_forward</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Flow -->
+  <main class="relative">
+
+    <!-- ASYMMETRIC FUTURISTIC EDITORIAL HERO SECTION -->
+    <section id="hero" class="relative min-h-[90vh] lg:min-h-screen w-full flex flex-col justify-center items-center overflow-hidden pt-12 pb-20 border-b border-stone-200/80 dark:border-white/[0.08] bg-transparent dark:bg-transparent transition-colors">
+      
+      <!-- Architectural HUD Frame Lines -->
+      <div class="frame-line absolute top-10 left-0 w-full h-[1px]"></div>
+      <div class="frame-line absolute bottom-10 left-0 w-full h-[1px]"></div>
+      <div class="frame-line absolute top-0 left-6 sm:left-12 w-[1px] h-full"></div>
+      <div class="frame-line absolute top-0 right-6 sm:right-12 w-[1px] h-full"></div>
+
+      <!-- Precision HUD Crosshairs at 4 Intersections -->
+      <div class="crosshair absolute top-10 left-6 sm:left-12 -translate-x-1/2 -translate-y-1/2">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 0v11M0 5.5h11" stroke="currentColor" stroke-width="1"/></svg>
+      </div>
+      <div class="crosshair absolute top-10 right-6 sm:right-12 translate-x-1/2 -translate-y-1/2">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 0v11M0 5.5h11" stroke="currentColor" stroke-width="1"/></svg>
+      </div>
+      <div class="crosshair absolute bottom-10 left-6 sm:left-12 -translate-x-1/2 translate-y-1/2">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 0v11M0 5.5h11" stroke="currentColor" stroke-width="1"/></svg>
+      </div>
+      <div class="crosshair absolute bottom-10 right-6 sm:right-12 translate-x-1/2 translate-y-1/2">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 0v11M0 5.5h11" stroke="currentColor" stroke-width="1"/></svg>
+      </div>
+
+      <!-- Viewport Micro-Telemetry Coordinates & Status -->
+      <div class="micro-text absolute top-3 left-8 sm:left-16 text-[10px] font-mono tracking-widest text-stone-500 dark:text-neutral-500 uppercase select-none">
+        JOBLEX // AUTONOMOUS COMPETENCY VECTOR NETWORK
+      </div>
+      <div class="micro-text absolute bottom-3 right-8 sm:right-16 text-[10px] font-mono tracking-widest text-stone-500 dark:text-neutral-500 uppercase select-none hidden sm:block">
+        NEP-2020 ACCREDITATION • 450+ UNIVERSITIES • LIVE SYNC
+      </div>
+      <div class="micro-text absolute top-1/2 right-3 -translate-y-1/2 rotate-90 origin-right text-[9px] font-mono tracking-[0.25em] text-stone-400 dark:text-neutral-600 uppercase whitespace-nowrap hidden lg:block select-none">
+        COSINE EMBEDDINGS // HIGH-DIMENSIONAL TALENT GRAPH
+      </div>
+
+      <!-- Center HUD Visual Stage: Targeting Reticle & Floating Telemetry Capsules -->
+      <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden">
+        <div class="extraction-ring w-[320px] h-[320px] sm:w-[500px] sm:h-[500px]"></div>
+        
+        <!-- Floating Telemetry Node 1: Cornflower Blue / Cosine Vectors -->
+        <div class="color-node node-float-1 absolute w-36 h-48 rounded-2xl bg-[#A8C7FA]/90 text-black flex flex-col justify-between p-4 pointer-events-auto cursor-default">
+          <div class="flex items-center justify-between">
+            <span class="text-[8px] font-mono font-bold uppercase tracking-wider text-black/70">Cosine Vector</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
+          </div>
+          <div class="space-y-1">
+            <div class="text-[10px] font-mono font-bold text-black/90">94.8% ATS Match</div>
+            <div class="text-[8px] font-mono text-black/60">#A8C7FA // Primary</div>
+          </div>
+        </div>
+
+        <!-- Floating Telemetry Node 2: Rose Blush / Syllabus Modernization -->
+        <div class="color-node node-float-2 absolute w-28 h-44 rounded-full bg-[#F1C6D4]/90 text-black flex flex-col justify-between p-4 pointer-events-auto cursor-default">
+          <span class="text-[8px] font-mono font-bold uppercase tracking-wider text-black/70">NEP-2020</span>
+          <div class="space-y-1 text-center">
+            <div class="text-[9px] font-mono font-bold text-black/90">BoS Audit</div>
+            <div class="text-[8px] font-mono text-black/60">#F1C6D4</div>
+          </div>
+        </div>
+
+        <!-- Floating Telemetry Node 3: Sandstone Gold / Corporate Grants -->
+        <div class="color-node node-float-3 absolute w-36 h-36 rounded-2xl bg-[#E2D3B6]/90 text-black flex flex-col justify-between p-4 pointer-events-auto cursor-default">
+          <span class="text-[8px] font-mono font-bold uppercase tracking-wider text-black/70">R&D Capital</span>
+          <div class="space-y-0.5">
+            <div class="text-[10px] font-mono font-bold text-black/90">₹48.5L Grants</div>
+            <div class="text-[8px] font-mono text-black/60">#E2D3B6</div>
+          </div>
+        </div>
+
+        <!-- Floating Telemetry Node 4: Velvet Obsidian Slate / Candidate Dossiers -->
+        <div class="color-node node-float-4 absolute w-48 h-28 rounded-full bg-[#111215]/90 border border-white/10 text-white flex flex-col justify-between p-4 pointer-events-auto cursor-default">
+          <span class="text-[8px] font-mono font-bold uppercase tracking-wider text-white/50">Verified Dossier</span>
+          <div class="flex items-center justify-between text-[10px] font-mono text-white/80">
+            <span>450+ UNIS</span>
+            <span class="text-[#A8C7FA]">SYS_SYNCED</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Container -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+          
+          <!-- Col 1-7: Editorial Tagline & Cyber Call to Action -->
+          <div class="lg:col-span-7 space-y-6 text-left reveal-from-left">
+            
+            <!-- Luminous Status Pill Badge -->
+            <div class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-stone-300/70 dark:border-white/10 bg-white/70 dark:bg-white/[0.04] backdrop-blur-md text-xs font-mono font-semibold text-stone-800 dark:text-stone-200 shadow-xs">
+              <span class="beacon-dot bg-emerald-500"></span>
+              <span class="text-[11px] tracking-wide uppercase">[ SYSTEM // ONLINE ]</span>
+              <span class="text-stone-300 dark:text-white/20">|</span>
+              <span class="text-[11px] text-[#2D5542] dark:text-[#A8C7FA] font-bold">NEP-2020 VECTOR ENGINE</span>
+            </div>
+
+            <!-- Crisp, High-Impact Editorial Headline with Classical Serif Italics Accent -->
+            <h1 class="text-4xl sm:text-6xl md:text-7xl lg:text-[4.75rem] font-display font-bold tracking-tight text-stone-900 dark:text-white leading-[1.02]">
+              Where Academic Rigor <br class="hidden sm:inline" />
+              <span class="font-newsreader italic text-[#2D5542] dark:text-[#A8C7FA] font-normal tracking-normal">Meets Corporate Mandates.</span>
+            </h1>
+
+            <!-- Controlled Subtext with Optimal Editorial Eye Comfort -->
+            <p class="text-base sm:text-lg text-stone-600 dark:text-neutral-400 leading-relaxed max-w-[54ch]">
+              AI competency vector matching, dynamic syllabus modernization, and verified placement dossiers for students, academia, and industry across all academic disciplines.
+            </p>
+
+            <!-- Cyber Button CTA Pair with Glowing Laser Tracks -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
+              <div class="relative flex items-center justify-center btn-group">
+                <div class="backdrop"></div>
+                <a href="auth.html" class="cyber-button w-full sm:w-auto">
+                  <div class="a l"></div><div class="a r"></div><div class="a t"></div><div class="a b"></div>
+                  <span class="text flex items-center gap-2">
+                    <span>Enter JOBLEX Portal // Access Roles</span>
+                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                  </span>
+                </a>
+              </div>
+
+              <div class="relative flex items-center justify-center btn-group">
+                <div class="backdrop"></div>
+                <a href="#bento-showcase" class="cyber-button secondary w-full sm:w-auto">
+                  <div class="a l"></div><div class="a r"></div><div class="a t"></div><div class="a b"></div>
+                  <span class="text flex items-center gap-2">
+                    <span class="material-symbols-outlined text-sm text-[#2D5542] dark:text-[#A8C7FA]">tune</span>
+                    <span>Explore Live Capabilities</span>
+                  </span>
+                </a>
+              </div>
+            </div>
+
+            <!-- Micro Trust Telemetry Badges -->
+            <div class="pt-2 flex flex-wrap items-center gap-4 text-xs text-stone-500 dark:text-neutral-400 font-mono">
+              <span class="flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span>450+ Universities</span>
+              </span>
+              <span class="opacity-40">•</span>
+              <span class="flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#855828] dark:bg-[#D4973B]"></span>
+                <span>84 Corporate Partners</span>
+              </span>
+              <span class="opacity-40">•</span>
+              <span class="flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#944C23] dark:bg-[#E07A48]"></span>
+                <span>₹48.5L Sponsoring Grants</span>
+              </span>
+            </div>
+
+          </div>
+
+          <!-- Col 8-12: Interactive Persona Switcher (Futuristic Bento HUD Card) -->
+          <div class="lg:col-span-5 space-y-3.5 reveal-from-right delay-100">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-mono uppercase tracking-wider text-stone-500 dark:text-neutral-400 font-bold">01 // Interactive Persona:</span>
+              <div class="inline-flex p-1 rounded-2xl bg-stone-200/70 dark:bg-white/[0.05] border border-stone-300/60 dark:border-white/[0.08] backdrop-blur-md">
+                <button id="hero-tab-student" onclick="selectHeroRole('student')" class="hero-role-tab active px-3.5 py-1.5 text-xs font-semibold rounded-xl">
+                  Student
+                </button>
+                <button id="hero-tab-academy" onclick="selectHeroRole('academy')" class="hero-role-tab px-3.5 py-1.5 text-xs font-semibold rounded-xl">
+                  Academy
+                </button>
+                <button id="hero-tab-company" onclick="selectHeroRole('company')" class="hero-role-tab px-3.5 py-1.5 text-xs font-semibold rounded-xl">
+                  Corporate
+                </button>
+              </div>
+            </div>
+
+            <!-- Dynamic Role Showcase Box (Liquid Glass HUD + Viewfinder Brackets) -->
+            <div id="hero-role-preview-card" class="liquid-glass tilt-card glow-border-hover p-6 sm:p-7 rounded-2xl relative overflow-hidden">
+              <!-- Viewfinder Reticle Brackets (permanently anchored) -->
+              <div class="bracket bracket-tl"></div>
+              <div class="bracket bracket-tr"></div>
+              <div class="bracket bracket-bl"></div>
+              <div class="bracket bracket-br"></div>
+
+              <div id="hero-role-preview-content" class="animate-tab-in transition-all">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-stone-200/60 dark:border-white/[0.07]">
+                  <div class="flex items-center gap-3">
+                    <span class="w-9 h-9 rounded-xl bg-[#2D5542]/10 text-[#2D5542] dark:text-[#4EBA87] flex items-center justify-center border border-[#2D5542]/20">
+                      <span class="material-symbols-outlined text-lg">school</span>
+                    </span>
+                    <div>
+                      <h3 class="text-xs font-bold font-mono uppercase tracking-wider text-stone-900 dark:text-stone-100">Student Acceleration Pathway</h3>
+                      <div class="text-[11px] text-stone-500 dark:text-stone-400">Targeted preparation & pre-screened placements</div>
+                    </div>
+                  </div>
+                  <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[11px] font-mono font-semibold self-start sm:self-auto border border-emerald-500/20">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>94.2% ATS Target Match</span>
+                  </div>
+                </div>
+
+                <div class="py-3.5 text-xs sm:text-sm text-stone-600 dark:text-stone-300 leading-relaxed">
+                  Build multidimensional skill vectors, complete verified academic bounties, practice with Zulu AI interview agent, and get mapped directly into corporate requisitions.
+                </div>
+
+                <!-- Feature Pills Row -->
+                <div class="flex flex-wrap items-center gap-2 pb-3.5 text-[11px] font-mono text-stone-500 dark:text-stone-400">
+                  <span class="glass-pill px-2.5 py-1 rounded-lg text-stone-700 dark:text-stone-300">✓ Cosine Vectors</span>
+                  <span class="glass-pill px-2.5 py-1 rounded-lg text-stone-700 dark:text-stone-300">✓ 4-Year Roadmap</span>
+                  <span class="glass-pill px-2.5 py-1 rounded-lg text-stone-700 dark:text-stone-300">✓ Verified Dossiers</span>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2.5 pt-2 border-t border-stone-200/50 dark:border-white/[0.05]">
+                  <button id="hero-role-primary-btn" onclick="JoblexApiClient.navigateToPortal('student')" class="btn-primary-brand px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs">
+                    <span>Enter Student Portal</span>
+                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+                  </button>
+                  <a href="src/students/student-resume.html" class="glass-pill px-3.5 py-2 rounded-xl hover:bg-stone-100 dark:hover:bg-white/[0.05] text-xs font-semibold text-stone-700 dark:text-stone-300 transition flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-sm text-[#2D5542] dark:text-[#4EBA87]">description</span>
+                    <span>Try AI Resume Analyzer</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Bottom Center Vertical Scroll Line Indicator -->
+      <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-[1px] h-12 bg-stone-300/80 dark:bg-white/20 overflow-hidden z-20 pointer-events-none">
+        <div class="w-full h-full bg-[#2D5542] dark:bg-white scroll-line-anim"></div>
+      </div>
+    </section>
+
+    <!-- LIVE TELEMETRY RIBBON (Futuristic Cyber Frames & Animated Counters) -->
+    <section class="py-10 border-b border-stone-200/80 dark:border-white/[0.08] relative z-10 bg-graph">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="liquid-glass tilt-card glow-border-hover rounded-2xl p-5 sm:p-7 shadow-sm reveal-scale relative overflow-hidden">
+          
+          <!-- Reticle Viewfinder Brackets -->
+          <div class="bracket bracket-tl"></div>
+          <div class="bracket bracket-tr"></div>
+          <div class="bracket bracket-bl"></div>
+          <div class="bracket bracket-br"></div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center divide-x-0 sm:divide-x divide-stone-200/60 dark:divide-white/[0.08]" data-stagger>
+            
+            <div class="p-2 reveal-scale delay-75">
+              <div data-counter-target="14820" data-counter-suffix="+" class="text-2xl sm:text-3xl lg:text-4xl font-mono font-bold text-stone-900 dark:text-white tracking-tight">14,820+</div>
+              <div class="text-xs font-mono font-medium text-stone-500 dark:text-neutral-400 mt-1 flex items-center justify-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#2D5542] dark:bg-[#4EBA87]"></span>
+                <span>Verified Skill Dossiers</span>
+              </div>
+            </div>
+
+            <div class="p-2 reveal-scale delay-150">
+              <div data-counter-target="84" class="text-2xl sm:text-3xl lg:text-4xl font-mono font-bold text-[#944C23] dark:text-[#E07A48] tracking-tight">84</div>
+              <div class="text-xs font-mono font-medium text-stone-500 dark:text-neutral-400 mt-1 flex items-center justify-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#944C23] dark:bg-[#E07A48]"></span>
+                <span>Corporate Partners</span>
+              </div>
+            </div>
+
+            <div class="p-2 reveal-scale delay-200">
+              <div data-counter-target="48.5" data-counter-prefix="₹" data-counter-suffix="L" class="text-2xl sm:text-3xl lg:text-4xl font-mono font-bold text-[#2D5542] dark:text-[#4EBA87] tracking-tight">₹48.5L</div>
+              <div class="text-xs font-mono font-medium text-stone-500 dark:text-neutral-400 mt-1 flex items-center justify-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#2D5542] dark:bg-[#4EBA87]"></span>
+                <span>R&D Grants Disbursed</span>
+              </div>
+            </div>
+
+            <div class="p-2 reveal-scale delay-300">
+              <div data-counter-target="92.4" data-counter-suffix="%" class="text-2xl sm:text-3xl lg:text-4xl font-mono font-bold text-[#855828] dark:text-[#D4973B] tracking-tight">92.4%</div>
+              <div class="text-xs font-mono font-medium text-stone-500 dark:text-neutral-400 mt-1 flex items-center justify-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#855828] dark:bg-[#D4973B]"></span>
+                <span>NAAC OBE Alignment</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMPILER LENS & BENTO SHOWCASE (Futuristic Compiler Lens & Multi-Dimensional Vectors) -->
+    <section id="bento-showcase" class="py-20 sm:py-28 relative z-10 overflow-hidden bg-transparent dark:bg-transparent transition-colors border-b border-stone-200/80 dark:border-white/[0.08]">
+      
+      <!-- Ethereal Glowing Ambient Orb -->
+      <div id="ambient-orb" class="ambient-orb"></div>
+
+      <!-- Architectural Lens Frame Lines -->
+      <div class="comp-frame-line-x absolute top-10 left-0 w-full h-[1px]"></div>
+      <div class="comp-frame-line-x absolute bottom-10 left-0 w-full h-[1px]"></div>
+      <div class="comp-frame-line-y absolute top-0 left-6 sm:left-12 w-[1px] h-full"></div>
+      <div class="comp-frame-line-y absolute top-0 right-6 sm:right-12 w-[1px] h-full"></div>
+
+      <!-- Precision Lens Crosshairs -->
+      <div class="lens-crosshair absolute top-10 left-6 sm:left-12 -translate-x-1/2 -translate-y-1/2">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 0v11M0 5.5h11" stroke="currentColor" stroke-width="1"/></svg>
+      </div>
+      <div class="lens-crosshair absolute top-10 right-6 sm:right-12 translate-x-1/2 -translate-y-1/2">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 0v11M0 5.5h11" stroke="currentColor" stroke-width="1"/></svg>
+      </div>
+      <div class="lens-crosshair absolute bottom-10 left-6 sm:left-12 -translate-x-1/2 translate-y-1/2">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 0v11M0 5.5h11" stroke="currentColor" stroke-width="1"/></svg>
+      </div>
+      <div class="lens-crosshair absolute bottom-10 right-6 sm:right-12 translate-x-1/2 translate-y-1/2">
+        <svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M5.5 0v11M0 5.5h11" stroke="currentColor" stroke-width="1"/></svg>
+      </div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        <!-- Section Header -->
+        <div class="mb-14 text-left max-w-2xl reveal-from-left">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-stone-300/70 dark:border-white/10 bg-white/70 dark:bg-white/[0.04] backdrop-blur-md text-[11px] font-mono font-semibold text-[#2D5542] dark:text-[#A8C7FA] mb-3">
+            <span class="beacon-dot bg-emerald-500"></span>
+            <span>02 // COMPILER LENS — COMPETENCY VECTOR ENGINE</span>
+          </div>
+          <h2 class="text-3xl sm:text-5xl font-display font-bold tracking-tight text-stone-900 dark:text-white leading-[1.08]">
+            Architecture for <span class="font-newsreader italic text-[#2D5542] dark:text-[#A8C7FA] font-normal">Institutional</span> Synergies
+          </h2>
+          <p class="text-sm sm:text-base text-stone-600 dark:text-neutral-400 mt-2.5 leading-relaxed">
+            Every layer addresses statutory accreditation, AI talent qualification, and corporate recruitment pipelines.
+          </p>
+        </div>
+
+        <!-- Bento Grid: 2-col, 1-col, 1-col, 2-col -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6" data-stagger>
+
+          <!-- Cell 1: Large 2-Column Hero Card with Interactive Vector Calibrator -->
+          <div class="md:col-span-2 liquid-glass bento-card tilt-card glow-border-hover rounded-2xl p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden reveal-from-left delay-100 bg-graph">
+            <!-- Reticle Viewfinder Brackets -->
+            <div class="bracket bracket-tl"></div>
+            <div class="bracket bracket-tr"></div>
+            <div class="bracket bracket-bl"></div>
+            <div class="bracket bracket-br"></div>
+
+            <!-- Animated Scanline Laser -->
+            <div class="scanline-widget"></div>
+
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-3">
+                  <span class="w-10 h-10 rounded-xl bg-[#2D5542]/10 dark:bg-[#A8C7FA]/10 text-[#2D5542] dark:text-[#A8C7FA] flex items-center justify-center border border-[#2D5542]/20 dark:border-[#A8C7FA]/30">
+                    <span class="material-symbols-outlined text-2xl">hub</span>
+                  </span>
+                  <div>
+                    <span class="text-[10px] font-mono tracking-widest text-[#2D5542] dark:text-[#A8C7FA] uppercase font-bold">
+                      01 // COSINE VECTOR ENGINE
+                    </span>
+                    <div class="text-[11px] font-mono text-stone-500 dark:text-neutral-500">LAT: 28.6139° N / LNG: 77.2090° E</div>
+                  </div>
+                </div>
+                <div class="px-2.5 py-1 rounded border border-[#A8C7FA]/30 text-[9px] font-mono bg-[#A8C7FA]/10 text-[#2D5542] dark:text-[#A8C7FA] font-bold">
+                  14ms MAX // VECTOR MATCH
+                </div>
+              </div>
+              
+              <h3 class="text-xl sm:text-2xl font-display font-bold text-stone-900 dark:text-white mb-2">
+                Multi-Dimensional Skill Vector & Placement Match
+              </h3>
+              <p class="text-sm text-stone-600 dark:text-neutral-400 max-w-xl leading-relaxed mb-5">
+                Replaces manual resumes with high-dimensional skill vectors. Candidates are evaluated across laboratory techniques, analytical standards, and research publications to generate exact match scores.
+              </p>
+
+              <!-- Interactive Discipline Simulation Switcher -->
+              <div class="space-y-2 mb-5">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="text-[11px] font-mono text-stone-500 dark:text-neutral-400 mr-1 font-bold">Simulate Target Role:</span>
+                  <button id="disc-btn-bio" onclick="selectVectorDiscipline('bio')" class="vector-disc-btn px-3 py-1.5 rounded-xl text-xs font-mono font-semibold border transition active bg-[#2D5542] text-white border-[#2D5542] dark:bg-[#4EBA87] dark:text-[#070709] dark:border-[#4EBA87] shadow-xs">
+                    Bioinformatics
+                  </button>
+                  <button id="disc-btn-clinical" onclick="selectVectorDiscipline('clinical')" class="vector-disc-btn px-3 py-1.5 rounded-xl text-xs font-mono font-semibold border border-stone-200/90 dark:border-white/[0.08] bg-white/80 dark:bg-white/[0.03] text-stone-700 dark:text-stone-300 hover:border-stone-400 transition glass-pill">
+                    Clinical Trials
+                  </button>
+                  <button id="disc-btn-phytochem" onclick="selectVectorDiscipline('phytochem')" class="vector-disc-btn px-3 py-1.5 rounded-xl text-xs font-mono font-semibold border border-stone-200/90 dark:border-white/[0.08] bg-white/80 dark:bg-white/[0.03] text-stone-700 dark:text-stone-300 hover:border-stone-400 transition glass-pill">
+                    Phytochemical QC
+                  </button>
+                  <button id="disc-btn-aihealth" onclick="selectVectorDiscipline('aihealth')" class="vector-disc-btn px-3 py-1.5 rounded-xl text-xs font-mono font-semibold border border-stone-200/90 dark:border-white/[0.08] bg-white/80 dark:bg-white/[0.03] text-stone-700 dark:text-stone-300 hover:border-stone-400 transition glass-pill">
+                    HealthTech AI
+                  </button>
+                </div>
+              </div>
+
+              <!-- Mini Visual Vector Matrix with Animated Bars -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1 mb-5">
+                <div class="p-3.5 rounded-xl bg-stone-50/80 dark:bg-white/[0.03] border border-stone-200/70 dark:border-white/[0.08] backdrop-blur-md space-y-2">
+                  <div class="flex items-center justify-between text-[11px] font-mono text-stone-500 dark:text-neutral-400">
+                    <span>Dimension 1</span>
+                    <span id="vec-dim-1-val" class="font-bold text-[#2D5542] dark:text-[#A8C7FA]">0.88</span>
+                  </div>
+                  <div id="vec-dim-1-title" class="text-sm font-bold text-stone-900 dark:text-white truncate">Genomics & Pipeline</div>
+                  <div class="w-full h-1.5 rounded-full bg-stone-200 dark:bg-white/10 overflow-hidden">
+                    <div id="vec-dim-1-bar" class="vector-bar-fill h-full rounded-full bg-[#2D5542] dark:bg-[#A8C7FA]" style="width: 88%;"></div>
+                  </div>
+                  <div id="vec-dim-1-sub" class="text-xs text-[#2D5542] dark:text-[#A8C7FA] font-mono font-semibold">Weight: 0.88 · Active</div>
+                </div>
+
+                <div class="p-3.5 rounded-xl bg-stone-50/80 dark:bg-white/[0.03] border border-stone-200/70 dark:border-white/[0.08] backdrop-blur-md space-y-2">
+                  <div class="flex items-center justify-between text-[11px] font-mono text-stone-500 dark:text-neutral-400">
+                    <span>Dimension 2</span>
+                    <span id="vec-dim-2-val" class="font-bold text-[#855828] dark:text-[#D4973B]">0.78</span>
+                  </div>
+                  <div id="vec-dim-2-title" class="text-sm font-bold text-stone-900 dark:text-white truncate">GLP & Calibration</div>
+                  <div class="w-full h-1.5 rounded-full bg-stone-200 dark:bg-white/10 overflow-hidden">
+                    <div id="vec-dim-2-bar" class="vector-bar-fill h-full rounded-full bg-[#855828] dark:bg-[#D4973B]" style="width: 78%;"></div>
+                  </div>
+                  <div id="vec-dim-2-sub" class="text-xs text-[#855828] dark:text-[#D4973B] font-mono font-semibold">Weight: 0.78 · Calibrated</div>
+                </div>
+
+                <div class="p-3.5 rounded-xl bg-stone-50/80 dark:bg-white/[0.03] border border-stone-200/70 dark:border-white/[0.08] backdrop-blur-md space-y-2">
+                  <div class="flex items-center justify-between text-[11px] font-mono text-stone-500 dark:text-neutral-400">
+                    <span>Dimension 3</span>
+                    <span id="vec-dim-3-val" class="font-bold text-[#944C23] dark:text-[#E07A48]">0.94</span>
+                  </div>
+                  <div id="vec-dim-3-title" class="text-sm font-bold text-stone-900 dark:text-white truncate">In-Silico Modeling</div>
+                  <div class="w-full h-1.5 rounded-full bg-stone-200 dark:bg-white/10 overflow-hidden">
+                    <div id="vec-dim-3-bar" class="vector-bar-fill h-full rounded-full bg-[#944C23] dark:bg-[#E07A48]" style="width: 94%;"></div>
+                  </div>
+                  <div id="vec-dim-3-sub" class="text-xs text-[#944C23] dark:text-[#E07A48] font-mono font-semibold">Weight: 0.94 · Verified</div>
+                </div>
+              </div>
+
+              <!-- Real-time Live Vector Match Score Ribbon -->
+              <div class="p-3.5 rounded-xl bg-stone-100/90 dark:bg-white/[0.04] border border-stone-200/80 dark:border-white/[0.08] flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span class="text-xs font-mono text-stone-600 dark:text-neutral-400">Calculated Cosine Match:</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span id="vector-score-val" class="text-base font-mono font-extrabold text-stone-900 dark:text-white">95.4%</span>
+                  <span id="vector-rank-tag" class="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-bold border border-emerald-500/20">Top 2% Tier</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-4 border-t border-stone-200/70 dark:border-white/[0.08] flex items-center justify-between">
+              <span class="text-xs text-stone-500 dark:text-neutral-500 font-mono">Algorithm: Hybrid Weighted Cosine & Jaccard</span>
+              <a href="src/students/student-resume.html" class="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-[#2D5542] dark:text-[#A8C7FA] hover:underline">
+                <span>Try Resume Parser</span>
+                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Cell 2: 1-Column Card (Syllabus Modernization) -->
+          <div class="liquid-glass bento-card tilt-card glow-border-hover rounded-2xl p-6 sm:p-7 flex flex-col justify-between reveal-from-right delay-150 relative overflow-hidden">
+            <div class="bracket bracket-tl"></div>
+            <div class="bracket bracket-tr"></div>
+            <div class="bracket bracket-bl"></div>
+            <div class="bracket bracket-br"></div>
+
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                <span class="w-10 h-10 rounded-xl bg-[#2D5542]/10 dark:bg-[#4EBA87]/10 text-[#2D5542] dark:text-[#4EBA87] flex items-center justify-center border border-[#2D5542]/20 dark:border-[#4EBA87]/30">
+                  <span class="material-symbols-outlined text-2xl">psychology</span>
+                </span>
+                <span class="text-[10px] font-mono tracking-widest text-[#2D5542] dark:text-[#4EBA87] uppercase font-bold">
+                  02 // NEP-2020 OBE
+                </span>
+              </div>
+
+              <h3 class="text-lg font-display font-bold text-stone-900 dark:text-white mb-2">
+                Dynamic Curriculum Gap Detection
+              </h3>
+              <p class="text-xs sm:text-sm text-stone-600 dark:text-neutral-400 leading-relaxed mb-4">
+                Analyzes live industry job requisitions against college syllabi to generate BoS-ready curriculum add-ons.
+              </p>
+
+              <div class="p-3.5 rounded-xl bg-stone-50/80 dark:bg-white/[0.03] border border-stone-200/70 dark:border-white/[0.08] text-xs space-y-1.5 font-mono">
+                <div class="text-stone-500 dark:text-neutral-500">Current Industry Gap:</div>
+                <div class="text-stone-900 dark:text-white font-semibold">Mass Spec & In-Silico Screening</div>
+                <div class="text-[#2D5542] dark:text-[#4EBA87] text-[11px] font-bold">Audit: Approved by 12 BoS Panels</div>
+              </div>
+            </div>
+
+            <div class="pt-4 border-t border-stone-200/70 dark:border-white/[0.08] mt-4">
+              <a href="academy.html" class="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-[#2D5542] dark:text-[#4EBA87] hover:underline">
+                <span>View Academy Portal</span>
+                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Cell 3: 1-Column Card (Anti-Decay Ledger) -->
+          <div class="liquid-glass bento-card tilt-card glow-border-hover rounded-2xl p-6 sm:p-7 flex flex-col justify-between reveal-from-left delay-200 relative overflow-hidden">
+            <div class="bracket bracket-tl"></div>
+            <div class="bracket bracket-tr"></div>
+            <div class="bracket bracket-bl"></div>
+            <div class="bracket bracket-br"></div>
+
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                <span class="w-10 h-10 rounded-xl bg-[#855828]/10 dark:bg-[#D4973B]/10 text-[#855828] dark:text-[#D4973B] flex items-center justify-center border border-[#855828]/20 dark:border-[#D4973B]/30">
+                  <span class="material-symbols-outlined text-2xl">ac_unit</span>
+                </span>
+                <span class="text-[10px] font-mono tracking-widest text-[#855828] dark:text-[#D4973B] uppercase font-bold">
+                  03 // RETENTION ENGINE
+                </span>
+              </div>
+
+              <h3 class="text-lg font-display font-bold text-stone-900 dark:text-white mb-2">
+                Anti-Decay XP & Streak Freeze
+              </h3>
+              <p class="text-xs sm:text-sm text-stone-600 dark:text-neutral-400 leading-relaxed mb-4">
+                Maintains student skill retention with automated decay curves. Active check-ins freeze points and validate ongoing competence.
+              </p>
+
+              <div class="p-3.5 rounded-xl bg-stone-50/80 dark:bg-white/[0.03] border border-stone-200/70 dark:border-white/[0.08] text-xs space-y-2 font-mono">
+                <div class="flex justify-between">
+                  <span class="text-stone-500 dark:text-neutral-500">Streak Freeze</span>
+                  <span class="text-[#2D5542] dark:text-[#4EBA87] font-bold">7 Days Protected</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-stone-500 dark:text-neutral-500">Quiz Bounty</span>
+                  <span class="text-[#855828] dark:text-[#D4973B] font-bold">+250 XP Active</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-4 border-t border-stone-200/70 dark:border-white/[0.08] mt-4">
+              <a href="src/students/student-quiz.html" class="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-[#855828] dark:text-[#D4973B] hover:underline">
+                <span>Enter Quiz Arena</span>
+                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Cell 4: Large 2-Column Corporate Grants Card -->
+          <div class="md:col-span-2 liquid-glass bento-card tilt-card glow-border-hover rounded-2xl p-6 sm:p-8 flex flex-col justify-between reveal-from-right delay-250 relative overflow-hidden bg-graph">
+            <div class="bracket bracket-tl"></div>
+            <div class="bracket bracket-tr"></div>
+            <div class="bracket bracket-bl"></div>
+            <div class="bracket bracket-br"></div>
+
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                <span class="w-10 h-10 rounded-xl bg-[#944C23]/10 dark:bg-[#E07A48]/10 text-[#944C23] dark:text-[#E07A48] flex items-center justify-center border border-[#944C23]/20 dark:border-[#E07A48]/30">
+                  <span class="material-symbols-outlined text-2xl">handshake</span>
+                </span>
+                <span class="text-[10px] font-mono tracking-widest text-[#944C23] dark:text-[#E07A48] uppercase font-bold">
+                  04 // CORPORATE PIPELINE
+                </span>
+              </div>
+
+              <h3 class="text-xl sm:text-2xl font-display font-bold text-stone-900 dark:text-white mb-2">
+                Bilateral Industry MoUs & Corporate Grants
+              </h3>
+              <p class="text-sm text-stone-600 dark:text-neutral-400 max-w-xl leading-relaxed mb-6">
+                Connects institutions directly with corporate research sponsors. Academic faculties receive FDP immersion opportunities while corporate sponsors fund targeted research cohorts.
+              </p>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div class="p-4 rounded-xl bg-stone-50/80 dark:bg-white/[0.03] border border-stone-200/70 dark:border-white/[0.08] backdrop-blur-md">
+                  <div class="flex items-center gap-2 text-xs font-bold text-stone-900 dark:text-white">
+                    <span class="material-symbols-outlined text-base text-[#944C23] dark:text-[#E07A48]">biotech</span>
+                    <span>Active Corporate Ledger</span>
+                  </div>
+                  <div class="text-sm font-mono font-extrabold text-stone-900 dark:text-white mt-1">₹48.5L in 6 Sponsoring Grants</div>
+                  <div class="text-[11px] font-mono text-stone-500 dark:text-neutral-500 mt-0.5">Dabur, Himalaya Wellness, Patanjali</div>
+                </div>
+
+                <div class="p-4 rounded-xl bg-stone-50/80 dark:bg-white/[0.03] border border-stone-200/70 dark:border-white/[0.08] backdrop-blur-md">
+                  <div class="flex items-center gap-2 text-xs font-bold text-stone-900 dark:text-white">
+                    <span class="material-symbols-outlined text-base text-[#2D5542] dark:text-[#4EBA87]">assignment_turned_in</span>
+                    <span>Direct Requisitions</span>
+                  </div>
+                  <div class="text-sm font-mono font-extrabold text-stone-900 dark:text-white mt-1">32 Open Industrial Placements</div>
+                  <div class="text-[11px] font-mono text-stone-500 dark:text-neutral-500 mt-0.5">Automated screening via Candidate Dossiers</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-4 border-t border-stone-200/70 dark:border-white/[0.08] flex items-center justify-between">
+              <span class="text-xs text-stone-500 dark:text-neutral-500 font-mono">Bilateral Framework: NEP-2020 Aligned</span>
+              <a href="industry.html" class="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-[#944C23] dark:text-[#E07A48] hover:underline">
+                <span>Explore Company Portal</span>
+                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- INTERACTIVE TRIPARTITE ECOSYSTEM SYNERGY SECTION (Futuristic Editorial Collaborative Network) -->
+    <section id="synergy-section" class="py-24 sm:py-32 relative overflow-hidden bg-graph z-10">
+      <!-- Architectural HUD perimeter frame lines -->
+      <div class="frame-line absolute top-0 left-0 right-0 h-px"></div>
+      <div class="frame-line absolute bottom-0 left-0 right-0 h-px"></div>
+      <div class="frame-line absolute top-0 bottom-0 left-4 sm:left-12 w-px hidden md:block"></div>
+      <div class="frame-line absolute top-0 bottom-0 right-4 sm:right-12 w-px hidden md:block"></div>
+
+      <!-- Corner Crosshairs -->
+      <div class="crosshair top-0 left-4 sm:left-12 -translate-x-1/2 -translate-y-1/2 hidden md:flex">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 0V14M0 7H14" stroke="currentColor" stroke-width="1"/></svg>
+      </div>
+      <div class="crosshair top-0 right-4 sm:right-12 translate-x-1/2 -translate-y-1/2 hidden md:flex">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 0V14M0 7H14" stroke="currentColor" stroke-width="1"/></svg>
+      </div>
+      <div class="crosshair bottom-0 left-4 sm:left-12 -translate-x-1/2 translate-y-1/2 hidden md:flex">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 0V14M0 7H14" stroke="currentColor" stroke-width="1"/></svg>
+      </div>
+      <div class="crosshair bottom-0 right-4 sm:right-12 translate-x-1/2 translate-y-1/2 hidden md:flex">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 0V14M0 7H14" stroke="currentColor" stroke-width="1"/></svg>
+      </div>
+
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        <div class="max-w-3xl space-y-3 mb-10 text-left reveal-from-left">
+          <div class="inline-flex items-center gap-2 font-space-mono text-[10px] tracking-[0.25em] text-[#2D5542] dark:text-[#4EBA87] uppercase font-semibold">
+            <span class="beacon-dot bg-emerald-500"></span>
+            <span>03 // TRIPARTITE COLLABORATIVE ENGINE</span>
+            <span class="text-stone-400 dark:text-neutral-600 font-normal">| REF: NEP-2020.OBE</span>
+          </div>
+          <h2 class="text-3xl sm:text-4xl lg:text-5xl font-display font-bold tracking-tight text-stone-900 dark:text-stone-100 leading-[1.1]">
+            Unified Closed-Loop <span class="font-newsreader italic font-normal text-gradient-sage">Symbiosis</span>
+          </h2>
+          <p class="font-space-mono text-xs sm:text-[13px] text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl">
+            An interconnected mathematical feedback loop linking academic curriculum development, verified student mastery, and live industrial talent pipelines.
+          </p>
+        </div>
+
+        <!-- Interactive Synergy Stage Buttons -->
+        <div class="flex flex-wrap items-center gap-2 mb-10 reveal-scale delay-75">
+          <button id="synergy-btn-1" data-step="1" onclick="selectSynergyStep(1)" class="synergy-step-btn active px-4 py-2.5 rounded-xl font-space-mono text-xs font-semibold border border-stone-200/90 dark:border-white/[0.08] flex items-center gap-2 glass-pill transition-all">
+            <span class="material-symbols-outlined text-sm">auto_stories</span>
+            <span>1. Curriculum Alignment</span>
+          </button>
+          <button id="synergy-btn-2" data-step="2" onclick="selectSynergyStep(2)" class="synergy-step-btn px-4 py-2.5 rounded-xl font-space-mono text-xs font-semibold border border-stone-200/90 dark:border-white/[0.08] bg-white/80 dark:bg-white/[0.03] text-stone-700 dark:text-stone-300 hover:border-stone-400 flex items-center gap-2 glass-pill transition-all">
+            <span class="material-symbols-outlined text-sm">verified</span>
+            <span>2. Competency Verification</span>
+          </button>
+          <button id="synergy-btn-3" data-step="3" onclick="selectSynergyStep(3)" class="synergy-step-btn px-4 py-2.5 rounded-xl font-space-mono text-xs font-semibold border border-stone-200/90 dark:border-white/[0.08] bg-white/80 dark:bg-white/[0.03] text-stone-700 dark:text-stone-300 hover:border-stone-400 flex items-center gap-2 glass-pill transition-all">
+            <span class="material-symbols-outlined text-sm">corporate_fare</span>
+            <span>3. Direct Placement & Grants</span>
+          </button>
+        </div>
+
+        <!-- 3 Interactive Node Columns with dynamic focus -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8" data-stagger>
+          
+          <!-- Node 1: Academy -->
+          <div id="synergy-card-1" class="liquid-glass synergy-node tilt-card glow-border-hover rounded-2xl p-6 sm:p-7 border-2 border-[#2D5542] dark:border-[#4EBA87] shadow-sm space-y-5 transition-all duration-300 reveal-from-left delay-100 relative">
+            <div class="bracket bracket-tl"></div>
+            <div class="bracket bracket-tr"></div>
+            <div class="bracket bracket-bl"></div>
+            <div class="bracket bracket-br"></div>
+            <div class="inner-frame">
+              <div class="f-top"></div><div class="f-bottom"></div><div class="f-left"></div><div class="f-right"></div>
+              <div class="cross-dot" style="top: 0; left: 0;"></div>
+              <div class="cross-dot" style="top: 0; left: 100%;"></div>
+              <div class="cross-dot" style="top: 100%; left: 0;"></div>
+              <div class="cross-dot" style="top: 100%; left: 100%;"></div>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span class="w-10 h-10 rounded-xl bg-[#2D5542]/10 text-[#2D5542] dark:text-[#4EBA87] flex items-center justify-center border border-[#2D5542]/20">
+                <span class="material-symbols-outlined text-lg">school</span>
+              </span>
+              <span class="font-space-mono text-[10px] tracking-wider px-2.5 py-0.5 rounded-full bg-[#2D5542]/10 text-[#2D5542] dark:text-[#4EBA87] font-semibold border border-[#2D5542]/20 uppercase">NEP-2020 OBE</span>
+            </div>
+            
+            <div>
+              <div class="font-space-mono text-[10px] text-stone-500 dark:text-neutral-500 tracking-wider mb-1">[NODE_01 :: ACADEMIA]</div>
+              <h3 class="text-base sm:text-lg font-bold font-display text-stone-900 dark:text-stone-100">Academia & Universities</h3>
+            </div>
+            
+            <p class="text-xs sm:text-[13px] text-stone-600 dark:text-stone-400 leading-relaxed">
+              Receives live corporate requisition vectors to automatically identify syllabus deficits, generate Board of Studies amendments, and meet NAAC/NBA accreditation criteria.
+            </p>
+            
+            <div class="p-3.5 rounded-xl bg-stone-50/80 dark:bg-white/[0.03] border border-stone-200/60 dark:border-white/[0.06] text-[11px] space-y-1.5 backdrop-blur-md font-space-mono">
+              <div class="text-[10px] text-stone-500 dark:text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#2D5542] dark:bg-[#4EBA87] animate-pulse"></span>
+                <span>Output Signal</span>
+              </div>
+              <div class="font-semibold text-stone-900 dark:text-stone-100">Accredited Course Outcomes (CO-PO)</div>
+            </div>
+          </div>
+
+          <!-- Node 2: Students -->
+          <div id="synergy-card-2" class="liquid-glass synergy-node tilt-card glow-border-hover rounded-2xl p-6 sm:p-7 border border-stone-200/90 dark:border-white/[0.08] shadow-sm space-y-5 transition-all duration-300 reveal-scale delay-200 relative">
+            <div class="bracket bracket-tl"></div>
+            <div class="bracket bracket-tr"></div>
+            <div class="bracket bracket-bl"></div>
+            <div class="bracket bracket-br"></div>
+            <div class="inner-frame">
+              <div class="f-top"></div><div class="f-bottom"></div><div class="f-left"></div><div class="f-right"></div>
+              <div class="cross-dot" style="top: 0; left: 0;"></div>
+              <div class="cross-dot" style="top: 0; left: 100%;"></div>
+              <div class="cross-dot" style="top: 100%; left: 0;"></div>
+              <div class="cross-dot" style="top: 100%; left: 100%;"></div>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span class="w-10 h-10 rounded-xl bg-[#855828]/10 text-[#855828] dark:text-[#D4973B] flex items-center justify-center border border-[#855828]/20">
+                <span class="material-symbols-outlined text-lg">badge</span>
+              </span>
+              <span class="font-space-mono text-[10px] tracking-wider px-2.5 py-0.5 rounded-full bg-[#855828]/10 text-[#855828] dark:text-[#D4973B] font-semibold border border-[#855828]/20 uppercase">CANDIDATE DOSSIERS</span>
+            </div>
+            
+            <div>
+              <div class="font-space-mono text-[10px] text-stone-500 dark:text-neutral-500 tracking-wider mb-1">[NODE_02 :: CANDIDATES]</div>
+              <h3 class="text-base sm:text-lg font-bold font-display text-stone-900 dark:text-stone-100">Certified Students</h3>
+            </div>
+
+            <p class="text-xs sm:text-[13px] text-stone-600 dark:text-stone-400 leading-relaxed">
+              Progress through phased 4-year roadmaps, maintain anti-decay skill XP streaks, and convert academic coursework into verified high-dimensional cosine vectors.
+            </p>
+            
+            <div class="p-3.5 rounded-xl bg-stone-50/80 dark:bg-white/[0.03] border border-stone-200/60 dark:border-white/[0.06] text-[11px] space-y-1.5 backdrop-blur-md font-space-mono">
+              <div class="text-[10px] text-stone-500 dark:text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#855828] dark:bg-[#D4973B] animate-pulse"></span>
+                <span>Output Signal</span>
+              </div>
+              <div class="font-semibold text-stone-900 dark:text-stone-100">Mathematically Verified Skill Vectors</div>
+            </div>
+          </div>
+
+          <!-- Node 3: Industry -->
+          <div id="synergy-card-3" class="liquid-glass synergy-node tilt-card glow-border-hover rounded-2xl p-6 sm:p-7 border border-stone-200/90 dark:border-white/[0.08] shadow-sm space-y-5 transition-all duration-300 reveal-from-right delay-300 relative">
+            <div class="bracket bracket-tl"></div>
+            <div class="bracket bracket-tr"></div>
+            <div class="bracket bracket-bl"></div>
+            <div class="bracket bracket-br"></div>
+            <div class="inner-frame">
+              <div class="f-top"></div><div class="f-bottom"></div><div class="f-left"></div><div class="f-right"></div>
+              <div class="cross-dot" style="top: 0; left: 0;"></div>
+              <div class="cross-dot" style="top: 0; left: 100%;"></div>
+              <div class="cross-dot" style="top: 100%; left: 0;"></div>
+              <div class="cross-dot" style="top: 100%; left: 100%;"></div>
+            </div>
+
+            <div class="flex items-center justify-between">
+              <span class="w-10 h-10 rounded-xl bg-[#944C23]/10 text-[#944C23] dark:text-[#E07A48] flex items-center justify-center border border-[#944C23]/20">
+                <span class="material-symbols-outlined text-lg">domain</span>
+              </span>
+              <span class="font-space-mono text-[10px] tracking-wider px-2.5 py-0.5 rounded-full bg-[#944C23]/10 text-[#944C23] dark:text-[#E07A48] font-semibold border border-[#944C23]/20 uppercase">CORPORATE CAPITAL</span>
+            </div>
+            
+            <div>
+              <div class="font-space-mono text-[10px] text-stone-500 dark:text-neutral-500 tracking-wider mb-1">[NODE_03 :: INDUSTRY]</div>
+              <h3 class="text-base sm:text-lg font-bold font-display text-stone-900 dark:text-stone-100">Corporate Industry</h3>
+            </div>
+
+            <p class="text-xs sm:text-[13px] text-stone-600 dark:text-stone-400 leading-relaxed">
+              Deploys live hiring mandates, recruits pre-screened talent without cold resume screening overhead, and sponsors bilateral R&D grants directly to collegiate laboratories.
+            </p>
+            
+            <div class="p-3.5 rounded-xl bg-stone-50/80 dark:bg-white/[0.03] border border-stone-200/60 dark:border-white/[0.06] text-[11px] space-y-1.5 backdrop-blur-md font-space-mono">
+              <div class="text-[10px] text-stone-500 dark:text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#944C23] dark:bg-[#E07A48] animate-pulse"></span>
+                <span>Output Signal</span>
+              </div>
+              <div class="font-semibold text-stone-900 dark:text-stone-100">Live Placement Mandates & R&D Grants</div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ROLE GATEWAY SECTION (Futuristic Direct Portals) -->
+    <section class="py-24 sm:py-32 border-t border-stone-200/80 dark:border-white/[0.06] relative z-10">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-12 text-left reveal-from-left">
+          <div class="inline-flex items-center gap-2 font-space-mono text-[10px] tracking-[0.25em] text-[#944C23] dark:text-[#E07A48] uppercase font-semibold mb-3">
+            <span class="beacon-dot bg-orange-500"></span>
+            <span>04 // DIRECT WORKSPACES</span>
+          </div>
+          <h2 class="text-3xl sm:text-4xl lg:text-5xl font-display font-bold tracking-tight text-stone-900 dark:text-stone-100">
+            Access <span class="font-serif italic font-normal text-gradient-terracotta">Dedicated</span> Workspaces
+          </h2>
+          <p class="font-space-mono text-xs sm:text-[13px] text-stone-600 dark:text-stone-400 mt-2 leading-relaxed">
+            Choose your portal to enter role-specific workflows and real-time telemetry data streams.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8" data-stagger>
+          
+          <!-- Student Workspace -->
+          <div onclick="JoblexApiClient.navigateToPortal('student')" class="liquid-glass bento-card tilt-card glow-border-hover rounded-2xl p-7 cursor-pointer group flex flex-col justify-between reveal-from-left delay-100 relative">
+            <div class="bracket bracket-tl"></div>
+            <div class="bracket bracket-tr"></div>
+            <div class="bracket bracket-bl"></div>
+            <div class="bracket bracket-br"></div>
+            <div>
+              <div class="flex items-center justify-between mb-5">
+                <div class="w-12 h-12 rounded-2xl bg-[#2D5542]/10 border border-[#2D5542]/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <span class="material-symbols-outlined text-[#2D5542] dark:text-[#4EBA87] text-2xl">school</span>
+                </div>
+                <span class="font-space-mono text-[10px] text-stone-400 dark:text-neutral-500 uppercase tracking-widest">SYS_PORTAL://STUDENT</span>
+              </div>
+              <h3 class="text-lg font-display font-bold text-stone-900 dark:text-stone-100 mb-2">Student Workspace</h3>
+              <p class="text-xs sm:text-[13px] text-stone-600 dark:text-stone-400 leading-relaxed mb-6">
+                Track 4-phase roadmaps, analyze resumes against corporate mandates, take skill bounties, and secure pre-screened placements.
+              </p>
+            </div>
+            <div class="pt-4 border-t border-stone-200/70 dark:border-white/[0.06] flex items-center justify-between font-space-mono text-xs font-bold text-[#2D5542] dark:text-[#4EBA87]">
+              <span>OPEN STUDENT AREA</span>
+              <span class="material-symbols-outlined text-base group-hover:translate-x-1.5 transition-transform">arrow_forward</span>
+            </div>
+          </div>
+
+          <!-- Academy Workspace -->
+          <div onclick="JoblexApiClient.navigateToPortal('academy')" class="liquid-glass bento-card tilt-card glow-border-hover rounded-2xl p-7 cursor-pointer group flex flex-col justify-between reveal-scale delay-200 relative">
+            <div class="bracket bracket-tl"></div>
+            <div class="bracket bracket-tr"></div>
+            <div class="bracket bracket-bl"></div>
+            <div class="bracket bracket-br"></div>
+            <div>
+              <div class="flex items-center justify-between mb-5">
+                <div class="w-12 h-12 rounded-2xl bg-[#855828]/10 border border-[#855828]/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <span class="material-symbols-outlined text-[#855828] dark:text-[#D4973B] text-2xl">account_balance</span>
+                </div>
+                <span class="font-space-mono text-[10px] text-stone-400 dark:text-neutral-500 uppercase tracking-widest">SYS_PORTAL://ACADEMY</span>
+              </div>
+              <h3 class="text-lg font-display font-bold text-stone-900 dark:text-stone-100 mb-2">Academy Workspace</h3>
+              <p class="text-xs sm:text-[13px] text-stone-600 dark:text-stone-400 leading-relaxed mb-6">
+                Perform automated syllabus gap audits under NEP-2020, verify candidate dossiers, nominate faculty for FDPs, and sign institutional MoUs.
+              </p>
+            </div>
+            <div class="pt-4 border-t border-stone-200/70 dark:border-white/[0.06] flex items-center justify-between font-space-mono text-xs font-bold text-[#855828] dark:text-[#D4973B]">
+              <span>OPEN ACADEMY AREA</span>
+              <span class="material-symbols-outlined text-base group-hover:translate-x-1.5 transition-transform">arrow_forward</span>
+            </div>
+          </div>
+
+          <!-- Company Workspace -->
+          <div onclick="JoblexApiClient.navigateToPortal('industry')" class="liquid-glass bento-card tilt-card glow-border-hover rounded-2xl p-7 cursor-pointer group flex flex-col justify-between reveal-from-right delay-300 relative">
+            <div class="bracket bracket-tl"></div>
+            <div class="bracket bracket-tr"></div>
+            <div class="bracket bracket-bl"></div>
+            <div class="bracket bracket-br"></div>
+            <div>
+              <div class="flex items-center justify-between mb-5">
+                <div class="w-12 h-12 rounded-2xl bg-[#944C23]/10 border border-[#944C23]/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <span class="material-symbols-outlined text-[#944C23] dark:text-[#E07A48] text-2xl">domain</span>
+                </div>
+                <span class="font-space-mono text-[10px] text-stone-400 dark:text-neutral-500 uppercase tracking-widest">SYS_PORTAL://COMPANY</span>
+              </div>
+              <h3 class="text-lg font-display font-bold text-stone-900 dark:text-stone-100 mb-2">Company Workspace</h3>
+              <p class="text-xs sm:text-[13px] text-stone-600 dark:text-stone-400 leading-relaxed mb-6">
+                Post corporate requisitions, search pre-qualified talent dossiers via cosine vectors, sponsor research grants, and calibrate demand skills.
+              </p>
+            </div>
+            <div class="pt-4 border-t border-stone-200/70 dark:border-white/[0.06] flex items-center justify-between font-space-mono text-xs font-bold text-[#944C23] dark:text-[#E07A48]">
+              <span>OPEN COMPANY AREA</span>
+              <span class="material-symbols-outlined text-base group-hover:translate-x-1.5 transition-transform">arrow_forward</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- PRE-FOOTER CINEMATIC CALLOUT (Editorial Cyber Showcase) -->
+    <section id="final-cta" class="relative py-28 sm:py-36 overflow-hidden border-t border-stone-200/80 dark:border-white/[0.06] z-10">
+      <!-- Ethereal pulsating ambient orb -->
+      <div class="cta-orb"></div>
+      
+      <!-- Architectural HUD perimeter frame lines -->
+      <div class="cta-frame-line absolute top-8 left-4 right-4 sm:left-12 sm:right-12 h-px"></div>
+      <div class="cta-frame-line absolute bottom-8 left-4 right-4 sm:left-12 sm:right-12 h-px"></div>
+      <div class="cta-frame-line absolute top-8 bottom-8 left-4 sm:left-12 w-px hidden sm:block"></div>
+      <div class="cta-frame-line absolute top-8 bottom-8 right-4 sm:right-12 w-px hidden sm:block"></div>
+      
+      <!-- Crosshairs at HUD intersections -->
+      <div class="cta-crosshair top-8 left-4 sm:left-12 -translate-x-1/2 -translate-y-1/2 hidden sm:flex">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 0V14M0 7H14" stroke="currentColor" stroke-width="1"/></svg>
+      </div>
+      <div class="cta-crosshair top-8 right-4 sm:right-12 translate-x-1/2 -translate-y-1/2 hidden sm:flex">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 0V14M0 7H14" stroke="currentColor" stroke-width="1"/></svg>
+      </div>
+      <div class="cta-crosshair bottom-8 left-4 sm:left-12 -translate-x-1/2 translate-y-1/2 hidden sm:flex">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 0V14M0 7H14" stroke="currentColor" stroke-width="1"/></svg>
+      </div>
+      <div class="cta-crosshair bottom-8 right-4 sm:right-12 translate-x-1/2 translate-y-1/2 hidden sm:flex">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 0V14M0 7H14" stroke="currentColor" stroke-width="1"/></svg>
+      </div>
+      
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div id="cta-card" class="relative rounded-3xl p-8 sm:p-14 text-center compiler-lens-bg overflow-hidden">
+          <div class="bracket bracket-tl"></div>
+          <div class="bracket bracket-tr"></div>
+          <div class="bracket bracket-bl"></div>
+          <div class="bracket bracket-br"></div>
+          
+          <div class="max-w-3xl mx-auto space-y-6 relative z-10">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full font-space-mono text-[10px] tracking-[0.2em] uppercase bg-[#4EBA87]/10 text-[#2D5542] dark:text-[#4EBA87] border border-[#2D5542]/20 dark:border-[#4EBA87]/25">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>AUTONOMOUS INSTITUTIONAL INTEGRATION</span>
+            </div>
+            
+            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-display font-bold tracking-tight text-stone-900 dark:text-[#E8E8E8] leading-[1.15]">
+              Accelerate Academic Rigor & Industrial Placement <br class="hidden sm:inline">
+              <span class="font-newsreader italic text-[#4EBA87] font-normal font-serif">Today</span>.
+            </h2>
+            
+            <p class="font-space-mono text-xs sm:text-sm text-stone-600 dark:text-neutral-400 max-w-xl mx-auto leading-relaxed">
+              Join over 450+ universities and 80+ corporate partners on India's unified NEP-2020 competency vector platform.
+            </p>
+            
+            <div class="flex flex-wrap items-center justify-center gap-4 pt-4">
+              <div class="relative flex items-center justify-center btn-group">
+                <div class="backdrop"></div>
+                <button onclick="JoblexApiClient.navigateToPortal('student')" class="cyber-button group">
+                  <div class="a l"></div><div class="a r"></div><div class="a t"></div><div class="a b"></div>
+                  <span class="text flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[16px]">school</span>
+                    <span>Launch Student Area</span>
+                  </span>
+                </button>
+              </div>
+              <div class="relative flex items-center justify-center btn-group">
+                <div class="backdrop"></div>
+                <button onclick="JoblexApiClient.navigateToPortal('academy')" class="cyber-button group">
+                  <div class="a l"></div><div class="a r"></div><div class="a t"></div><div class="a b"></div>
+                  <span class="text flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[16px]">account_balance</span>
+                    <span>University Hub</span>
+                  </span>
+                </button>
+              </div>
+              <div class="relative flex items-center justify-center btn-group">
+                <div class="backdrop"></div>
+                <button onclick="JoblexApiClient.navigateToPortal('industry')" class="cyber-button group">
+                  <div class="a l"></div><div class="a r"></div><div class="a t"></div><div class="a b"></div>
+                  <span class="text flex items-center gap-2">
+                    <span class="material-symbols-outlined text-[16px]">domain</span>
+                    <span>Corporate Pipeline</span>
+                  </span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Comprehensive Platform Footer with All Important Links -->
+    <footer id="main-footer" class="pt-20 pb-14 border-t border-stone-200/90 dark:border-white/[0.08] bg-[#FAF8F5]/90 dark:bg-[#070709]/90 bg-graph-footer backdrop-blur-xl text-xs text-stone-600 dark:text-stone-400 transition-colors duration-200 relative z-10">
+      <!-- Footer Perimeter Lines & Crosshairs -->
+      <div class="footer-frame-line absolute top-0 left-0 right-0 h-px"></div>
+      
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+        
+        <!-- Top Grid: 3 Organized Column Sets -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+          
+          <!-- Col 1: Brand & Platform Identity -->
+          <div class="lg:col-span-2 space-y-4">
+            <div class="flex items-center gap-2">
+              <span class="text-xl font-display font-bold tracking-tight text-stone-900 dark:text-stone-100 uppercase">JOBLEX</span>
+            </div>
+            <p class="font-space-mono text-xs text-stone-600 dark:text-stone-400 leading-relaxed max-w-sm">
+              National unified academia-industry collaboration and placement architecture. Aligning dynamic collegiate curricula with live industrial competency vectors and NEP-2020 accreditation standards.
+            </p>
+            <div class="pt-2 flex items-center gap-2 font-space-mono text-[11px] text-[#2D5542] dark:text-[#4EBA87]">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>CORE v2.4 ONLINE // 450+ UNIVERSITIES CONNECTED</span>
+            </div>
+          </div>
+
+          <!-- Col 2: Portals -->
+          <div class="space-y-3">
+            <h4 class="font-space-mono text-xs font-bold uppercase tracking-wider text-stone-900 dark:text-stone-100">Portals</h4>
+            <ul class="space-y-2 font-space-mono text-xs">
+              <li><a id="footer-link-portal-student" href="student.html" class="term-link inline-flex items-center hover:text-stone-900 dark:hover:text-stone-100 transition"><span class="term-caret mr-1">›</span>Student Portal</a></li>
+              <li><a id="footer-link-portal-academy" href="academy.html" class="term-link inline-flex items-center hover:text-stone-900 dark:hover:text-stone-100 transition"><span class="term-caret mr-1">›</span>Academy Portal</a></li>
+              <li><a id="footer-link-portal-industry" href="industry.html" class="term-link inline-flex items-center hover:text-stone-900 dark:hover:text-stone-100 transition"><span class="term-caret mr-1">›</span>Company Portal</a></li>
+            </ul>
+          </div>
+
+          <!-- Col 3: Pricing & Company -->
+          <div class="space-y-3">
+            <h4 class="font-space-mono text-xs font-bold uppercase tracking-wider text-stone-900 dark:text-stone-100">Pricing & Company</h4>
+            <ul class="space-y-2 font-space-mono text-xs">
+              <li><a id="footer-link-home" href="index.html" class="term-link inline-flex items-center hover:text-stone-900 dark:hover:text-stone-100 transition"><span class="term-caret mr-1">›</span>Home</a></li>
+              <li><a id="footer-link-about" href="about.html" class="term-link inline-flex items-center hover:text-stone-900 dark:hover:text-stone-100 transition"><span class="term-caret mr-1">›</span>About Us & Goals</a></li>
+              <li><a id="footer-link-pricing" href="pricing.html" class="term-link inline-flex items-center hover:text-stone-900 dark:hover:text-stone-100 transition"><span class="term-caret mr-1">›</span>Pricing Overview</a></li>
+              <li><a id="footer-link-student-plans" href="pricing.html" class="term-link inline-flex items-center hover:text-stone-900 dark:hover:text-stone-100 transition"><span class="term-caret mr-1">›</span>Student Plans</a></li>
+              <li><a id="footer-link-uni-plans" href="pricing.html" class="term-link inline-flex items-center hover:text-stone-900 dark:hover:text-stone-100 transition"><span class="term-caret mr-1">›</span>University Plans</a></li>
+              <li><a id="footer-link-company-plan" href="pricing.html" class="term-link inline-flex items-center hover:text-stone-900 dark:hover:text-stone-100 transition"><span class="term-caret mr-1">›</span>Company Plans</a></li>
+            </ul>
+          </div>
+
+        </div>
+
+        <!-- Bottom Sub-Footer: Copyright, Standards, Legal -->
+        <div class="pt-8 border-t border-stone-200/60 dark:border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4 font-space-mono text-[11px] text-stone-500 dark:text-stone-500">
+          <div class="flex items-center gap-2">
+            <span>&copy; 2026 JOBLEX Platform. All rights reserved.</span>
+            <span>•</span>
+            <span>NEP-2020 Compliant</span>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-4 sm:gap-6">
+            <a id="footer-link-privacy" href="about.html#security" class="hover:text-stone-900 dark:hover:text-stone-300 transition">Privacy & Data Governance</a>
+            <a id="footer-link-terms" href="about.html#terms" class="hover:text-stone-900 dark:hover:text-stone-300 transition">Institutional Terms</a>
+            <a id="footer-link-accreditation" href="about.html#outcomes" class="hover:text-stone-900 dark:hover:text-stone-300 transition">Accreditation Standards</a>
+            <a id="footer-link-security" href="about.html#security" class="hover:text-stone-900 dark:hover:text-stone-300 transition">Security Telemetry</a>
+          </div>
+        </div>
+
+      </div>
+    </footer>
+
+    <!-- Floating Futuristic Scroll Capsule Indicator & Scroll-to-Top -->
+    <div id="floating-scroll-capsule" class="scroll-btn-container visible">
+      <button id="scroll-capsule-btn" onclick="handleScrollCapsuleClick()" class="scroll-floating-btn clickable" aria-label="Scroll navigation">
+        <div class="arrow-anim-container">
+          <svg id="scroll-capsule-arrow-svg" class="arrow-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.3s ease;">
+            <path class="arrow-path" d="M12 5v14M19 12l-7 7-7-7"/>
+          </svg>
+        </div>
+        <span id="scroll-capsule-text">Explore Deck</span>
+      </button>
+    </div>
+
+    <button id="scroll-to-top-btn" aria-label="Scroll back to top" title="Scroll to top" class="fixed bottom-6 left-6 z-40 p-3 rounded-2xl bg-white/90 dark:bg-[#16181D]/90 backdrop-blur-md border border-stone-200/90 dark:border-white/[0.1] text-stone-700 dark:text-stone-300 hover:text-stone-950 dark:hover:text-white shadow-lg hover:shadow-xl tactile-btn flex items-center justify-center group transition-all opacity-0 pointer-events-none">
+      <span class="material-symbols-outlined text-xl group-hover:-translate-y-0.5 transition-transform">arrow_upward</span>
+    </button>
+
+  </main>
+
+
+  <!-- Three.js Background Script -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="js/frontend/three-scene.js"></script>
+  
+  <!-- Frontend API Client -->
+  <script src="js/frontend/api-client.js"></script>
+
+  <!-- Animation Engine -->
+  <script src="js/frontend/animations.js"></script>
+
+  <!-- Home Page Interactive UX & Animation Logic -->
+  <script>
+    // 1. Responsive Mobile Navigation Toggle
+    function toggleMobileNav() {
+      const drawer = document.getElementById('mobile-nav-drawer');
+      const icon = document.getElementById('mobile-menu-icon');
+      if (!drawer || !icon) return;
+
+      const isHidden = drawer.classList.contains('hidden');
+      if (isHidden) {
+        drawer.classList.remove('hidden');
+        icon.textContent = 'close';
+        document.body.classList.add('mobile-menu-open');
+      } else {
+        drawer.classList.add('hidden');
+        icon.textContent = 'menu';
+        document.body.classList.remove('mobile-menu-open');
+      }
+    }
+
+    // Close mobile nav drawer when clicking links or outside
+    document.addEventListener('click', (e) => {
+      const drawer = document.getElementById('mobile-nav-drawer');
+      const toggleBtn = document.getElementById('mobile-menu-toggle-btn');
+      if (!drawer || drawer.classList.contains('hidden')) return;
+      if (!drawer.contains(e.target) && !toggleBtn?.contains(e.target)) {
+        drawer.classList.add('hidden');
+        const icon = document.getElementById('mobile-menu-icon');
+        if (icon) icon.textContent = 'menu';
+        document.body.classList.remove('mobile-menu-open');
+      }
+    });
+
+    // 2. Interactive Hero Role Experience Switcher
+    const heroRoleData = {
+      student: {
+        title: 'Student Acceleration Pathway',
+        subtitle: 'Targeted preparation & pre-screened placements',
+        tag: '94.2% ATS Target Match',
+        tagClass: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20',
+        icon: 'school',
+        iconColor: 'text-[#2D5542] dark:text-[#4EBA87]',
+        iconBg: 'bg-[#2D5542]/10',
+        borderColor: 'border-[#2D5542]/20',
+        description: 'Build multidimensional skill vectors, complete verified academic bounties, practice with Zulu AI interview agent, and get mapped directly into corporate requisitions.',
+        pills: ['✓ Cosine Vectors', '✓ 4-Year Roadmap', '✓ Verified Dossiers'],
+        primaryBtnText: 'Enter Student Portal',
+        primaryAction: () => JoblexApiClient.navigateToPortal('student'),
+        secondaryBtnText: 'Try AI Resume Analyzer',
+        secondaryHref: 'src/students/student-resume.html',
+        secondaryIcon: 'description'
+      },
+      academy: {
+        title: 'Curriculum & Accreditation Hub',
+        subtitle: 'Continuous curriculum modernization & OBE compliance',
+        tag: 'NEP-2020 OBE Audits',
+        tagClass: 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20',
+        icon: 'account_balance',
+        iconColor: 'text-[#855828] dark:text-[#D4973B]',
+        iconBg: 'bg-[#855828]/10',
+        borderColor: 'border-[#855828]/20',
+        description: 'Audit academic curricula against live corporate demand vectors, automate NAAC/NBA documentation, nominate faculty for FDP immersion, and sign corporate MoUs.',
+        pills: ['✓ OBE Curriculum Mapping', '✓ NAAC Automation', '✓ Corporate MoUs'],
+        primaryBtnText: 'Enter Academy Portal',
+        primaryAction: () => JoblexApiClient.navigateToPortal('academy'),
+        secondaryBtnText: 'View Syllabus Gap Radar',
+        secondaryHref: 'src/academy/academy-syllabus-gap.html',
+        secondaryIcon: 'radar'
+      },
+      company: {
+        title: 'Corporate Recruitment & R&D Portal',
+        subtitle: 'Pre-screened talent cohorts & bilateral research grants',
+        tag: '₹48.5L Active Grants',
+        tagClass: 'bg-orange-500/10 text-orange-700 dark:text-orange-400 border border-orange-500/20',
+        icon: 'domain',
+        iconColor: 'text-[#944C23] dark:text-[#E07A48]',
+        iconBg: 'bg-[#944C23]/10',
+        borderColor: 'border-[#944C23]/20',
+        description: 'Deploy live corporate requisitions, search verified candidate dossiers via mathematical cosine vectors, and sponsor targeted R&D grants into collegiate laboratories.',
+        pills: ['✓ Cosine Dossiers', '✓ Pre-screened Cohorts', '✓ R&D Grants'],
+        primaryBtnText: 'Enter Company Portal',
+        primaryAction: () => JoblexApiClient.navigateToPortal('industry'),
+        secondaryBtnText: 'Search Talent Vectors',
+        secondaryHref: 'src/industry/industry-talent-search.html',
+        secondaryIcon: 'manage_search'
+      }
+    };
+
+    function selectHeroRole(roleKey) {
+      const tabs = ['student', 'academy', 'company'];
+      tabs.forEach(k => {
+        const tabEl = document.getElementById(`hero-tab-${k}`);
+        if (tabEl) {
+          if (k === roleKey) tabEl.classList.add('active');
+          else tabEl.classList.remove('active');
+        }
+      });
+
+      const data = heroRoleData[roleKey];
+      const card = document.getElementById('hero-role-preview-card');
+      const contentEl = document.getElementById('hero-role-preview-content') || card;
+      if (!data || !contentEl) return;
+
+      // Trigger subtle animation replay on content
+      contentEl.classList.remove('animate-tab-in');
+      void contentEl.offsetWidth;
+      contentEl.classList.add('animate-tab-in');
+
+      contentEl.innerHTML = `
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-stone-200/60 dark:border-white/[0.07]">
+          <div class="flex items-center gap-3">
+            <span class="w-9 h-9 rounded-xl ${data.iconBg} ${data.iconColor} flex items-center justify-center border ${data.borderColor}">
+              <span class="material-symbols-outlined text-lg">${data.icon}</span>
+            </span>
+            <div>
+              <h3 class="text-xs font-bold font-mono uppercase tracking-wider text-stone-900 dark:text-stone-100">${data.title}</h3>
+              <div class="text-[11px] text-stone-500 dark:text-stone-400">${data.subtitle}</div>
+            </div>
+          </div>
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full ${data.tagClass} text-[11px] font-mono font-semibold self-start sm:self-auto border">
+            <span class="w-1.5 h-1.5 rounded-full bg-current animate-pulse"></span>
+            <span>${data.tag}</span>
+          </div>
+        </div>
+
+        <div class="py-3 text-xs sm:text-sm text-stone-600 dark:text-stone-400 leading-relaxed">
+          ${data.description}
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 pb-3 text-[11px] font-mono text-stone-500 dark:text-stone-400">
+          ${data.pills.map(p => `<span class="glass-pill px-2.5 py-1 rounded-lg text-[11px] font-mono text-stone-700 dark:text-stone-300">${p}</span>`).join('')}
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5 pt-1 border-t border-stone-200/50 dark:border-white/[0.05]">
+          <button id="hero-role-primary-btn" class="btn-primary-brand px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs">
+            <span>${data.primaryBtnText}</span>
+            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+          </button>
+          <a href="${data.secondaryHref}" class="glass-pill px-3.5 py-2 rounded-xl hover:bg-stone-100 dark:hover:bg-white/[0.05] text-xs font-semibold text-stone-700 dark:text-stone-300 transition flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm ${data.iconColor}">${data.secondaryIcon}</span>
+            <span>${data.secondaryBtnText}</span>
+          </a>
+        </div>
+      `;
+
+      document.getElementById('hero-role-primary-btn')?.addEventListener('click', data.primaryAction);
+    }
+
+    // 3. Interactive Vector Calibrator Simulator
+    const vectorDisciplineData = {
+      bio: {
+        dim1: { title: 'Genomics & Pipeline', val: '0.88', sub: 'Weight: 0.88 · Active', width: '88%' },
+        dim2: { title: 'GLP & Calibration', val: '0.78', sub: 'Weight: 0.78 · Calibrated', width: '78%' },
+        dim3: { title: 'In-Silico Modeling', val: '0.94', sub: 'Weight: 0.94 · Verified', width: '94%' },
+        score: '95.4%',
+        rank: 'Top 2% Tier'
+      },
+      clinical: {
+        dim1: { title: 'GCP Regulatory Audits', val: '0.92', sub: 'Weight: 0.92 · Active', width: '92%' },
+        dim2: { title: 'Pharmacovigilance', val: '0.89', sub: 'Weight: 0.89 · Verified', width: '89%' },
+        dim3: { title: 'Clinical Protocols', val: '0.86', sub: 'Weight: 0.86 · Calibrated', width: '86%' },
+        score: '94.2%',
+        rank: 'Top 3% Tier'
+      },
+      phytochem: {
+        dim1: { title: 'HPLC & Spectroscopy', val: '0.95', sub: 'Weight: 0.95 · Verified', width: '95%' },
+        dim2: { title: 'Analytical QC Standards', val: '0.91', sub: 'Weight: 0.91 · Calibrated', width: '91%' },
+        dim3: { title: 'Herbal Monographs', val: '0.83', sub: 'Weight: 0.83 · Active', width: '83%' },
+        score: '92.8%',
+        rank: 'Top 5% Tier'
+      },
+      aihealth: {
+        dim1: { title: 'Neural Architectures', val: '0.93', sub: 'Weight: 0.93 · Active', width: '93%' },
+        dim2: { title: 'Biomarker Synthesis', val: '0.90', sub: 'Weight: 0.90 · Verified', width: '90%' },
+        dim3: { title: 'Clinical EHR Vectors', val: '0.87', sub: 'Weight: 0.87 · Calibrated', width: '87%' },
+        score: '96.1%',
+        rank: 'Top 1% Tier'
+      }
+    };
+
+    function selectVectorDiscipline(discKey) {
+      const keys = ['bio', 'clinical', 'phytochem', 'aihealth'];
+      keys.forEach(k => {
+        const btn = document.getElementById(`disc-btn-${k}`);
+        if (!btn) return;
+        if (k === discKey) {
+          btn.classList.add('active', 'bg-[#2D5542]', 'text-white', 'border-[#2D5542]', 'dark:bg-[#4EBA87]', 'dark:text-[#070709]', 'dark:border-[#4EBA87]', 'shadow-xs');
+          btn.classList.remove('bg-white/80', 'dark:bg-white/[0.03]', 'text-stone-700', 'dark:text-stone-300', 'border-stone-200/90', 'dark:border-white/[0.08]');
+        } else {
+          btn.classList.remove('active', 'bg-[#2D5542]', 'text-white', 'border-[#2D5542]', 'dark:bg-[#4EBA87]', 'dark:text-[#070709]', 'dark:border-[#4EBA87]', 'shadow-xs');
+          btn.classList.add('bg-white/80', 'dark:bg-white/[0.03]', 'text-stone-700', 'dark:text-stone-300', 'border-stone-200/90', 'dark:border-white/[0.08]');
+        }
+      });
+
+      const d = vectorDisciplineData[discKey];
+      if (!d) return;
+
+      // Dim 1
+      const dim1Title = document.getElementById('vec-dim-1-title');
+      const dim1Val = document.getElementById('vec-dim-1-val');
+      const dim1Sub = document.getElementById('vec-dim-1-sub');
+      const dim1Bar = document.getElementById('vec-dim-1-bar');
+      if (dim1Title) dim1Title.textContent = d.dim1.title;
+      if (dim1Val) dim1Val.textContent = d.dim1.val;
+      if (dim1Sub) dim1Sub.textContent = d.dim1.sub;
+      if (dim1Bar) dim1Bar.style.width = d.dim1.width;
+
+      // Dim 2
+      const dim2Title = document.getElementById('vec-dim-2-title');
+      const dim2Val = document.getElementById('vec-dim-2-val');
+      const dim2Sub = document.getElementById('vec-dim-2-sub');
+      const dim2Bar = document.getElementById('vec-dim-2-bar');
+      if (dim2Title) dim2Title.textContent = d.dim2.title;
+      if (dim2Val) dim2Val.textContent = d.dim2.val;
+      if (dim2Sub) dim2Sub.textContent = d.dim2.sub;
+      if (dim2Bar) dim2Bar.style.width = d.dim2.width;
+
+      // Dim 3
+      const dim3Title = document.getElementById('vec-dim-3-title');
+      const dim3Val = document.getElementById('vec-dim-3-val');
+      const dim3Sub = document.getElementById('vec-dim-3-sub');
+      const dim3Bar = document.getElementById('vec-dim-3-bar');
+      if (dim3Title) dim3Title.textContent = d.dim3.title;
+      if (dim3Val) dim3Val.textContent = d.dim3.val;
+      if (dim3Sub) dim3Sub.textContent = d.dim3.sub;
+      if (dim3Bar) dim3Bar.style.width = d.dim3.width;
+
+      // Overall Score & Rank
+      const scoreVal = document.getElementById('vector-score-val');
+      const rankTag = document.getElementById('vector-rank-tag');
+      if (scoreVal) scoreVal.textContent = d.score;
+      if (rankTag) rankTag.textContent = d.rank;
+    }
+
+    // 4. Interactive Tripartite Synergy Step Controller
+    function selectSynergyStep(stepNum) {
+      const nodeColors = {
+        1: { border: 'border-[#2D5542]', darkBorder: 'dark:border-[#4EBA87]' },
+        2: { border: 'border-[#855828]', darkBorder: 'dark:border-[#D4973B]' },
+        3: { border: 'border-[#944C23]', darkBorder: 'dark:border-[#E07A48]' }
+      };
+
+      [1, 2, 3].forEach(i => {
+        const btn = document.getElementById(`synergy-btn-${i}`);
+        const card = document.getElementById(`synergy-card-${i}`);
+        if (!btn || !card) return;
+
+        // Clear existing active border classes
+        card.classList.remove('border-2', 'shadow-md',
+          'border-[#2D5542]', 'dark:border-[#4EBA87]',
+          'border-[#855828]', 'dark:border-[#D4973B]',
+          'border-[#944C23]', 'dark:border-[#E07A48]'
+        );
+
+        if (i === stepNum) {
+          btn.classList.add('active');
+          btn.classList.remove('bg-white/80', 'dark:bg-white/[0.03]', 'text-stone-700', 'dark:text-stone-300');
+          card.classList.remove('border-stone-200/90', 'dark:border-white/[0.08]');
+          card.classList.add('border-2', nodeColors[i].border, nodeColors[i].darkBorder, 'shadow-md');
+        } else {
+          btn.classList.remove('active');
+          btn.classList.add('bg-white/80', 'dark:bg-white/[0.03]', 'text-stone-700', 'dark:text-stone-300');
+          card.classList.add('border-stone-200/90', 'dark:border-white/[0.08]');
+        }
+      });
+    }
+
+    // 5. Floating Capsule Scroll Controller (Editorial deck interaction)
+    function handleScrollCapsuleClick() {
+      const isPastHero = window.scrollY > 450;
+      if (isPastHero) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        const target = document.getElementById('bento-showcase') || document.getElementById('synergy-section');
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth' });
+        } else {
+          window.scrollBy({ top: 600, behavior: 'smooth' });
+        }
+      }
+    }
+
+    function updateScrollCapsuleState() {
+      const capsuleText = document.getElementById('scroll-capsule-text');
+      const arrowSvg = document.getElementById('scroll-capsule-arrow-svg');
+      const scrollBtn = document.getElementById('scroll-to-top-btn');
+      const isPastHero = window.scrollY > 450;
+
+      if (capsuleText) {
+        capsuleText.textContent = isPastHero ? 'Top of Deck' : 'Explore Deck';
+      }
+      if (arrowSvg) {
+        arrowSvg.style.transform = isPastHero ? 'rotate(180deg)' : 'none';
+      }
+      if (scrollBtn) {
+        if (isPastHero) {
+          scrollBtn.classList.remove('opacity-0', 'pointer-events-none');
+        } else {
+          scrollBtn.classList.add('opacity-0', 'pointer-events-none');
+        }
+      }
+    }
+
+    window.addEventListener('scroll', updateScrollCapsuleState, { passive: true });
+    updateScrollCapsuleState();
+
+    // Initialize interactive state on DOM load
+    document.addEventListener('DOMContentLoaded', () => {
+      // Ensure User Navbar is rendered
+      if (typeof JoblexApiClient !== 'undefined' && typeof JoblexApiClient.renderUserNavbar === 'function') {
+        JoblexApiClient.renderUserNavbar();
+      }
+    });
+  </script>
+</body>
+</html>

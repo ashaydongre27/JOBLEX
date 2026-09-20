@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pricing & Institutional Plans | JOBLEX</title>
+  <meta name="description" content="Transparent, scalable subscription plans for Students, Universities, and Corporate Industry Partners on JOBLEX.">
+  <meta property="og:title" content="JOBLEX Pricing">
+  <meta property="og:description" content="Transparent, scalable subscription plans for Students, Universities, and Corporate Industry Partners on JOBLEX.">
+  
+  <!-- Google Fonts Preconnect -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  
+  <!-- Theme Handler -->
+  <script src="/js/frontend/theme.js"></script>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            serif: ['Newsreader', 'Georgia', 'serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+            display: ['"Plus Jakarta Sans"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Editorial Custom Styles -->
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="bg-[#FAF8F5] dark:bg-[#070709] text-[#1C1917] dark:text-[#F4F4F6] antialiased transition-colors duration-200 min-h-screen relative overflow-x-hidden flex flex-col justify-between selection:bg-[#944C23] selection:text-white dark:selection:bg-[#E07A48] dark:selection:text-black">
+
+  <!-- Ambient Three.js Canvas Container -->
+  <div id="three-canvas-container" class="fixed inset-0 pointer-events-none z-0 opacity-40 dark:opacity-60" aria-hidden="true"></div>
+
+  <!-- Soft Ambient Glow Orbs -->
+  <div class="fixed top-[-10%] right-[-5%] w-[45vw] h-[45vw] rounded-full bg-[#944C23]/5 dark:bg-[#E07A48]/[0.03] blur-[120px] pointer-events-none z-0"></div>
+  <div class="fixed bottom-[-10%] left-[-5%] w-[45vw] h-[45vw] rounded-full bg-[#2D5542]/5 dark:bg-[#4EBA87]/[0.03] blur-[120px] pointer-events-none z-0"></div>
+
+  <!-- Header / Navigation -->
+  <header id="site-header" class="sticky top-0 z-50 w-full bg-[#FAF8F5]/90 dark:bg-[#070709]/90 backdrop-blur-xl border-b border-stone-200/80 dark:border-white/[0.07] transition-colors duration-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Brand -->
+      <div class="flex items-center gap-4 sm:gap-6">
+        <a id="header-brand-logo" href="index.html" class="flex items-center cursor-pointer select-none group">
+          <span class="text-xl font-display font-bold tracking-tight text-stone-900 dark:text-stone-100 uppercase">JOBLEX</span>
+        </a>
+      </div>
+
+      <!-- Links & Actions -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <nav id="header-nav-items" class="flex items-center gap-1 text-xs font-semibold text-stone-600 dark:text-stone-400">
+          <a id="nav-home-link" href="index.html" class="px-2.5 sm:px-3 py-1.5 rounded-lg hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.05] transition">
+            Home
+          </a>
+          <a id="nav-about-link" href="about.html" class="px-2.5 sm:px-3 py-1.5 rounded-lg hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.05] transition">
+            About
+          </a>
+          <a id="nav-pricing-active" href="pricing.html" class="px-2.5 sm:px-3 py-1.5 rounded-lg text-stone-900 dark:text-white bg-stone-200/70 dark:bg-white/[0.08] font-bold transition">
+            Pricing
+          </a>
+        </nav>
+
+        <div class="hidden sm:flex items-center gap-1 text-xs font-semibold text-stone-600 dark:text-stone-400">
+          <button id="nav-student-portal-btn" onclick="JoblexApiClient.navigateToPortal('student')" class="px-2.5 py-1.5 rounded-lg hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.05] transition">
+            Student
+          </button>
+          <button id="nav-academy-portal-btn" onclick="JoblexApiClient.navigateToPortal('academy')" class="px-2.5 py-1.5 rounded-lg hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.05] transition">
+            Academy
+          </button>
+          <button id="nav-industry-portal-btn" onclick="JoblexApiClient.navigateToPortal('industry')" class="px-2.5 py-1.5 rounded-lg hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.05] transition">
+            Industry
+          </button>
+        </div>
+
+        <!-- Theme Toggle -->
+        <button id="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Theme" title="Toggle Light/Dark Theme" class="p-2 rounded-xl border border-stone-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.03] text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white transition flex items-center justify-center tactile-btn shadow-xs">
+          <span id="theme-toggle-icon" class="material-symbols-outlined text-[18px]">dark_mode</span>
+        </button>
+
+        <!-- Account Container / Sign In -->
+        <div class="nav-user-account-container relative"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main id="pricing-main-content" class="relative z-10 flex-1">
+
+    <!-- HERO SECTION -->
+    <section id="pricing-hero-section" class="pt-12 sm:pt-16 pb-10 text-center">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
+        
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[#944C23]/10 dark:bg-[#E07A48]/10 text-[#944C23] dark:text-[#E07A48] border border-[#944C23]/20 dark:border-[#E07A48]/20">
+          <span class="material-symbols-outlined text-[14px]">price_change</span>
+          <span>Transparent Institutional Pricing</span>
+        </div>
+
+        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-display font-bold tracking-tight text-stone-900 dark:text-stone-100 leading-[1.1]">
+          Invest in Real Competency, <span class="font-serif italic font-normal text-[#944C23] dark:text-[#E07A48]">Not Credentials.</span>
+        </h1>
+
+        <p class="text-base sm:text-lg text-stone-600 dark:text-stone-400 font-normal max-w-2xl mx-auto leading-relaxed">
+          Tailored subscription plans designed specifically for students, university departments, and corporate hiring partners.
+        </p>
+
+        <!-- SLIDE SELECTOR / SEGMENTED CONTROL -->
+        <div class="pt-6 flex justify-center">
+          <div id="pricing-slide-selector-wrapper" class="relative inline-flex p-1.5 rounded-2xl bg-stone-200/70 dark:bg-stone-900/90 border border-stone-300/80 dark:border-white/[0.1] shadow-inner backdrop-blur-md">
+            
+            <!-- Sliding Indicator Highlight -->
+            <div id="slide-indicator" class="absolute top-1.5 bottom-1.5 left-1.5 rounded-xl bg-white dark:bg-stone-800 shadow-md transition-all duration-300 ease-out pointer-events-none" style="width: 120px; transform: translateX(0px);"></div>
+
+            <!-- 1. Students Tab -->
+            <button 
+              id="selector-btn-students" 
+              type="button"
+              onclick="switchPricingRole('students', this)"
+              class="relative z-10 px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition-colors duration-200 text-stone-900 dark:text-white flex items-center gap-2 cursor-pointer select-none">
+              <span class="material-symbols-outlined text-[16px] text-[#2D5542] dark:text-[#4EBA87]">school</span>
+              <span>Students</span>
+            </button>
+
+            <!-- 2. University Tab -->
+            <button 
+              id="selector-btn-university" 
+              type="button"
+              onclick="switchPricingRole('university', this)"
+              class="relative z-10 px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition-colors duration-200 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 flex items-center gap-2 cursor-pointer select-none">
+              <span class="material-symbols-outlined text-[16px] text-[#855828] dark:text-[#D4973B]">account_balance</span>
+              <span>University</span>
+            </button>
+
+            <!-- 3. Company Tab -->
+            <button 
+              id="selector-btn-company" 
+              type="button"
+              onclick="switchPricingRole('company', this)"
+              class="relative z-10 px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl transition-colors duration-200 text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 flex items-center gap-2 cursor-pointer select-none">
+              <span class="material-symbols-outlined text-[16px] text-[#944C23] dark:text-[#E07A48]">domain</span>
+              <span>Company</span>
+            </button>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- PRICING TIERS DISPLAY SECTION -->
+    <section id="pricing-tiers-section" class="pb-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <!-- ==================== 1. STUDENTS CONTAINER (3 PLANS) ==================== -->
+        <div id="plans-container-students" class="transition-opacity duration-300">
+          
+          <div class="text-center mb-8">
+            <span class="text-xs font-mono font-bold uppercase tracking-widest text-[#2D5542] dark:text-[#4EBA87]">Individual Candidate Tiers</span>
+            <h2 class="text-2xl font-display font-bold text-stone-900 dark:text-stone-100 mt-1">Accelerate Your Placement Readiness</h2>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 items-stretch">
+            
+            <!-- Plan 1: Free Plan -->
+            <div id="card-student-free" class="bento-card rounded-2xl p-6 sm:p-8 bg-white dark:bg-[#101115] border border-stone-200 dark:border-white/[0.08] shadow-xs flex flex-col justify-between relative">
+              <div>
+                <div class="flex items-center justify-between mb-4">
+                  <span class="text-xs font-mono font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">Starter Tier</span>
+                  <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-stone-100 dark:bg-white/[0.06] text-stone-600 dark:text-stone-400">Basic</span>
+                </div>
+
+                <h3 class="text-xl font-display font-bold text-stone-900 dark:text-stone-100">Free Plan</h3>
+                <p class="text-xs text-stone-600 dark:text-stone-400 mt-1 mb-6 leading-relaxed">
+                  Limited access of platform for self-paced exploration and core assessment practice.
+                </p>
+
+                <div class="mb-6 pb-6 border-b border-stone-100 dark:border-white/[0.06]">
+                  <div class="flex items-baseline gap-1">
+                    <span class="text-4xl sm:text-5xl font-mono font-bold text-stone-900 dark:text-stone-100">$0</span>
+                    <span class="text-xs text-stone-500 dark:text-stone-400 font-medium">/ month</span>
+                  </div>
+                  <p class="text-[11px] text-stone-500 dark:text-stone-500 mt-1">Free forever with basic privileges</p>
+                </div>
+
+                <div class="space-y-3 text-xs text-stone-700 dark:text-stone-300 mb-8">
+                  <p class="font-bold text-[11px] uppercase tracking-wider text-stone-500 dark:text-stone-400">Included Features:</p>
+                  
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-stone-400 shrink-0 mt-0.5">check</span>
+                    <span><strong>Limited platform access:</strong> Browse general career tracks & public internships</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-amber-500 shrink-0 mt-0.5">schedule</span>
+                    <span><strong>Limited use of Zulu AI:</strong> 10 diagnostic prompt queries per day</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-stone-400 shrink-0 mt-0.5">check</span>
+                    <span>Public skill tree and module catalog exploration</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-stone-400 shrink-0 mt-0.5">check</span>
+                    <span>Participation in standard community quiz challenges</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5 text-stone-400 dark:text-stone-600">
+                    <span class="material-symbols-outlined text-[16px] shrink-0 mt-0.5">close</span>
+                    <span class="line-through">AI Resume Analyzer & ATS diagnostics</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5 text-stone-400 dark:text-stone-600">
+                    <span class="material-symbols-outlined text-[16px] shrink-0 mt-0.5">close</span>
+                    <span class="line-through">Personalized career & course recommendations</span>
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                id="btn-select-student-free"
+                onclick="selectPlan('Student Free', 0, 'month', ['Limited platform access', 'Limited Zulu AI (10 queries/day)', 'Public skill tree access'])"
+                class="w-full py-3 px-4 rounded-xl border border-stone-300 dark:border-white/[0.12] bg-stone-100/80 dark:bg-white/[0.04] text-stone-800 dark:text-stone-200 font-bold text-xs hover:bg-stone-200 dark:hover:bg-white/[0.08] transition tactile-btn">
+                Start Free Now
+              </button>
+            </div>
+
+            <!-- Plan 2: 29$ Plan (AI Resume Analyzer & Recommendations) -->
+            <div id="card-student-29" class="bento-card rounded-2xl p-6 sm:p-8 bg-white dark:bg-[#101115] border-2 border-[#2D5542] dark:border-[#4EBA87] shadow-md flex flex-col justify-between relative">
+              
+              <!-- Badge -->
+              <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-[#2D5542] dark:bg-[#4EBA87] text-white dark:text-stone-900 shadow-sm whitespace-nowrap">
+                Most Popular for Placement
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between mb-4 mt-1">
+                  <span class="text-xs font-mono font-bold uppercase tracking-wider text-[#2D5542] dark:text-[#4EBA87]">Pro Candidate</span>
+                  <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#2D5542]/10 text-[#2D5542] dark:text-[#4EBA87]">Placement Focus</span>
+                </div>
+
+                <h3 class="text-xl font-display font-bold text-stone-900 dark:text-stone-100">Scholar Pro</h3>
+                <p class="text-xs text-stone-600 dark:text-stone-400 mt-1 mb-6 leading-relaxed">
+                  With the access of AI resume analyzer and personalized recommendations to land interviews.
+                </p>
+
+                <div class="mb-6 pb-6 border-b border-stone-100 dark:border-white/[0.06]">
+                  <div class="flex items-baseline gap-1">
+                    <span class="text-4xl sm:text-5xl font-mono font-bold text-[#2D5542] dark:text-[#4EBA87]">$29</span>
+                    <span class="text-xs text-stone-500 dark:text-stone-400 font-medium">/ month</span>
+                  </div>
+                  <p class="text-[11px] text-stone-500 dark:text-stone-500 mt-1">Billed monthly • Cancel anytime</p>
+                </div>
+
+                <div class="space-y-3 text-xs text-stone-700 dark:text-stone-300 mb-8">
+                  <p class="font-bold text-[11px] uppercase tracking-wider text-stone-500 dark:text-stone-400">Everything in Free, plus:</p>
+                  
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#2D5542] dark:text-[#4EBA87] shrink-0 mt-0.5">auto_awesome</span>
+                    <span><strong>Full Access of AI Resume Analyzer:</strong> NLP ATS parser with quantitative feedback & keyword suggestions</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#2D5542] dark:text-[#4EBA87] shrink-0 mt-0.5">recommend</span>
+                    <span><strong>Free Career Recommendations:</strong> Dynamic gap analysis matching you with active campus and off-campus roles</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#2D5542] dark:text-[#4EBA87] shrink-0 mt-0.5">check_circle</span>
+                    <span><strong>Expanded Zulu AI Access:</strong> Up to 200 conversational queries per day</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#2D5542] dark:text-[#4EBA87] shrink-0 mt-0.5">check_circle</span>
+                    <span>Skill decay warnings with scheduled active recall drills</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#2D5542] dark:text-[#4EBA87] shrink-0 mt-0.5">check_circle</span>
+                    <span>Priority application status on verified company internship postings</span>
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                id="btn-select-student-29"
+                onclick="selectPlan('Student Scholar Pro', 29, 'month', ['Access of AI Resume Analyzer', 'Free career recommendations', 'Expanded Zulu AI (200 queries/day)', 'Skill decay alerts'])"
+                class="w-full py-3 px-4 rounded-xl bg-[#2D5542] dark:bg-[#4EBA87] text-white dark:text-stone-950 font-bold text-xs hover:opacity-95 shadow-sm transition tactile-btn">
+                Get Scholar Pro ($29)
+              </button>
+            </div>
+
+            <!-- Plan 3: 49$ Plan (All Access of the Site) -->
+            <div id="card-student-49" class="bento-card rounded-2xl p-6 sm:p-8 bg-white dark:bg-[#101115] border border-stone-200 dark:border-white/[0.08] shadow-xs flex flex-col justify-between relative">
+              <div>
+                <div class="flex items-center justify-between mb-4">
+                  <span class="text-xs font-mono font-bold uppercase tracking-wider text-[#944C23] dark:text-[#E07A48]">Elite Tier</span>
+                  <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#944C23]/10 text-[#944C23] dark:text-[#E07A48]">Complete Suite</span>
+                </div>
+
+                <h3 class="text-xl font-display font-bold text-stone-900 dark:text-stone-100">Ultimate Access</h3>
+                <p class="text-xs text-stone-600 dark:text-stone-400 mt-1 mb-6 leading-relaxed">
+                  All access of the site with unrestricted capabilities across the entire JOBLEX platform.
+                </p>
+
+                <div class="mb-6 pb-6 border-b border-stone-100 dark:border-white/[0.06]">
+                  <div class="flex items-baseline gap-1">
+                    <span class="text-4xl sm:text-5xl font-mono font-bold text-[#944C23] dark:text-[#E07A48]">$49</span>
+                    <span class="text-xs text-stone-500 dark:text-stone-400 font-medium">/ month</span>
+                  </div>
+                  <p class="text-[11px] text-stone-500 dark:text-stone-500 mt-1">Unrestricted individual career pass</p>
+                </div>
+
+                <div class="space-y-3 text-xs text-stone-700 dark:text-stone-300 mb-8">
+                  <p class="font-bold text-[11px] uppercase tracking-wider text-stone-500 dark:text-stone-400">Everything in Scholar Pro, plus:</p>
+                  
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#944C23] dark:text-[#E07A48] shrink-0 mt-0.5">verified_user</span>
+                    <span><strong>ALL ACCESS OF THE SITE:</strong> Zero limits on any student portal tools or features</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#944C23] dark:text-[#E07A48] shrink-0 mt-0.5">all_inclusive</span>
+                    <span><strong>Unlimited Zulu AI:</strong> Unrestricted queries, multi-turn mock interviews, and code reviews</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#944C23] dark:text-[#E07A48] shrink-0 mt-0.5">check_circle</span>
+                    <span>Cryptographically signed <strong>Verified Placement Dossier</strong></span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#944C23] dark:text-[#E07A48] shrink-0 mt-0.5">check_circle</span>
+                    <span>Direct priority indexing in corporate Industry Vector Search</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#944C23] dark:text-[#E07A48] shrink-0 mt-0.5">check_circle</span>
+                    <span>Exclusive micro-internship access & bilateral corporate referrals</span>
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                id="btn-select-student-49"
+                onclick="selectPlan('Student Ultimate Access', 49, 'month', ['All access of the entire site', 'Unlimited Zulu AI', 'Verified Placement Dossier', 'Priority Industry Indexing'])"
+                class="w-full py-3 px-4 rounded-xl bg-stone-900 dark:bg-white text-white dark:text-stone-900 font-bold text-xs hover:opacity-90 shadow-sm transition tactile-btn">
+                Get Ultimate Access ($49)
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ==================== 2. UNIVERSITY CONTAINER (2 PLANS) ==================== -->
+        <div id="plans-container-university" class="hidden transition-opacity duration-300">
+          
+          <div class="text-center mb-8">
+            <span class="text-xs font-mono font-bold uppercase tracking-widest text-[#855828] dark:text-[#D4973B]">Higher Education Institutions</span>
+            <h2 class="text-2xl font-display font-bold text-stone-900 dark:text-stone-100 mt-1">Accreditation & Curriculum Modernization</h2>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto items-stretch">
+            
+            <!-- Plan 1: 1299$ Plan (Limited Access of Platform Resources) -->
+            <div id="card-uni-1299" class="bento-card rounded-2xl p-6 sm:p-8 bg-white dark:bg-[#101115] border border-stone-200 dark:border-white/[0.08] shadow-xs flex flex-col justify-between relative">
+              <div>
+                <div class="flex items-center justify-between mb-4">
+                  <span class="text-xs font-mono font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400">Collegiate Department</span>
+                  <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-stone-100 dark:bg-white/[0.06] text-stone-600 dark:text-stone-400">Department Level</span>
+                </div>
+
+                <h3 class="text-xl font-display font-bold text-stone-900 dark:text-stone-100">Academic Department Tier</h3>
+                <p class="text-xs text-stone-600 dark:text-stone-400 mt-1 mb-6 leading-relaxed">
+                  With limited access of platform resources for specialized departments and emerging colleges.
+                </p>
+
+                <div class="mb-6 pb-6 border-b border-stone-100 dark:border-white/[0.06]">
+                  <div class="flex items-baseline gap-1">
+                    <span class="text-4xl sm:text-5xl font-mono font-bold text-stone-900 dark:text-stone-100">$1,299</span>
+                    <span class="text-xs text-stone-500 dark:text-stone-400 font-medium">/ month</span>
+                  </div>
+                  <p class="text-[11px] text-stone-500 dark:text-stone-500 mt-1">Monthly institutional licensing</p>
+                </div>
+
+                <div class="space-y-3.5 text-xs text-stone-700 dark:text-stone-300 mb-8">
+                  <p class="font-bold text-[11px] uppercase tracking-wider text-stone-500 dark:text-stone-400">Included Institutional Resources:</p>
+                  
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#855828] dark:text-[#D4973B] shrink-0 mt-0.5">check_circle</span>
+                    <span><strong>Limited access of platform resources:</strong> Single department deployment</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#855828] dark:text-[#D4973B] shrink-0 mt-0.5">check_circle</span>
+                    <span>Up to <strong>250 active student dossiers</strong> tracked across semesters</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#855828] dark:text-[#D4973B] shrink-0 mt-0.5">check_circle</span>
+                    <span>Department-level syllabus gap audit radar (up to 3 engineering programs)</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#855828] dark:text-[#D4973B] shrink-0 mt-0.5">check_circle</span>
+                    <span>Standard NAAC Criteria 1 & 2 outcome compliance reports</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#855828] dark:text-[#D4973B] shrink-0 mt-0.5">check_circle</span>
+                    <span>Bilateral MoU registry with up to 5 corporate industry partners</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5 text-stone-400 dark:text-stone-600">
+                    <span class="material-symbols-outlined text-[16px] shrink-0 mt-0.5">close</span>
+                    <span class="line-through">Campus-wide unlimited student seats & institutional API export</span>
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                id="btn-select-uni-1299"
+                onclick="selectPlan('University Department Tier', 1299, 'month', ['Limited access of platform resources', 'Up to 250 students', '3 program audits', '5 bilateral MoUs'])"
+                class="w-full py-3 px-4 rounded-xl border border-stone-300 dark:border-white/[0.12] bg-stone-100/80 dark:bg-white/[0.04] text-stone-800 dark:text-stone-200 font-bold text-xs hover:bg-stone-200 dark:hover:bg-white/[0.08] transition tactile-btn">
+                Select Department Tier ($1,299/mo)
+              </button>
+            </div>
+
+            <!-- Plan 2: 5999$ Plan (Full Access of Platform) -->
+            <div id="card-uni-5999" class="bento-card rounded-2xl p-6 sm:p-8 bg-white dark:bg-[#101115] border-2 border-[#855828] dark:border-[#D4973B] shadow-md flex flex-col justify-between relative">
+              
+              <!-- Badge -->
+              <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-[#855828] dark:text-stone-900 dark:bg-[#D4973B] text-white shadow-sm whitespace-nowrap">
+                Recommended for Premier Universities
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between mb-4 mt-1">
+                  <span class="text-xs font-mono font-bold uppercase tracking-wider text-[#855828] dark:text-[#D4973B]">Institutional Enterprise</span>
+                  <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#855828]/10 text-[#855828] dark:text-[#D4973B]">Campus-Wide</span>
+                </div>
+
+                <h3 class="text-xl font-display font-bold text-stone-900 dark:text-stone-100">Institutional Enterprise</h3>
+                <p class="text-xs text-stone-600 dark:text-stone-400 mt-1 mb-6 leading-relaxed">
+                  With full access of platform resources, unlimited student enrollments, and automated accreditation suites.
+                </p>
+
+                <div class="mb-6 pb-6 border-b border-stone-100 dark:border-white/[0.06]">
+                  <div class="flex items-baseline gap-1">
+                    <span class="text-4xl sm:text-5xl font-mono font-bold text-[#855828] dark:text-[#D4973B]">$5,999</span>
+                    <span class="text-xs text-stone-500 dark:text-stone-400 font-medium">/ month</span>
+                  </div>
+                  <p class="text-[11px] text-stone-500 dark:text-stone-500 mt-1">Complete campus license • Includes faculty licenses</p>
+                </div>
+
+                <div class="space-y-3.5 text-xs text-stone-700 dark:text-stone-300 mb-8">
+                  <p class="font-bold text-[11px] uppercase tracking-wider text-stone-500 dark:text-stone-400">Everything in Department Tier, plus:</p>
+                  
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#855828] dark:text-[#D4973B] shrink-0 mt-0.5">verified_user</span>
+                    <span><strong>FULL ACCESS OF PLATFORM:</strong> All modules, tools, and institutional reporting engines</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#855828] dark:text-[#D4973B] shrink-0 mt-0.5">check_circle</span>
+                    <span><strong>Unlimited student enrollments</strong> across all faculties and constituent campuses</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#855828] dark:text-[#D4973B] shrink-0 mt-0.5">check_circle</span>
+                    <span>Automated <strong>NEP-2020 & NBA/NAAC Criterion 1, 2 & 5</strong> OBE compliance generator</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#855828] dark:text-[#D4973B] shrink-0 mt-0.5">check_circle</span>
+                    <span>Dynamic syllabus modernization radar with AI curriculum diffs against industry</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#855828] dark:text-[#D4973B] shrink-0 mt-0.5">check_circle</span>
+                    <span>Unrestricted Bilateral Corporate MoU execution & R&D grant disbursement tracking</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#855828] dark:text-[#D4973B] shrink-0 mt-0.5">check_circle</span>
+                    <span>Direct corporate placement drive coordination & dedicated Institutional Success Manager</span>
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                id="btn-select-uni-5999"
+                onclick="selectPlan('University Institutional Enterprise', 5999, 'month', ['Full access of platform', 'Unlimited students', 'Automated NAAC/NBA OBE matrix', 'Unrestricted MoUs & Grants'])"
+                class="w-full py-3 px-4 rounded-xl bg-[#855828] dark:bg-[#D4973B] text-white dark:text-stone-950 font-bold text-xs hover:opacity-95 shadow-sm transition tactile-btn">
+                Deploy Campus Enterprise ($5,999/mo)
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ==================== 3. COMPANY CONTAINER (1 PLAN) ==================== -->
+        <div id="plans-container-company" class="hidden transition-opacity duration-300">
+          
+          <div class="text-center mb-8">
+            <span class="text-xs font-mono font-bold uppercase tracking-widest text-[#944C23] dark:text-[#E07A48]">Corporate Talent Acquisition & R&D</span>
+            <h2 class="text-2xl font-display font-bold text-stone-900 dark:text-stone-100 mt-1">Precision Hiring & Co-Innovation</h2>
+          </div>
+
+          <div class="max-w-2xl mx-auto">
+            
+            <!-- Plan 1: 7999$ Plan (All Resources of Company Portal) -->
+            <div id="card-company-7999" class="bento-card rounded-2xl p-6 sm:p-10 bg-white dark:bg-[#101115] border-2 border-[#944C23] dark:border-[#E07A48] shadow-lg flex flex-col justify-between relative">
+              
+              <!-- Badge -->
+              <div class="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-[#944C23] dark:bg-[#E07A48] text-white dark:text-stone-950 shadow-sm whitespace-nowrap">
+                Complete Corporate Partner License
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between mb-4 mt-1">
+                  <span class="text-xs font-mono font-bold uppercase tracking-wider text-[#944C23] dark:text-[#E07A48]">Corporate Tier</span>
+                  <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-[#944C23]/10 text-[#944C23] dark:text-[#E07A48]">Unlimited Company Portal</span>
+                </div>
+
+                <h3 class="text-2xl font-display font-bold text-stone-900 dark:text-stone-100">Corporate Enterprise Partner</h3>
+                <p class="text-xs sm:text-sm text-stone-600 dark:text-stone-400 mt-1 mb-6 leading-relaxed">
+                  For all the resources of company portal, high-dimensional vector candidate matching, and bilateral university co-innovation.
+                </p>
+
+                <div class="mb-6 pb-6 border-b border-stone-100 dark:border-white/[0.06]">
+                  <div class="flex items-baseline gap-1">
+                    <span class="text-4xl sm:text-5xl font-mono font-bold text-[#944C23] dark:text-[#E07A48]">$7,999</span>
+                    <span class="text-xs text-stone-500 dark:text-stone-400 font-medium">/ month</span>
+                  </div>
+                  <p class="text-[11px] text-stone-500 dark:text-stone-500 mt-1">Comprehensive monthly corporate license • Unlimited recruiters</p>
+                </div>
+
+                <div class="space-y-3.5 text-xs text-stone-700 dark:text-stone-300 mb-8">
+                  <p class="font-bold text-[11px] uppercase tracking-wider text-stone-500 dark:text-stone-400">All Company Portal Resources Included:</p>
+                  
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#944C23] dark:text-[#E07A48] shrink-0 mt-0.5">verified_user</span>
+                    <span><strong>ALL RESOURCES OF COMPANY PORTAL:</strong> Unrestricted access across talent, requisitions, and university grants</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#944C23] dark:text-[#E07A48] shrink-0 mt-0.5">check_circle</span>
+                    <span><strong>Multidimensional Vector Candidate Search:</strong> Instant cosine similarity ranking matching exact team tech stacks</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#944C23] dark:text-[#E07A48] shrink-0 mt-0.5">check_circle</span>
+                    <span><strong>Unlimited Job & Internship Requisitions:</strong> Direct distribution across 450+ affiliated universities</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#944C23] dark:text-[#E07A48] shrink-0 mt-0.5">check_circle</span>
+                    <span>Direct access to cryptographically authenticated student portfolios and code telemetry</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#944C23] dark:text-[#E07A48] shrink-0 mt-0.5">check_circle</span>
+                    <span><strong>Bilateral MoU Execution & R&D Grant Sponsorship:</strong> Sponsor university labs and claim verified milestones</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#944C23] dark:text-[#E07A48] shrink-0 mt-0.5">check_circle</span>
+                    <span><strong>Live Competency Calibrator:</strong> Feed upcoming corporate tech requirements directly into collegiate syllabi</span>
+                  </div>
+
+                  <div class="flex items-start gap-2.5">
+                    <span class="material-symbols-outlined text-[16px] text-[#944C23] dark:text-[#E07A48] shrink-0 mt-0.5">check_circle</span>
+                    <span>Dedicated Technical Account Director & direct ATS integration (Workday, Greenhouse, Lever)</span>
+                  </div>
+                </div>
+              </div>
+
+              <button 
+                id="btn-select-company-7999"
+                onclick="selectPlan('Corporate Enterprise Partner', 7999, 'month', ['All resources of company portal', 'Multidimensional candidate vector search', 'Unlimited requisitions', 'Bilateral university MoUs & Grants'])"
+                class="w-full py-3.5 px-4 rounded-xl bg-[#944C23] dark:bg-[#E07A48] text-white dark:text-stone-950 font-bold text-xs hover:opacity-95 shadow-sm transition tactile-btn">
+                Activate Corporate Enterprise ($7,999/mo)
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- INTERACTIVE CHECKOUT & ENROLLMENT MODAL -->
+  <div id="checkout-modal-overlay" class="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-opacity duration-200 opacity-0 pointer-events-none" aria-hidden="true">
+    <div id="checkout-modal-card" class="relative w-full max-w-lg rounded-2xl p-6 sm:p-8 bg-white dark:bg-[#101115] border border-stone-300 dark:border-stone-700 shadow-2xl text-stone-900 dark:text-white transform transition-transform duration-200 scale-95">
+      
+      <div class="flex items-start justify-between pb-4 border-b border-stone-200 dark:border-white/[0.08]">
+        <div>
+          <span id="modal-plan-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-[#2D5542]/10 text-[#2D5542] dark:text-[#4EBA87]">
+            Selected Plan
+          </span>
+          <h3 id="modal-plan-name" class="text-lg font-display font-bold mt-1 text-stone-900 dark:text-white">Scholar Pro</h3>
+        </div>
+        <button id="modal-close-btn" onclick="closeCheckoutModal()" class="p-1 rounded-lg text-stone-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/10 transition" aria-label="Close">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+
+      <div class="py-4 space-y-4">
+        
+        <!-- Summary Banner -->
+        <div class="p-4 rounded-xl bg-stone-50 dark:bg-white/[0.03] border border-stone-200 dark:border-white/[0.06] flex items-center justify-between">
+          <div>
+            <span class="text-xs text-stone-500 dark:text-stone-400">Total Investment:</span>
+            <div id="modal-plan-price" class="text-2xl font-mono font-bold text-stone-900 dark:text-white">$29</div>
+          </div>
+          <div id="modal-billing-cycle" class="text-xs text-stone-500 dark:text-stone-400 font-medium">Billed Monthly</div>
+        </div>
+
+        <!-- Highlights list -->
+        <div>
+          <p class="text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-2">Features Unlocked:</p>
+          <ul id="modal-features-list" class="space-y-1.5 text-xs text-stone-600 dark:text-stone-300">
+            <!-- Dynamically populated -->
+          </ul>
+        </div>
+
+        <!-- Enrollment Form -->
+        <form id="checkout-form" onsubmit="handleCheckoutSubmit(event)" class="space-y-3 pt-2">
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-400 mb-1">
+              Full Name / Authorized Signatory
+            </label>
+            <input 
+              id="checkout-name" 
+              type="text" 
+              required 
+              placeholder="e.g. Dr. Jane Smith or Alex Roy"
+              class="w-full px-3 py-2 text-xs rounded-xl border border-stone-300 dark:border-white/[0.1] bg-white dark:bg-stone-900 text-stone-900 dark:text-white focus:outline-none focus:border-[#2D5542] dark:focus:border-[#4EBA87]">
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-400 mb-1">
+              Institution / Corporate / College Email
+            </label>
+            <input 
+              id="checkout-email" 
+              type="email" 
+              required 
+              placeholder="name@university.edu or you@company.com"
+              class="w-full px-3 py-2 text-xs rounded-xl border border-stone-300 dark:border-white/[0.1] bg-white dark:bg-stone-900 text-stone-900 dark:text-white focus:outline-none focus:border-[#2D5542] dark:focus:border-[#4EBA87]">
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-bold uppercase tracking-wider text-stone-600 dark:text-stone-400 mb-1">
+              Payment / Procurement Method
+            </label>
+            <select 
+              id="checkout-method"
+              class="w-full px-3 py-2 text-xs rounded-xl border border-stone-300 dark:border-white/[0.1] bg-white dark:bg-stone-900 text-stone-900 dark:text-white focus:outline-none focus:border-[#2D5542] dark:focus:border-[#4EBA87]">
+              <option value="card">Credit Card / Corporate Card</option>
+              <option value="po">Institutional Purchase Order (PO)</option>
+              <option value="wire">Bank Wire / SWIFT Transfer</option>
+              <option value="upi">UPI / Net Banking (India)</option>
+            </select>
+          </div>
+
+          <div class="pt-3">
+            <button 
+              id="checkout-submit-btn" 
+              type="submit" 
+              class="w-full py-3 px-4 rounded-xl bg-stone-900 dark:bg-white text-white dark:text-stone-950 font-bold text-xs hover:opacity-95 shadow-sm transition tactile-btn flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-[16px]">lock</span>
+              <span id="checkout-btn-text">Confirm Subscription & Activate Access</span>
+            </button>
+          </div>
+
+          <p class="text-[10px] text-stone-400 dark:text-stone-500 text-center">
+            Transactions are secured with 256-bit TLS encryption. Access credentials are issued instantly.
+          </p>
+        </form>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Comprehensive Platform Footer with All Important Links -->
+  <footer id="site-comprehensive-footer" class="pt-16 pb-12 border-t border-stone-200/90 dark:border-white/[0.08] bg-[#FAF8F5]/90 dark:bg-[#070709] text-xs text-stone-600 dark:text-stone-400 transition-colors duration-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      
+      <!-- Top Grid: 3 Organized Column Sets -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+        
+        <!-- Col 1: Brand & Platform Identity -->
+        <div class="lg:col-span-2 space-y-4">
+          <div class="flex items-center gap-2">
+            <span class="text-xl font-display font-bold tracking-tight text-stone-900 dark:text-stone-100 uppercase">JOBLEX</span>
+          </div>
+          <p class="text-xs text-stone-600 dark:text-stone-400 leading-relaxed max-w-sm">
+            National unified academia-industry collaboration and placement architecture. Aligning dynamic collegiate curricula with live industrial competency vectors and NEP-2020 accreditation standards.
+          </p>
+          <div class="pt-2 flex items-center gap-2 text-[11px] font-mono text-[#2D5542] dark:text-[#4EBA87]">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Live Platform • 450+ Universities Connected</span>
+          </div>
+        </div>
+
+        <!-- Col 2: Portals -->
+        <div class="space-y-3">
+          <h4 class="text-xs font-mono font-bold uppercase tracking-wider text-stone-900 dark:text-stone-100">Portals</h4>
+          <ul class="space-y-2 text-xs">
+            <li><a id="footer-link-portal-student" href="student.html" class="hover:text-stone-900 dark:hover:text-stone-100 transition">Student Portal</a></li>
+            <li><a id="footer-link-portal-academy" href="academy.html" class="hover:text-stone-900 dark:hover:text-stone-100 transition">Academy Portal</a></li>
+            <li><a id="footer-link-portal-industry" href="industry.html" class="hover:text-stone-900 dark:hover:text-stone-100 transition">Company Portal</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: Pricing & Company -->
+        <div class="space-y-3">
+          <h4 class="text-xs font-mono font-bold uppercase tracking-wider text-stone-900 dark:text-stone-100">Pricing & Company</h4>
+          <ul class="space-y-2 text-xs">
+            <li><a id="footer-link-home" href="index.html" class="hover:text-stone-900 dark:hover:text-stone-100 transition">Home</a></li>
+            <li><a id="footer-link-about" href="about.html" class="hover:text-stone-900 dark:hover:text-stone-100 transition">About Us & Goals</a></li>
+            <li><a id="footer-link-pricing" href="pricing.html" class="hover:text-stone-900 dark:hover:text-stone-100 transition">Pricing Overview</a></li>
+            <li><a id="footer-link-student-plans" href="pricing.html" onclick="switchPricingRole('students')" class="hover:text-stone-900 dark:hover:text-stone-100 transition">Student Plans</a></li>
+            <li><a id="footer-link-uni-plans" href="pricing.html" onclick="switchPricingRole('university')" class="hover:text-stone-900 dark:hover:text-stone-100 transition">University Plans</a></li>
+            <li><a id="footer-link-company-plan" href="pricing.html" onclick="switchPricingRole('company')" class="hover:text-stone-900 dark:hover:text-stone-100 transition">Company Plans</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Bottom Sub-Footer: Copyright, Standards, Legal -->
+      <div class="pt-8 border-t border-stone-200/60 dark:border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-stone-500 dark:text-stone-500">
+        <div class="flex items-center gap-2">
+          <span>&copy; 2026 JOBLEX Platform. All rights reserved.</span>
+          <span>•</span>
+          <span>NEP-2020 Compliant</span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-4 sm:gap-6">
+          <a id="footer-link-privacy" href="about.html#security" class="hover:text-stone-900 dark:hover:text-stone-300 transition">Privacy & Data Governance</a>
+          <a id="footer-link-terms" href="about.html#terms" class="hover:text-stone-900 dark:hover:text-stone-300 transition">Institutional Terms</a>
+          <a id="footer-link-accreditation" href="about.html#outcomes" class="hover:text-stone-900 dark:hover:text-stone-300 transition">Accreditation Standards</a>
+          <a id="footer-link-security" href="about.html#security" class="hover:text-stone-900 dark:hover:text-stone-300 transition">Security Telemetry</a>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- Client-Side Pricing Controller -->
+  <script>
+    let currentRole = 'students';
+    let activeSelectedPlan = null;
+
+    function switchPricingRole(role, btnEl) {
+      currentRole = role;
+
+      const indicator = document.getElementById('slide-indicator');
+      const allButtons = [
+        document.getElementById('selector-btn-students'),
+        document.getElementById('selector-btn-university'),
+        document.getElementById('selector-btn-company')
+      ];
+
+      // Reset all buttons styling
+      allButtons.forEach(b => {
+        if (!b) return;
+        b.classList.remove('text-stone-900', 'dark:text-white');
+        b.classList.add('text-stone-600', 'dark:text-stone-400');
+      });
+
+      // Highlight active button
+      if (btnEl) {
+        btnEl.classList.remove('text-stone-600', 'dark:text-stone-400');
+        btnEl.classList.add('text-stone-900', 'dark:text-white');
+
+        // Move indicator
+        if (indicator) {
+          indicator.style.width = `${btnEl.offsetWidth}px`;
+          indicator.style.transform = `translateX(${btnEl.offsetLeft - 6}px)`;
+        }
+      }
+
+      // Toggle containers
+      const studentsContainer = document.getElementById('plans-container-students');
+      const universityContainer = document.getElementById('plans-container-university');
+      const companyContainer = document.getElementById('plans-container-company');
+
+      if (studentsContainer) studentsContainer.classList.add('hidden');
+      if (universityContainer) universityContainer.classList.add('hidden');
+      if (companyContainer) companyContainer.classList.add('hidden');
+
+      if (role === 'students' && studentsContainer) {
+        studentsContainer.classList.remove('hidden');
+      } else if (role === 'university' && universityContainer) {
+        universityContainer.classList.remove('hidden');
+      } else if (role === 'company' && companyContainer) {
+        companyContainer.classList.remove('hidden');
+      }
+    }
+
+    // Initialize slide indicator position on load
+    window.addEventListener('DOMContentLoaded', () => {
+      const studentBtn = document.getElementById('selector-btn-students');
+      if (studentBtn) {
+        const indicator = document.getElementById('slide-indicator');
+        if (indicator) {
+          indicator.style.width = `${studentBtn.offsetWidth}px`;
+          indicator.style.transform = `translateX(${studentBtn.offsetLeft - 6}px)`;
+        }
+      }
+      window.addEventListener('resize', () => {
+        const activeBtn = document.getElementById(`selector-btn-${currentRole}`);
+        if (activeBtn) {
+          const indicator = document.getElementById('slide-indicator');
+          if (indicator) {
+            indicator.style.width = `${activeBtn.offsetWidth}px`;
+            indicator.style.transform = `translateX(${activeBtn.offsetLeft - 6}px)`;
+          }
+        }
+      });
+    });
+
+    // Plan Selection / Checkout Modal
+    function selectPlan(planName, price, billingPeriod, features = []) {
+      activeSelectedPlan = { planName, price, billingPeriod, features };
+
+      if (price === 0) {
+        // Free plan instant activation
+        localStorage.setItem('joblex_plan', JSON.stringify({
+          plan: planName,
+          price: 0,
+          status: 'active',
+          activatedAt: new Date().toISOString()
+        }));
+        if (window.JoblexApiClient && typeof window.JoblexApiClient.showToast === 'function') {
+          window.JoblexApiClient.showToast(`Starter Free Plan activated. Redirecting to Student Portal...`, 'Plan Activated', 'success');
+        }
+        setTimeout(() => {
+          window.location.href = 'student.html';
+        }, 1200);
+        return;
+      }
+
+      // Populate Modal
+      document.getElementById('modal-plan-name').textContent = planName;
+      document.getElementById('modal-plan-price').textContent = `$${price}`;
+      document.getElementById('modal-billing-cycle').textContent = `Billed ${billingPeriod === 'year' ? 'Annually' : 'Monthly'}`;
+
+      const featuresList = document.getElementById('modal-features-list');
+      featuresList.innerHTML = features.map(f => `
+        <li class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[14px] text-emerald-500">check_circle</span>
+          <span>${f}</span>
+        </li>
+      `).join('');
+
+      // Open Modal
+      const overlay = document.getElementById('checkout-modal-overlay');
+      const card = document.getElementById('checkout-modal-card');
+      overlay.classList.remove('pointer-events-none', 'opacity-0');
+      overlay.classList.add('opacity-100');
+      card.classList.remove('scale-95');
+      card.classList.add('scale-100');
+    }
+
+    function closeCheckoutModal() {
+      const overlay = document.getElementById('checkout-modal-overlay');
+      const card = document.getElementById('checkout-modal-card');
+      card.classList.remove('scale-100');
+      card.classList.add('scale-95');
+      overlay.classList.remove('opacity-100');
+      overlay.classList.add('opacity-0');
+      setTimeout(() => {
+        overlay.classList.add('pointer-events-none');
+      }, 200);
+    }
+
+    function handleCheckoutSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('checkout-name').value.trim();
+      const email = document.getElementById('checkout-email').value.trim();
+      const method = document.getElementById('checkout-method').value;
+
+      const subscription = {
+        plan: activeSelectedPlan ? activeSelectedPlan.planName : 'Standard',
+        price: activeSelectedPlan ? activeSelectedPlan.price : 29,
+        subscriberName: name,
+        subscriberEmail: email,
+        paymentMethod: method,
+        status: 'active',
+        activatedAt: new Date().toISOString()
+      };
+
+      localStorage.setItem('joblex_plan', JSON.stringify(subscription));
+
+      closeCheckoutModal();
+
+      if (window.JoblexApiClient && typeof window.JoblexApiClient.showToast === 'function') {
+        window.JoblexApiClient.showToast(`Subscription confirmed for ${name}! Access is now active.`, 'Subscription Active', 'success');
+      }
+
+      // Navigate to appropriate portal based on plan
+      setTimeout(() => {
+        if (subscription.plan.includes('Student')) {
+          window.location.href = 'student.html';
+        } else if (subscription.plan.includes('University')) {
+          window.location.href = 'academy.html';
+        } else {
+          window.location.href = 'industry.html';
+        }
+      }, 1500);
+    }
+
+    // Dismiss modal on background click
+    document.getElementById('checkout-modal-overlay')?.addEventListener('click', (e) => {
+      if (e.target.id === 'checkout-modal-overlay') {
+        closeCheckoutModal();
+      }
+    });
+  </script>
+
+  <!-- Background Three.js & Animation scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="/js/frontend/three-scene.js"></script>
+  <script src="/js/frontend/api-client.js"></script>
+  <script src="/js/frontend/animations.js"></script>
+</body>
+</html>

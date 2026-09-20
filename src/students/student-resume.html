@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JOBLEX | AI Resume Analyzer, NLP Parser & Auto-Assessment</title>
+  <!-- Google Fonts Preconnect -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- High-Tech Editorial Typography: Space Grotesk, Outfit, JetBrains Mono -->
+    <!-- High-Tech Editorial Typography: Plus Jakarta Sans, Newsreader, JetBrains Mono -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Google Material Symbols Outlined -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script src="/js/frontend/theme.js"></script>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            sans: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            serif: ['Newsreader', 'Georgia', 'serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          colors: {
+            bone: { 50: '#FAF9F6', 100: '#F4F2EC', 200: '#E8E5DC', 300: '#D7D2C5' },
+            obsidian: { 950: '#070709', 900: '#0C0D10', 800: '#111215', 700: '#16181D', 600: '#22252C' },
+            sage: { 50: '#F2F6F3', 100: '#E3EDE6', 500: '#3D7055', 600: '#2D5542', 700: '#1E3C2E', glow: '#4EBA87' },
+            terracotta: { 50: '#FAF4F0', 100: '#F4E7DF', 500: '#B85E2E', 600: '#944C23', glow: '#E07A48' },
+            ochre: { 50: '#FAF6EF', 100: '#F4EBDA', 500: '#A67332', 600: '#855828', glow: '#D4973B' }
+          }
+        }
+      }
+    };
+  </script>
+  <!-- Chart.js CDN for Vector Radar & Gap Analysis -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- PDF.js CDN for Client-Side Document Streaming -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    @media print {
+      body * { visibility: hidden; }
+      #printable-dossier-modal, #printable-dossier-modal *,
+      #resume-preview-sheet, #resume-preview-sheet * { visibility: visible; }
+      #printable-dossier-modal { position: absolute; left: 0; top: 0; width: 100%; }
+      #resume-preview-sheet { 
+        position: absolute !important; 
+        left: 0 !important; 
+        top: 0 !important; 
+        width: 100% !important; 
+        max-width: 100% !important; 
+        margin: 0 !important; 
+        padding: 15mm !important;
+        box-shadow: none !important;
+        border: none !important;
+        background: #ffffff !important;
+        color: #0f172a !important;
+      }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body class="bg-[#FAF8F5] dark:bg-[#070709] text-[#1C1917] dark:text-[#F4F4F6] font-sans h-screen flex flex-col overflow-hidden portal-body antialiased transition-colors duration-200">
+
+<header class="sticky top-0 z-50 w-full bg-white/85 dark:bg-[#070709]/90 backdrop-blur-md border-b border-[#E7E4DC] dark:border-white/5 transition-colors duration-200 no-print">
+  <div class="w-full px-3 sm:px-6 py-2 flex items-center justify-between">
+    <!-- Mobile Hamburger + Brand Logo -->
+    <div class="flex items-center gap-3">
+      <button onclick="toggleMobileMenu()" class="lg:hidden p-2 rounded-xl text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 border border-slate-200 dark:border-gray-800 transition" aria-label="Toggle Navigation">
+        <span class="material-symbols-outlined text-[20px]">menu</span>
+      </button>
+      <a href="../../student.html" class="flex items-center gap-2.5 cursor-pointer select-none">
+        <div class="w-1.5 h-7 bg-[#2D5542] dark:bg-[#4EBA87] rounded-full"></div>
+        <span class="text-xl font-extrabold tracking-widest text-[#1C1917] dark:text-white uppercase block">JOBLEX</span>
+      </a>
+    </div>
+
+    <!-- Student Stats + Notifications + Theme Toggle + Avatar -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      <!-- Live Metrics -->
+      <span id="header-xp-badge" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-mono text-xs font-bold border border-purple-200 dark:border-purple-800/60">
+        <span class="material-symbols-outlined text-purple-500 text-sm align-middle mr-1">bolt</span>0 XP
+      </span>
+      <span id="header-streak-badge" class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-mono text-xs font-bold border border-emerald-200 dark:border-emerald-800/60">
+        <span class="material-symbols-outlined text-amber-500 text-sm align-middle mr-1">local_fire_department</span>0-Day Streak
+      </span>
+
+      <!-- Notification Bell -->
+      <button id="notification-bell-btn" type="button" aria-label="Open Notifications" class="relative p-2 rounded-xl text-[#6E6962] dark:text-gray-300 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 border border-[#E7E4DC] dark:border-white/10 transition-colors">
+        <span class="material-symbols-outlined text-[20px]">notifications</span>
+        <span class="notification-badge-indicator hidden absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-[#2D5542] dark:bg-[#4EBA87] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">0</span>
+      </button>
+
+      <!-- Theme Switcher -->
+      <button id="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Light/Dark Theme" title="Toggle Light/Dark Theme" class="p-2 rounded-xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-white/5 text-[#6E6962] dark:text-gray-300 hover:text-[#1C1917] dark:hover:text-white transition-colors duration-150 flex items-center justify-center">
+        <span id="theme-toggle-icon" class="material-symbols-outlined text-[18px]">dark_mode</span>
+      </button>
+
+      <div class="nav-user-account-container relative"></div>
+    </div>
+  </div>
+</header>
+
+<!-- MOBILE SLIDE-OUT DRAWER -->
+<div id="mobile-drawer" onclick="if(event.target === this) closeMobileMenu()" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden lg:hidden no-print">
+  <div class="fixed inset-y-0 left-0 w-72 bg-white dark:bg-[#101115] p-5 flex flex-col justify-between shadow-2xl border-r border-[#E7E4DC] dark:border-white/10 overflow-y-auto">
+    <div class="space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-gray-800">
+        <span class="text-xs uppercase tracking-wider text-purple-600 dark:text-purple-400 font-bold">Student Navigation</span>
+        <button type="button" onclick="closeMobileMenu()" aria-label="Close navigation" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white"><span class="material-symbols-outlined text-lg">close</span></button>
+      </div>
+      <div class="space-y-1 pt-1">
+        <a href="../../student.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-purple-400 text-base">grid_view</span> <span>Student Overview</span></span>
+        </a>
+        <a href="student-roadmap.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-cyan-400 text-base">alt_route</span> <span>Career Roadmap</span></span>
+        </a>
+        <a href="student-resume.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition bg-[#0F172A] text-white dark:bg-white/10 dark:text-white font-bold">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-blue-400 text-base">document_scanner</span> <span>AI Resume Analyzer</span></span>
+          <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-500 text-white font-bold">Active</span>
+        </a>
+        <a href="student-quiz.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-amber-400 text-base">quiz</span> <span>Quiz Arena</span></span>
+        </a>
+        <a href="student-internships.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-emerald-400 text-base">work_outline</span> <span>Apply for Internships</span></span>
+        </a>
+        <a href="student-jobs.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-indigo-400 text-base">apartment</span> <span>Apply for Jobs</span></span>
+        </a>
+        <a href="student-zulu.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-pink-400 text-base">smart_toy</span> <span>Zulu AI Companion</span></span>
+        </a>
+        <a href="student-skilltree.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-teal-400 text-base">hub</span> <span>Skill Constellation</span></span>
+        </a>
+        <a href="student-portfolio.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-yellow-400 text-base">verified</span> <span>Verified Portfolio</span></span>
+        </a>
+      </div>
+    </div>
+    <div class="pt-4 border-t border-slate-200 dark:border-gray-800">
+      <button onclick="JoblexApiClient.logout()" class="w-full py-2.5 rounded-xl text-center text-xs font-semibold text-slate-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-rose-400 text-base">logout</span> <span>Sign Out</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="flex-1 flex overflow-hidden min-h-0">
+  <!-- COLLAPSIBLE SIDEBAR -->
+  <aside id="student-sidebar" class="hidden lg:flex w-64 bg-white/80 dark:bg-[#101115]/90 border-r border-[#E7E4DC] dark:border-white/5 backdrop-blur-md p-3.5 flex-col justify-between shrink-0 transition-all duration-300 no-print">
+    <div class="space-y-1">
+      <div class="flex items-center justify-between px-2 pb-2 mb-2 border-b border-slate-200 dark:border-gray-800/80">
+        <span class="sidebar-text-label text-[10px] uppercase tracking-wider text-purple-600 dark:text-purple-400 font-bold">Student Modules</span>
+        <button id="sidebar-collapse-btn" onclick="toggleSidebarCollapse()" title="Minimize / Expand Sidebar" class="p-1.5 rounded-lg bg-slate-100 dark:bg-gray-900 border border-slate-200 dark:border-gray-800 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white text-xs transition">
+          <span class="material-symbols-outlined text-xs">chevron_left</span>
+        </button>
+      </div>
+      <a href="../../student.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 border border-transparent">
+        <span class="material-symbols-outlined text-base shrink-0 text-purple-400">grid_view</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">Student Overview</span>
+          <span class="text-[10px] text-[#6E6962] dark:text-gray-500 truncate">Central Dashboard</span>
+        </div>
+      </a>
+      <a href="student-roadmap.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 border border-transparent">
+        <span class="material-symbols-outlined text-base shrink-0 text-cyan-400">alt_route</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">Career Roadmap</span>
+          <span class="text-[10px] text-[#6E6962] dark:text-gray-500 truncate">4-Phase Progression</span>
+        </div>
+      </a>
+      <a href="student-resume.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all bg-[#0F172A] text-white dark:bg-white/10 dark:text-white shadow-sm">
+        <span class="material-symbols-outlined text-base shrink-0 text-blue-400">document_scanner</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">AI Resume Analyzer</span>
+          <span class="text-[10px] text-gray-300 dark:text-gray-400 truncate">NLP Parser &amp; Benchmark</span>
+        </div>
+      </a>
+      <a href="student-quiz.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 border border-transparent">
+        <span class="material-symbols-outlined text-base shrink-0 text-amber-400">quiz</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">Quiz Arena</span>
+          <span class="text-[10px] text-[#6E6962] dark:text-gray-500 truncate">Knowledge Validation</span>
+        </div>
+      </a>
+      <a href="student-internships.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 border border-transparent">
+        <span class="material-symbols-outlined text-base shrink-0 text-emerald-400">work_outline</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">Apply for Internships</span>
+          <span class="text-[10px] text-[#6E6962] dark:text-gray-500 truncate">Fellowships &amp; Bounties</span>
+        </div>
+      </a>
+      <a href="student-jobs.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 border border-transparent">
+        <span class="material-symbols-outlined text-base shrink-0 text-indigo-400">apartment</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">Apply for Jobs</span>
+          <span class="text-[10px] text-[#6E6962] dark:text-gray-500 truncate">Corporate Placements</span>
+        </div>
+      </a>
+      <a href="student-zulu.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 border border-transparent">
+        <span class="material-symbols-outlined text-base shrink-0 text-pink-400">smart_toy</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">Zulu AI Companion</span>
+          <span class="text-[10px] text-[#6E6962] dark:text-gray-500 truncate">Career Counselor</span>
+        </div>
+      </a>
+      <a href="student-skilltree.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 border border-transparent">
+        <span class="material-symbols-outlined text-base shrink-0 text-teal-400">hub</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">Skill Constellation</span>
+          <span class="text-[10px] text-[#6E6962] dark:text-gray-500 truncate">Interactive 2D Map</span>
+        </div>
+      </a>
+      <a href="student-portfolio.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 border border-transparent">
+        <span class="material-symbols-outlined text-base shrink-0 text-yellow-400">verified</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">Verified Portfolio</span>
+          <span class="text-[10px] text-[#6E6962] dark:text-gray-500 truncate">Tamper-Proof Ledger</span>
+        </div>
+      </a>
+    </div>
+    <div class="mt-4 pt-3 border-t border-slate-200 dark:border-gray-800/80">
+      <button onclick="JoblexApiClient.logout()" class="w-full py-2 rounded-xl text-center text-xs font-semibold text-slate-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-base shrink-0">logout</span> <span class="sidebar-text-label">Sign Out</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- WORKSPACE -->
+  <main class="flex-1 overflow-y-auto min-h-0 px-4 sm:px-6 lg:px-8 py-6 custom-scrollbar">
+    <div class="w-full max-w-6xl mx-auto space-y-6">
+
+      <!-- HERO BANNER -->
+      <div class="rounded-2xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-white/[0.03] p-6 sm:p-8 shadow-sm">
+        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          <div class="space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-400">AI Resume Parser &amp; Skill Gap Engine</span>
+              <span class="text-slate-300 dark:text-gray-700">•</span>
+              <span class="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 px-2.5 py-0.5 rounded-full">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                85+ Skill Ontology Active
+              </span>
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#1C1917] dark:text-white">
+              Resume Ingestion, NLP Extraction &amp; Auto-Assessment
+            </h1>
+            <p class="text-sm text-[#6E6962] dark:text-gray-300 max-w-3xl leading-relaxed">
+              Upload PDF or DOCX documents to automatically extract contact info, education, and technical competencies. Compare parsed competencies side-by-side with industry role benchmarks and merge directly into your live digital portfolio.
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2.5 sm:gap-3 shrink-0">
+            <button id="btn-open-builder-hero" onclick="openResumeBuilderModal()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md transition flex items-center gap-2 hover:scale-[1.02]">
+              <span class="material-symbols-outlined text-[18px]">post_add</span>
+              <span>Create / Edit Resume (PDF)</span>
+            </button>
+            <button id="export-dossier-btn" onclick="triggerDossierExport()" class="px-4 py-2.5 rounded-xl border border-purple-300 dark:border-purple-600/40 bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40 font-semibold text-xs transition flex items-center gap-2">
+              <span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+              <span>Export Official Dossier</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESUME SCANNER & UPLOADER CONSOLE -->
+      <div class="rounded-2xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-white/[0.03] p-6 sm:p-8 shadow-sm space-y-6">
+        
+        <!-- Universal Multi-Disciplinary Intake (Auto-Calibrated for all students) -->
+        <div class="p-4 rounded-xl bg-gradient-to-r from-purple-50/80 via-slate-50 to-indigo-50/80 dark:from-purple-950/30 dark:via-stone-900/30 dark:to-indigo-950/30 border border-purple-200/80 dark:border-purple-800/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-purple-500/20 text-purple-600 dark:text-purple-400 flex items-center justify-center border border-purple-500/30 shrink-0">
+              <span class="material-symbols-outlined text-[20px]">auto_awesome</span>
+            </div>
+            <div>
+              <span class="text-xs font-bold text-[#1C1917] dark:text-white flex items-center gap-2">
+                Universal Multi-Disciplinary Ingestion
+                <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">All Disciplines</span>
+              </span>
+              <p class="text-[11px] text-[#6E6962] dark:text-gray-300 mt-0.5">
+                Upload your resume from any field (Ayurveda, Medicine, Biotechnology, Computer Science, Pharmacy, Healthcare, or Analytics). The AI automatically discovers your domain and calibrates benchmarks to your real credentials.
+              </p>
+            </div>
+          </div>
+          <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 text-xs font-mono font-bold border border-purple-200 dark:border-purple-700/60 shrink-0">
+            <span class="w-2 h-2 rounded-full bg-purple-600 animate-pulse"></span>
+            <span>Auto-Calibrated Fit</span>
+          </div>
+        </div>
+
+        <!-- Ingestion Mode Selector Tabs: PDF, Image, and Text -->
+        <div class="flex flex-wrap items-center gap-2 border-b border-[#E7E4DC] dark:border-white/10 pb-3">
+          <button id="tab-btn-pdf" onclick="switchInputMode('pdf')" class="px-4 py-2 rounded-xl text-xs font-bold bg-[#0F172A] text-white dark:bg-white/10 dark:text-white transition shadow-sm flex items-center gap-2">
+            <span class="material-symbols-outlined text-[16px] text-red-400">picture_as_pdf</span>
+            <span>PDF Document (.pdf)</span>
+          </button>
+          <button id="tab-btn-image" onclick="switchInputMode('image')" class="px-4 py-2 rounded-xl text-xs font-medium text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition flex items-center gap-2">
+            <span class="material-symbols-outlined text-[16px] text-cyan-400">image</span>
+            <span>Image / Photo (OCR)</span>
+          </button>
+          <button id="tab-btn-text" onclick="switchInputMode('text')" class="px-4 py-2 rounded-xl text-xs font-medium text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition flex items-center gap-2">
+            <span class="material-symbols-outlined text-[16px] text-purple-400">edit_note</span>
+            <span>Paste Resume Text</span>
+          </button>
+        </div>
+
+        <!-- Mode 1: Drag & Drop File Zone (Supports PDF & Image) -->
+        <div id="file-upload-mode" class="space-y-3">
+          <div id="resume-dropzone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleFileDrop(event)" onclick="document.getElementById('resume-file-input').click()" class="border-2 border-dashed border-purple-300 dark:border-purple-600/40 rounded-2xl p-8 sm:p-10 text-center cursor-pointer hover:border-purple-500 dark:hover:border-purple-400 hover:bg-purple-50/40 dark:hover:bg-purple-950/20 transition-all group">
+            <input type="file" id="resume-file-input" accept=".pdf,.docx,.txt,.doc,.png,.jpg,.jpeg,.webp,.bmp,.tif,.tiff,image/*" class="hidden" onchange="handleFileSelect(event)">
+            <div id="dropzone-icon-box" class="w-16 h-16 rounded-3xl bg-purple-100 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-700/50 flex items-center justify-center text-purple-600 dark:text-purple-400 text-3xl mx-auto shadow-sm group-hover:scale-110 transition-transform">
+              <span id="dropzone-icon" class="material-symbols-outlined text-[32px]">cloud_upload</span>
+            </div>
+            <h3 id="dropzone-title" class="text-base font-bold text-[#1C1917] dark:text-white mt-4">Drag and drop your PDF Resume document</h3>
+            <p id="dropzone-desc" class="text-xs text-[#6E6962] dark:text-gray-400 mt-1">Supports PDF (via in-browser PDF.js), DOCX, or TXT (Max 10MB)</p>
+            <div class="mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs font-semibold border border-purple-200 dark:border-purple-700/50">
+              <span class="material-symbols-outlined text-[16px]">folder_open</span>
+              <span>Browse Local Files</span>
+            </div>
+          </div>
+          <div id="selected-file-info" class="hidden p-3 rounded-xl bg-slate-50 dark:bg-gray-900/60 border border-[#E7E4DC] dark:border-gray-800 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2 overflow-hidden">
+              <span class="material-symbols-outlined text-[18px] text-purple-600 dark:text-purple-400">description</span>
+              <span id="file-name-display" class="font-mono font-medium truncate max-w-xs">resume.pdf</span>
+              <span id="file-size-display" class="text-slate-400 font-mono text-[10px]"></span>
+            </div>
+            <button onclick="clearSelectedFile(event)" class="text-slate-400 hover:text-red-500 text-xs font-bold">Remove</button>
+          </div>
+        </div>
+
+        <!-- Mode 2: Direct Text Area -->
+        <div id="text-input-mode" class="hidden space-y-3">
+          <div>
+            <label class="text-xs font-bold text-[#1C1917] dark:text-gray-200">Raw Candidate Resume Text</label>
+          </div>
+          <textarea id="resume-textarea" rows="7" class="w-full p-4 rounded-xl bg-slate-50 dark:bg-gray-900 border border-[#E7E4DC] dark:border-gray-700 text-xs sm:text-sm font-mono text-[#1C1917] dark:text-gray-200 focus:ring-2 focus:ring-purple-500 transition leading-relaxed" placeholder="Paste your academic and technical resume text here..."></textarea>
+        </div>
+
+        <!-- Action Button & Parsing Progress -->
+        <div class="space-y-4 pt-2">
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <span class="text-xs text-[#6E6962] dark:text-gray-400 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px] text-emerald-500">lock</span>
+              <span>All candidate parsing executes securely on your institutional cluster</span>
+            </span>
+            <button id="execute-parse-btn" onclick="handleExecuteParse()" class="w-full sm:w-auto px-7 py-3 rounded-xl bg-[#0F172A] hover:bg-[#1E293B] dark:bg-purple-600 dark:hover:bg-purple-500 text-white font-semibold text-xs sm:text-sm transition-all shadow-md flex items-center justify-center gap-2 hover:scale-[1.02]">
+              <span class="material-symbols-outlined text-[20px]">document_scanner</span>
+              <span>Parse &amp; Auto-Assess Resume</span> <span class="material-symbols-outlined text-sm align-middle ml-1">arrow_forward</span>
+            </button>
+          </div>
+
+          <!-- Live Parsing Progress Tracker -->
+          <div id="parsing-progress-box" class="hidden p-5 rounded-2xl bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800/40 space-y-3">
+            <div class="flex items-center justify-between text-xs font-semibold text-purple-900 dark:text-purple-200">
+              <span id="parsing-status-step" class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-purple-600 animate-ping"></span>
+                <span>Reading Document Text...</span>
+              </span>
+              <span id="parsing-progress-percent" class="font-mono font-bold">25%</span>
+            </div>
+            <div class="w-full bg-slate-200 dark:bg-gray-800 h-2 rounded-full overflow-hidden">
+              <div id="parsing-progress-bar" class="bg-gradient-to-r from-purple-600 to-cyan-500 h-full transition-all duration-300" style="width: 25%"></div>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] font-mono text-slate-500 dark:text-gray-400 pt-1">
+              <span id="step-1" class="text-purple-600 font-bold">1. Ingestion</span>
+              <span id="step-2">2. NLP Extraction</span>
+              <span id="step-3">3. Ontology Match</span>
+              <span id="step-4">4. Vector Assessment</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- PROMPT GIVER & AI RESUME OPTIMIZER COPILOT CARD -->
+      <div id="resume-prompt-optimizer-card" class="rounded-2xl border border-purple-200 dark:border-purple-800/50 bg-white dark:bg-white/[0.03] p-6 sm:p-8 shadow-sm space-y-6">
+        
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E7E4DC] dark:border-white/10 pb-4">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-purple-600/10 to-indigo-600/10 border border-purple-300 dark:border-purple-700/60 text-purple-700 dark:text-purple-300 text-xs font-bold uppercase tracking-wider">
+                <span class="material-symbols-outlined text-[16px] text-purple-600 animate-spin">smart_toy</span>
+                AI Prompt Giver &amp; Resume Optimizer Copilot
+              </span>
+              <span class="text-slate-300 dark:text-gray-700">•</span>
+              <span class="text-[11px] font-mono text-purple-600 dark:text-purple-400 font-semibold">Powered by Zulu AI</span>
+            </div>
+            <h2 class="text-xl sm:text-2xl font-extrabold text-[#1C1917] dark:text-white">
+              Instruct the AI: Send Changes &amp; Tailor Your Resume
+            </h2>
+            <p class="text-xs sm:text-sm text-[#6E6962] dark:text-gray-300 max-w-2xl leading-relaxed">
+              Upload any candidate resume, then specify custom directions below (e.g. emphasize specialized lab skills, target a specific company, or rewrite for research grants). Zulu AI will rewrite your summary and synthesize tailored bullet points.
+            </p>
+          </div>
+
+          <div class="shrink-0 flex sm:flex-col items-end gap-1">
+            <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">AI Copilot</span>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 text-xs font-mono font-bold">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Zulu AI Ready
+            </span>
+          </div>
+        </div>
+
+        <!-- Prompt Giver Input Console -->
+        <div class="space-y-3">
+          <label for="resume-custom-prompt" class="block text-xs font-bold uppercase tracking-wider text-[#1C1917] dark:text-gray-200">
+            What changes would you like the AI to make?
+          </label>
+          <div class="relative">
+            <textarea id="resume-custom-prompt" rows="3" class="w-full p-4 rounded-xl bg-slate-50 dark:bg-gray-900 border border-[#E7E4DC] dark:border-gray-700 text-xs sm:text-sm font-sans text-[#1C1917] dark:text-gray-200 focus:ring-2 focus:ring-purple-500 transition leading-relaxed pr-10" placeholder="e.g. Highlight chromatography and phytochemistry experience for Dabur R&amp;D internship, quantify experimental sample batches, emphasize GLP compliance, and align tone with institutional hiring standards..."></textarea>
+            <button type="button" onclick="document.getElementById('resume-custom-prompt').value=''" title="Clear Instructions" class="absolute top-3 right-3 text-slate-400 hover:text-slate-600 dark:hover:text-white p-1">
+              <span class="material-symbols-outlined text-[16px]">backspace</span>
+            </button>
+          </div>
+
+          <!-- Quick Suggestion Chips -->
+          <div class="space-y-1.5 pt-1">
+            <span class="text-[11px] font-semibold text-slate-400 dark:text-gray-500">Quick Prompt Directives:</span>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" onclick="setPromptSuggestion('Highlight Full Stack development, REST APIs, React, Node.js, and cloud containerization with quantified metrics.')" class="px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 text-blue-700 dark:text-blue-300 text-xs font-medium hover:bg-blue-100 dark:hover:bg-blue-900/60 transition flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[14px]">code</span>
+                <span>Full Stack &amp; Cloud Systems</span>
+              </button>
+              <button type="button" onclick="setPromptSuggestion('Highlight chromatography, HPTLC fingerprinting, and phytochemistry for Dabur R&D internship with GLP compliance emphasis.')" class="px-3 py-1.5 rounded-xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 text-purple-700 dark:text-purple-300 text-xs font-medium hover:bg-purple-100 dark:hover:bg-purple-900/60 transition flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[14px]">biotech</span>
+                <span>Target Dabur R&amp;D Formulation</span>
+              </button>
+              <button type="button" onclick="setPromptSuggestion('Focus on Bioinformatics, in-silico molecular docking, and computational drug discovery pipelines.')" class="px-3 py-1.5 rounded-xl bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800/60 text-cyan-700 dark:text-cyan-300 text-xs font-medium hover:bg-cyan-100 dark:hover:bg-cyan-900/60 transition flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[14px]">terminal</span>
+                <span>Focus on Bioinformatics &amp; AI</span>
+              </button>
+              <button type="button" onclick="setPromptSuggestion('Emphasize Good Laboratory Practice (GLP), 21 CFR Part 11 audit trails, and pharmacopeial monograph standards.')" class="px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-700 dark:text-amber-300 text-xs font-medium hover:bg-amber-100 dark:hover:bg-amber-900/60 transition flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[14px]">verified_user</span>
+                <span>Emphasize GLP &amp; QA Compliance</span>
+              </button>
+              <button type="button" onclick="setPromptSuggestion('Elevate research summary for PhD admissions and national fellowship grant review with peer-reviewed publications emphasis.')" class="px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300 text-xs font-medium hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[14px]">school</span>
+                <span>Elevate for Academic Fellowship</span>
+              </button>
+              <button type="button" onclick="setPromptSuggestion('Quantify all project metrics, experimental yields, batch accuracy percentages, and team outcomes.')" class="px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/60 text-indigo-700 dark:text-indigo-300 text-xs font-medium hover:bg-indigo-100 dark:hover:bg-indigo-900/60 transition flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[14px]">trending_up</span>
+                <span>Quantify Project Metrics</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Optimization Action Trigger -->
+          <div class="pt-3 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <span class="text-xs text-[#6E6962] dark:text-gray-400 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-purple-500 text-[16px]">auto_awesome</span>
+              <span>Processes parsed document text or current candidate credentials with custom instructions</span>
+            </span>
+            <button id="btn-optimize-resume" type="button" onclick="handleOptimizeResume()" class="w-full sm:w-auto px-7 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 hover:scale-[1.02]">
+              <span class="material-symbols-outlined text-[20px]">auto_fix_high</span>
+              <span>Send Changes &amp; Optimize with AI</span>
+            </button>
+          </div>
+
+          <!-- Loading Spinner -->
+          <div id="optimizer-loading-state" class="hidden p-5 rounded-2xl bg-purple-50/70 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800/50 flex items-center justify-center gap-3 text-xs font-semibold text-purple-900 dark:text-purple-200">
+            <div class="w-5 h-5 border-2 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+            <span>Zulu AI is tailoring your resume materials based on your custom prompt...</span>
+          </div>
+        </div>
+
+        <!-- Optimization Results Display -->
+        <div id="optimizer-results-container" class="hidden pt-4 border-t border-[#E7E4DC] dark:border-white/10 space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div class="flex items-center gap-2">
+                <span id="optimizer-provider-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-800">
+                  Zulu AI Copilot
+                </span>
+                <span id="optimizer-confidence-score" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                  94% Match
+                </span>
+              </div>
+              <h3 class="text-base sm:text-lg font-bold text-[#1C1917] dark:text-white mt-1">
+                Optimized Resume Materials &amp; Tailored Highlights
+              </h3>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <button type="button" onclick="copyOptimizedSummary()" class="px-3 py-1.5 rounded-xl border border-slate-200 dark:border-gray-700 text-xs font-semibold text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 transition flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[15px]">content_copy</span>
+                <span>Copy Summary</span>
+              </button>
+              <button type="button" onclick="applyOptimizedSummary()" class="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                <span class="material-symbols-outlined text-[15px]">sync</span>
+                <span>Apply to Profile</span>
+              </button>
+              <button type="button" onclick="openResumeBuilderWithOptimizedData()" class="px-3.5 py-1.5 rounded-xl border border-purple-300 dark:border-purple-600/40 bg-purple-50 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40 font-semibold text-xs transition flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[16px]">edit_document</span>
+                <span>Edit in Builder</span>
+              </button>
+              <button id="btn-quick-download-pdf" type="button" onclick="downloadOptimizedResumeDirectPdf()" class="px-4 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md hover:scale-105">
+                <span class="material-symbols-outlined text-[16px]">download</span>
+                <span>Download Resume (PDF)</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Section 1: Revised Executive Summary -->
+          <div class="p-4 rounded-xl bg-purple-50/60 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/50 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold uppercase tracking-wider text-purple-900 dark:text-purple-200 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-purple-600 text-base">format_quote</span>
+                AI-Rewritten Professional Summary
+              </span>
+              <span class="text-[10px] text-slate-400">Tailored to your instructions</span>
+            </div>
+            <p id="optimizer-revised-summary" class="text-xs sm:text-sm text-slate-800 dark:text-gray-200 leading-relaxed italic">
+              Loading tailored summary...
+            </p>
+          </div>
+
+          <!-- Section 2: Tailored High-Impact Bullets -->
+          <div class="space-y-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-[#1C1917] dark:text-white flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-indigo-500 text-base">checklist</span>
+              Tailored Experience &amp; Project Bullets (Ready to Paste)
+            </span>
+            <ul id="optimizer-tailored-bullets" class="space-y-2">
+              <!-- Rendered via JS -->
+            </ul>
+          </div>
+
+          <!-- Section 3: Recommended ATS Keywords & Tactical Suggestions -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Keywords -->
+            <div class="p-4 rounded-xl bg-slate-50 dark:bg-gray-900/60 border border-[#E7E4DC] dark:border-gray-800 space-y-2.5">
+              <span class="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-purple-500 text-base">key</span>
+                High-Impact ATS Keywords to Include
+              </span>
+              <div id="optimizer-recommended-keywords" class="flex flex-wrap gap-1.5">
+                <!-- Chips rendered via JS -->
+              </div>
+            </div>
+
+            <!-- Structural suggestions -->
+            <div class="p-4 rounded-xl bg-slate-50 dark:bg-gray-900/60 border border-[#E7E4DC] dark:border-gray-800 space-y-2.5">
+              <span class="text-xs font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-amber-500 text-base">tips_and_updates</span>
+                Strategic Resume Adjustments
+              </span>
+              <div id="optimizer-structural-suggestions" class="space-y-2">
+                <!-- Suggestions rendered via JS -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RESULTS REPORT CONTAINER (Initially Hidden) -->
+      <div id="resume-results-container" class="hidden space-y-6">
+
+        <!-- Top Overview Score Card -->
+        <div class="rounded-2xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-white/[0.03] p-6 shadow-sm">
+          <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span id="match-tier-badge" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60">
+                  Strong Match
+                </span>
+                <span class="text-xs text-[#6E6962] dark:text-gray-400">Candidate Specialization: <strong id="results-target-role" class="text-purple-600 dark:text-purple-400 font-bold">Auto-Calibrating...</strong></span>
+              </div>
+              <h2 class="text-2xl font-extrabold text-[#1C1917] dark:text-white">
+                Candidate Competency &amp; Gap Diagnostics
+              </h2>
+              <p class="text-xs sm:text-sm text-[#6E6962] dark:text-gray-300 leading-relaxed max-w-2xl">
+                Hybrid Cosine-Jaccard alignment calculated against industrial role vectors. Skills verified through NLP parsing can be directly committed into your permanent portfolio.
+              </p>
+            </div>
+            <div class="flex items-center gap-6 p-4 rounded-2xl bg-slate-50 dark:bg-black/40 border border-[#E7E4DC] dark:border-gray-800">
+              <div class="text-center">
+                <span class="text-[10px] uppercase font-bold text-[#6E6962] dark:text-gray-400 block">Hybrid Fit</span>
+                <span id="resume-match-score" class="text-3xl font-black font-mono text-purple-600 dark:text-purple-400">0%</span>
+              </div>
+              <div class="w-px h-10 bg-slate-200 dark:bg-gray-800"></div>
+              <div class="text-center">
+                <span class="text-[10px] uppercase font-bold text-[#6E6962] dark:text-gray-400 block">Skills Extracted</span>
+                <span id="resume-skills-count" class="text-3xl font-black font-mono text-emerald-600 dark:text-emerald-400">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Parsed Contact & Profile Details Card -->
+        <div class="rounded-2xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-white/[0.03] p-6 shadow-sm space-y-4">
+          <div class="flex items-center justify-between border-b border-[#E7E4DC] dark:border-white/5 pb-3">
+            <h3 class="text-sm font-bold uppercase tracking-wider text-[#1C1917] dark:text-white flex items-center gap-2">
+              <span class="material-symbols-outlined text-[18px] text-purple-600">badge</span>
+              <span>Extracted Candidate Profile</span>
+            </h3>
+            <div class="flex items-center gap-2.5">
+              <button type="button" onclick="openResumeBuilderWithParsedData()" class="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm hover:scale-105">
+                <span class="material-symbols-outlined text-[16px]">edit_document</span>
+                <span>Make &amp; Download Resume (PDF)</span>
+              </button>
+              <span class="text-xs font-mono text-slate-400 hidden sm:inline">NLP Entity Tagger v2.4</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-gray-900/60 border border-[#E7E4DC] dark:border-gray-800">
+              <span class="text-slate-400 block text-[10px] uppercase font-semibold">Candidate Name</span>
+              <strong id="parsed-candidate-name" class="text-sm text-slate-900 dark:text-white truncate block">—</strong>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-gray-900/60 border border-[#E7E4DC] dark:border-gray-800">
+              <span class="text-slate-400 block text-[10px] uppercase font-semibold">Email Contact</span>
+              <strong id="parsed-candidate-email" class="text-sm text-slate-900 dark:text-white truncate block">—</strong>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-gray-900/60 border border-[#E7E4DC] dark:border-gray-800">
+              <span class="text-slate-400 block text-[10px] uppercase font-semibold">Institution / Degree</span>
+              <strong id="parsed-candidate-education" class="text-sm text-slate-900 dark:text-white truncate block">—</strong>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-50 dark:bg-gray-900/60 border border-[#E7E4DC] dark:border-gray-800">
+              <span class="text-slate-400 block text-[10px] uppercase font-semibold">Experience Level</span>
+              <strong id="parsed-candidate-experience" class="text-sm text-slate-900 dark:text-white truncate block">—</strong>
+            </div>
+          </div>
+
+          <!-- Summary Snippet -->
+          <div id="parsed-summary-box" class="p-3.5 rounded-xl bg-purple-50/50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800/40 text-xs text-slate-700 dark:text-gray-300 leading-relaxed">
+            <span class="font-bold text-purple-900 dark:text-purple-300 block mb-1">Executive Summary:</span>
+            <span id="parsed-candidate-summary">Standardization of classical Ashwagandha Kwatha and phytochemical screening.</span>
+          </div>
+        </div>
+
+        <!-- SIDE-BY-SIDE COMPARATOR & PROFILE MERGE -->
+        <div class="rounded-2xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-white/[0.03] p-6 shadow-sm space-y-4">
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-[#E7E4DC] dark:border-white/5 pb-3">
+            <div>
+              <h3 class="text-base font-bold text-[#1C1917] dark:text-white flex items-center gap-2">
+                <span class="material-symbols-outlined text-[20px] text-cyan-500">compare_arrows</span>
+                <span>Side-by-Side: Parsed Competencies vs Live Profile</span>
+              </h3>
+              <p class="text-xs text-[#6E6962] dark:text-gray-400">Select skills verified in your resume to merge directly into your permanent institutional profile.</p>
+            </div>
+            <button id="merge-to-profile-btn" onclick="handleMergeSelectedSkills()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md transition flex items-center gap-2 hover:scale-105">
+              <span class="material-symbols-outlined text-[18px]">sync</span>
+              <span>Merge Selected to Live Profile</span>
+            </button>
+          </div>
+
+          <!-- Two Column Table / Comparator Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Left: Parsed from Resume -->
+            <div class="p-4 rounded-xl bg-slate-50 dark:bg-gray-900/60 border border-[#E7E4DC] dark:border-gray-800 space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-purple-700 dark:text-purple-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+                  <span>Extracted from Resume</span>
+                </span>
+                <button onclick="toggleSelectAllSkills(true)" class="text-[10px] text-purple-600 hover:underline">Select All</button>
+              </div>
+              <div id="side-by-side-parsed-list" class="space-y-2 max-h-96 overflow-y-auto pr-1 custom-scrollbar">
+                <!-- Dynamically rendered -->
+              </div>
+            </div>
+
+            <!-- Right: Target Benchmark & Current Profile -->
+            <div class="p-4 rounded-xl bg-slate-50 dark:bg-gray-900/60 border border-[#E7E4DC] dark:border-gray-800 space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-cyan-700 dark:text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-cyan-500"></span>
+                  <span>Current Assessed Profile</span>
+                </span>
+                <span class="text-[10px] text-slate-400">Institutional Ledger</span>
+              </div>
+              <div id="side-by-side-current-list" class="space-y-2 max-h-96 overflow-y-auto pr-1 custom-scrollbar">
+                <!-- Dynamically rendered -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RADAR BENCHMARK CHART & ACTION ROADMAP -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Chart.js Radar Canvas Card -->
+          <div class="rounded-2xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-white/[0.03] p-6 shadow-sm flex flex-col justify-between space-y-4">
+            <div>
+              <h3 class="text-base font-bold text-[#1C1917] dark:text-white flex items-center gap-2 mb-1">
+                <span class="material-symbols-outlined text-[18px] text-purple-600">radar</span>
+                <span>Role Benchmark Vector Radar</span>
+              </h3>
+              <p class="text-xs text-[#6E6962] dark:text-gray-400">Comparing extracted candidate skill vector against corporate mandate targets.</p>
+            </div>
+            <div class="w-full aspect-square max-h-80 mx-auto flex items-center justify-center relative">
+              <canvas id="resume-benchmark-radar-chart"></canvas>
+            </div>
+            <div class="text-[11px] text-center text-slate-500 dark:text-gray-400 font-mono">
+              Purple: Candidate Extracted Vector · Cyan: Target Industry Benchmark
+            </div>
+          </div>
+
+          <!-- Strengths, Gaps & Action Recommendations -->
+          <div class="space-y-4">
+            <!-- Strengths -->
+            <div class="p-4 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-emerald-500 text-base">verified</span> <span>Top Contributing Strengths</span>
+                </span>
+                <span id="strengths-count" class="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">3 Skills</span>
+              </div>
+              <div id="diagnostic-strengths-box" class="flex flex-wrap gap-1.5">
+                <!-- Chips rendered dynamically -->
+              </div>
+            </div>
+
+            <!-- Critical Gaps -->
+            <div class="p-4 rounded-2xl bg-amber-50/70 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-amber-500 text-base">warning</span> <span>Critical Skill Gaps (High Corporate Weight)</span>
+                </span>
+                <span id="critical-gaps-count" class="text-[10px] font-mono text-amber-600 dark:text-amber-400 font-bold">2 Gaps</span>
+              </div>
+              <div id="diagnostic-critical-gaps-box" class="flex flex-wrap gap-1.5">
+                <!-- Chips rendered dynamically -->
+              </div>
+            </div>
+
+            <!-- Action Recommendations -->
+            <div class="p-4 rounded-2xl bg-purple-50/70 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800/40 space-y-2.5">
+              <span class="text-xs font-bold text-purple-800 dark:text-purple-300 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-indigo-500 text-base">track_changes</span> <span>Prescribed Remediation Actions</span>
+              </span>
+              <div id="diagnostic-actions-box" class="space-y-1.5 text-xs text-slate-700 dark:text-gray-300">
+                <!-- Actions rendered dynamically -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- PRINTABLE OFFICIAL DOSSIER MODAL / VIEW (Triggered on Print) -->
+<div id="printable-dossier-modal" class="hidden p-8 max-w-4xl mx-auto bg-white text-slate-900 font-sans space-y-6">
+  <div class="border-b-2 border-slate-900 pb-4 flex justify-between items-start">
+    <div>
+      <div class="text-xs font-bold uppercase tracking-widest text-slate-500">Higher Education &amp; National Academic Registry</div>
+      <h1 class="text-2xl font-black tracking-tight text-slate-900">JOBLEX OFFICIAL COMPETENCY DOSSIER</h1>
+      <p class="text-xs text-slate-600">Candidate Skill Benchmark &amp; Industry Alignment Report</p>
+    </div>
+    <div class="text-right font-mono text-xs">
+      <div>Date: <span id="dossier-date">2026-03-01</span></div>
+      <div class="text-[10px] text-slate-500">Hash: 0x9B44...F022</div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4 border p-4 rounded text-xs">
+    <div><strong>Candidate:</strong> <span id="dossier-name">—</span></div>
+    <div><strong>Institution:</strong> <span id="dossier-institution">Accredited University / College</span></div>
+    <div><strong>Target Benchmark:</strong> <span id="dossier-target-role">Technical &amp; Professional Benchmark</span></div>
+    <div><strong>Overall Readiness Fit:</strong> <span id="dossier-fit-score" class="font-bold">78%</span></div>
+  </div>
+
+  <div class="space-y-2">
+    <h3 class="text-sm font-bold uppercase border-b pb-1">Verified Technical Competencies</h3>
+    <div id="dossier-skills-list" class="grid grid-cols-2 gap-2 text-xs">
+      <!-- Injected -->
+    </div>
+  </div>
+
+  <div class="space-y-2">
+    <h3 class="text-sm font-bold uppercase border-b pb-1 text-amber-700">Identified Competency Gaps</h3>
+    <div id="dossier-gaps-list" class="space-y-1 text-xs">
+      <!-- Injected -->
+    </div>
+  </div>
+
+  <div class="pt-6 border-t flex justify-between items-center text-[10px] text-slate-500">
+    <span>Verified via JOBLEX AI Engine (SIH Problem Statement 26044)</span>
+    <span>Dean of Academic Affairs Signature: _____________________</span>
+  </div>
+</div>
+
+<!-- INTERACTIVE RESUME BUILDER & ATS PDF EXPORTER MODAL -->
+<div id="resume-builder-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-2 sm:p-4 overflow-hidden">
+  <div class="w-full max-w-7xl h-[94vh] bg-white dark:bg-[#0F1117] rounded-3xl shadow-2xl border border-[#E7E4DC] dark:border-white/10 flex flex-col overflow-hidden">
+    
+    <!-- Modal Header -->
+    <div class="px-4 sm:px-6 py-3.5 border-b border-[#E7E4DC] dark:border-white/10 bg-slate-50/90 dark:bg-black/40 flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-600 to-indigo-600 text-white flex items-center justify-center shadow-md shrink-0">
+          <span class="material-symbols-outlined text-[22px]">edit_document</span>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h2 class="text-base sm:text-lg font-extrabold text-[#1C1917] dark:text-white">
+              Zulu AI Resume Maker &amp; ATS Exporter
+            </h2>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 border border-purple-300 dark:border-purple-800">
+              ATS-Optimized
+            </span>
+          </div>
+          <p class="text-[11px] text-[#6E6962] dark:text-gray-400">
+            Customize your resume, inject Zulu AI suggestions, and export an employer-ready PDF
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-2.5">
+        <!-- Quick Action Buttons -->
+        <button type="button" onclick="loadResumeSampleTemplate()" title="Load Polished Sample" class="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-gray-800 text-xs font-semibold text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 transition">
+          <span class="material-symbols-outlined text-[15px]">auto_awesome</span>
+          <span>Sample Template</span>
+        </button>
+
+        <button type="button" onclick="syncParsedDataToBuilder()" title="Sync Parsed Credentials" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-purple-200 dark:border-purple-800 text-xs font-semibold text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-950/40 transition">
+          <span class="material-symbols-outlined text-[15px]">sync</span>
+          <span>Sync Parsed</span>
+        </button>
+
+        <button type="button" onclick="printResumeDocument()" title="Print via Browser" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-gray-800 text-xs font-semibold text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 transition">
+          <span class="material-symbols-outlined text-[15px]">print</span>
+          <span>Print</span>
+        </button>
+
+        <!-- Primary Export PDF Button -->
+        <button id="btn-download-resume-pdf-top" type="button" onclick="downloadResumePdf()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold shadow-md transition flex items-center gap-2 hover:scale-[1.02]">
+          <span class="material-symbols-outlined text-[17px]">download</span>
+          <span>Download PDF</span>
+        </button>
+
+        <button type="button" onclick="closeResumeBuilderModal()" aria-label="Close resume builder" class="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white transition">
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Body (Split Pane: Left = Editor, Right = Live ATS Preview) -->
+    <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+      
+      <!-- Mobile View Switcher (Visible on mobile only) -->
+      <div class="lg:hidden flex border-b border-[#E7E4DC] dark:border-white/10 bg-slate-50 dark:bg-gray-900 px-4 py-2 gap-2 shrink-0">
+        <button id="tab-toggle-editor" onclick="switchBuilderMobileTab('editor')" class="flex-1 py-1.5 rounded-lg text-xs font-bold bg-purple-600 text-white">Edit Resume</button>
+        <button id="tab-toggle-preview" onclick="switchBuilderMobileTab('preview')" class="flex-1 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-gray-300">Live Preview &amp; PDF</button>
+      </div>
+
+      <!-- Left Column: Live Form Editor -->
+      <div id="builder-editor-pane" class="w-full lg:w-1/2 overflow-y-auto p-4 sm:p-6 space-y-6 custom-scrollbar border-b lg:border-b-0 lg:border-r border-[#E7E4DC] dark:border-white/10">
+        
+        <!-- Section 1: Contact Information -->
+        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-gray-900/50 border border-[#E7E4DC] dark:border-gray-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px]">person</span>
+              <span>1. Contact &amp; Identity</span>
+            </span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 dark:text-gray-300 mb-1">Full Name</label>
+              <input type="text" id="rb-name" oninput="handleResumeFieldInput()" placeholder="e.g. Alex Sharma" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#101115] border border-slate-200 dark:border-gray-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 dark:text-gray-300 mb-1">Professional Title / Discipline</label>
+              <input type="text" id="rb-title" oninput="handleResumeFieldInput()" placeholder="e.g. Full Stack Software Engineer" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#101115] border border-slate-200 dark:border-gray-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 dark:text-gray-300 mb-1">Email Address</label>
+              <input type="email" id="rb-email" oninput="handleResumeFieldInput()" placeholder="e.g. alex.sharma@example.edu" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#101115] border border-slate-200 dark:border-gray-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 dark:text-gray-300 mb-1">Phone Number</label>
+              <input type="text" id="rb-phone" oninput="handleResumeFieldInput()" placeholder="e.g. +91 98765 43210" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#101115] border border-slate-200 dark:border-gray-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 dark:text-gray-300 mb-1">Location (City, Country)</label>
+              <input type="text" id="rb-location" oninput="handleResumeFieldInput()" placeholder="e.g. Bengaluru, India" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#101115] border border-slate-200 dark:border-gray-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none">
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 dark:text-gray-300 mb-1">Links (LinkedIn • GitHub • Portfolio)</label>
+              <input type="text" id="rb-links" oninput="handleResumeFieldInput()" placeholder="e.g. linkedin.com/in/alex • github.com/alex" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#101115] border border-slate-200 dark:border-gray-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Executive Summary -->
+        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-gray-900/50 border border-[#E7E4DC] dark:border-gray-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px]">description</span>
+              <span>2. Professional Summary</span>
+            </span>
+            <button type="button" onclick="insertAiSummaryIntoBuilder()" class="text-[11px] font-semibold text-purple-600 hover:text-purple-500 dark:text-purple-400 flex items-center gap-1">
+              <span class="material-symbols-outlined text-[13px]">auto_fix_high</span>
+              <span>Insert Zulu AI Summary</span>
+            </button>
+          </div>
+          <textarea id="rb-summary" rows="3" oninput="handleResumeFieldInput()" placeholder="Write 2-3 compelling sentences highlighting your expertise, key skills, and impact..." class="w-full p-3 rounded-xl bg-white dark:bg-[#101115] border border-slate-200 dark:border-gray-700 text-xs sm:text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none leading-relaxed"></textarea>
+        </div>
+
+        <!-- Section 3: Technical Competencies & Skills -->
+        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-gray-900/50 border border-[#E7E4DC] dark:border-gray-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px]">psychology</span>
+              <span>3. Skills &amp; Technical Competencies</span>
+            </span>
+            <button type="button" onclick="importParsedSkillsIntoBuilder()" class="text-[11px] font-semibold text-purple-600 hover:text-purple-500 dark:text-purple-400 flex items-center gap-1">
+              <span class="material-symbols-outlined text-[13px]">download</span>
+              <span>Import Parsed Skills</span>
+            </button>
+          </div>
+          <p class="text-[11px] text-slate-500 dark:text-gray-400">Comma-separated list of technical skills, tools, and methodologies:</p>
+          <textarea id="rb-skills" rows="2" oninput="handleResumeFieldInput()" placeholder="e.g. JavaScript, Python, React.js, Node.js, PostgreSQL, Docker, Git, REST APIs, Microservices, Testing" class="w-full p-3 rounded-xl bg-white dark:bg-[#101115] border border-slate-200 dark:border-gray-700 text-xs sm:text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none"></textarea>
+        </div>
+
+        <!-- Section 4: Work & Internship Experience -->
+        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-gray-900/50 border border-[#E7E4DC] dark:border-gray-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px]">work</span>
+              <span>4. Experience &amp; Internships</span>
+            </span>
+            <button type="button" onclick="addExperienceEntry()" class="px-2.5 py-1 rounded-lg bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 text-[11px] font-bold border border-purple-200 dark:border-purple-800 hover:bg-purple-200 dark:hover:bg-purple-900/60 transition flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">add</span>
+              <span>Add Position</span>
+            </button>
+          </div>
+          <div id="rb-experience-container" class="space-y-3">
+            <!-- Dynamic Experience Cards -->
+          </div>
+        </div>
+
+        <!-- Section 5: Key Projects -->
+        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-gray-900/50 border border-[#E7E4DC] dark:border-gray-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px]">code</span>
+              <span>5. Academic &amp; Personal Projects</span>
+            </span>
+            <button type="button" onclick="addProjectEntry()" class="px-2.5 py-1 rounded-lg bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 text-[11px] font-bold border border-purple-200 dark:border-purple-800 hover:bg-purple-200 dark:hover:bg-purple-900/60 transition flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">add</span>
+              <span>Add Project</span>
+            </button>
+          </div>
+          <div id="rb-projects-container" class="space-y-3">
+            <!-- Dynamic Project Cards -->
+          </div>
+        </div>
+
+        <!-- Section 6: Education -->
+        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-gray-900/50 border border-[#E7E4DC] dark:border-gray-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px]">school</span>
+              <span>6. Education &amp; Academics</span>
+            </span>
+            <button type="button" onclick="addEducationEntry()" class="px-2.5 py-1 rounded-lg bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 text-[11px] font-bold border border-purple-200 dark:border-purple-800 hover:bg-purple-200 dark:hover:bg-purple-900/60 transition flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px]">add</span>
+              <span>Add Education</span>
+            </button>
+          </div>
+          <div id="rb-education-container" class="space-y-3">
+            <!-- Dynamic Education Cards -->
+          </div>
+        </div>
+
+        <!-- Section 7: Certifications & Publications -->
+        <div class="p-4 rounded-2xl bg-slate-50 dark:bg-gray-900/50 border border-[#E7E4DC] dark:border-gray-800 space-y-3">
+          <span class="text-xs font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300 flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px]">verified</span>
+            <span>7. Certifications &amp; Achievements</span>
+          </span>
+          <textarea id="rb-certifications" rows="2" oninput="handleResumeFieldInput()" placeholder="One per line (e.g. AWS Certified Solutions Architect, NPTEL Elite Gold Medalist...)" class="w-full p-3 rounded-xl bg-white dark:bg-[#101115] border border-slate-200 dark:border-gray-700 text-xs sm:text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500 outline-none"></textarea>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Live ATS Resume Preview (Printable Sheet) -->
+      <div id="builder-preview-pane" class="w-full lg:w-1/2 bg-slate-100 dark:bg-[#07080B] p-3 sm:p-6 overflow-y-auto flex flex-col items-center custom-scrollbar">
+        <div class="w-full max-w-[760px] flex items-center justify-between pb-3 text-xs text-slate-500 dark:text-gray-400 no-print">
+          <span class="flex items-center gap-1.5 font-mono text-[11px]">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Live ATS Standard Document (A4)</span>
+          </span>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="downloadResumePdf()" class="px-3 py-1 rounded-lg bg-purple-600 text-white font-semibold text-xs hover:bg-purple-500 transition flex items-center gap-1 shadow-sm">
+              <span class="material-symbols-outlined text-[15px]">picture_as_pdf</span>
+              <span>Download PDF</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- REAL PRINTABLE & EXPORTABLE ATS SHEET -->
+        <div id="resume-preview-sheet" class="w-full max-w-[760px] min-h-[960px] bg-white text-slate-900 p-8 sm:p-12 rounded-xl shadow-xl border border-slate-200 font-sans space-y-4 text-left" style="color: #0f172a; background-color: #ffffff;">
+          <!-- Dynamically populated by renderResumeLivePreview() -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="px-4 sm:px-6 py-3 border-t border-[#E7E4DC] dark:border-white/10 bg-slate-50/90 dark:bg-black/40 flex flex-wrap items-center justify-between gap-3 shrink-0">
+      <div class="flex items-center gap-3 text-xs text-slate-500 dark:text-gray-400">
+        <span class="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold font-mono text-[11px]">
+          <span class="material-symbols-outlined text-[15px]">check_circle</span>
+          <span>ATS Pass Rate: 98%</span>
+        </span>
+        <span class="hidden sm:inline">•</span>
+        <span class="hidden sm:inline text-[11px]">Clean ATS Parsing Structure • Powered by Zulu AI</span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button type="button" onclick="closeResumeBuilderModal()" class="px-4 py-2 rounded-xl border border-slate-200 dark:border-gray-800 text-xs font-semibold text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 transition">
+          Close
+        </button>
+        <button type="button" onclick="downloadResumePdf()" class="px-5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold shadow-md transition flex items-center gap-2 hover:scale-105">
+          <span class="material-symbols-outlined text-[17px]">download</span>
+          <span>Download PDF Now</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="/js/frontend/html2pdf.bundle.min.js"></script>
+<script src="/js/frontend/api-client.js"></script>
+<script src="/js/frontend/notifications.js"></script>
+<script src="/js/frontend/student-ui.js"></script>
+<script src="../../js/frontend/animations.js"></script>
+</body>
+</html>

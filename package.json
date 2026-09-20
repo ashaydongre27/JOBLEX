@@ -1,0 +1,23 @@
+{
+  "name": "joblex",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node backend/server.js",
+    "server": "node backend/server.js",
+    "dev": "node backend/server.js",
+    "build": "node build.js",
+    "preview": "node backend/server.js",
+    "lint": "node -c backend/server.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@langchain/core": "^1.2.9",
+    "@langchain/google-genai": "^2.3.0",
+    "@langchain/langgraph": "^1.4.13",
+    "@supabase/supabase-js": "^2.40.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
+  }
+}

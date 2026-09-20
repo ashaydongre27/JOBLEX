@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About JOBLEX | Academia-Industry Collaboration & Placement Portal</title>
+  <meta name="description" content="Learn about JOBLEX's mission, core objectives, user empowerment mechanisms, and strategic goals to eliminate the curriculum-industry skill divide.">
+  <meta property="og:title" content="About JOBLEX">
+  <meta property="og:description" content="Learn about JOBLEX's mission, core objectives, user empowerment mechanisms, and strategic goals to eliminate the curriculum-industry skill divide.">
+  
+  <!-- Google Fonts Preconnect -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  
+  <!-- Theme Handler -->
+  <script src="/js/frontend/theme.js"></script>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            serif: ['Newsreader', 'Georgia', 'serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+            display: ['"Plus Jakarta Sans"', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Editorial Custom Styles -->
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="bg-[#FAF8F5] dark:bg-[#070709] text-[#1C1917] dark:text-[#F4F4F6] antialiased transition-colors duration-200 min-h-screen relative overflow-x-hidden flex flex-col justify-between selection:bg-[#2D5542] selection:text-white dark:selection:bg-[#4EBA87] dark:selection:text-black">
+
+  <!-- Ambient Three.js Canvas Container -->
+  <div id="three-canvas-container" class="fixed inset-0 pointer-events-none z-0 opacity-40 dark:opacity-60" aria-hidden="true"></div>
+
+  <!-- Soft Ambient Glow Orbs -->
+  <div class="fixed top-[-10%] left-[-5%] w-[45vw] h-[45vw] rounded-full bg-[#2D5542]/5 dark:bg-[#4EBA87]/[0.03] blur-[120px] pointer-events-none z-0"></div>
+  <div class="fixed bottom-[-10%] right-[-5%] w-[45vw] h-[45vw] rounded-full bg-[#944C23]/5 dark:bg-[#E07A48]/[0.03] blur-[120px] pointer-events-none z-0"></div>
+
+  <!-- Header / Navigation -->
+  <header id="site-header" class="sticky top-0 z-50 w-full bg-[#FAF8F5]/90 dark:bg-[#070709]/90 backdrop-blur-xl border-b border-stone-200/80 dark:border-white/[0.07] transition-colors duration-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Brand -->
+      <div class="flex items-center gap-4 sm:gap-6">
+        <a id="header-brand-logo" href="index.html" class="flex items-center cursor-pointer select-none group">
+          <span class="text-xl font-display font-bold tracking-tight text-stone-900 dark:text-stone-100 uppercase">JOBLEX</span>
+        </a>
+      </div>
+
+      <!-- Links & Actions -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <nav id="header-nav-items" class="flex items-center gap-1 text-xs font-semibold text-stone-600 dark:text-stone-400">
+          <a id="nav-home-link" href="index.html" class="px-2.5 sm:px-3 py-1.5 rounded-lg hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.05] transition">
+            Home
+          </a>
+          <a id="nav-about-active" href="about.html" class="px-2.5 sm:px-3 py-1.5 rounded-lg text-stone-900 dark:text-white bg-stone-200/70 dark:bg-white/[0.08] font-bold transition">
+            About
+          </a>
+          <a id="nav-pricing-link" href="pricing.html" class="px-2.5 sm:px-3 py-1.5 rounded-lg hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.05] transition">
+            Pricing
+          </a>
+        </nav>
+
+        <div class="hidden sm:flex items-center gap-1 text-xs font-semibold text-stone-600 dark:text-stone-400">
+          <button id="nav-student-portal-btn" onclick="JoblexApiClient.navigateToPortal('student')" class="px-2.5 py-1.5 rounded-lg hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.05] transition">
+            Student
+          </button>
+          <button id="nav-academy-portal-btn" onclick="JoblexApiClient.navigateToPortal('academy')" class="px-2.5 py-1.5 rounded-lg hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.05] transition">
+            Academy
+          </button>
+          <button id="nav-industry-portal-btn" onclick="JoblexApiClient.navigateToPortal('industry')" class="px-2.5 py-1.5 rounded-lg hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-white/[0.05] transition">
+            Industry
+          </button>
+        </div>
+
+        <!-- Theme Toggle -->
+        <button id="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Theme" title="Toggle Light/Dark Theme" class="p-2 rounded-xl border border-stone-200 dark:border-white/[0.08] bg-white dark:bg-white/[0.03] text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-white transition flex items-center justify-center tactile-btn shadow-xs">
+          <span id="theme-toggle-icon" class="material-symbols-outlined text-[18px]">dark_mode</span>
+        </button>
+
+        <!-- Account Container / Sign In -->
+        <div class="nav-user-account-container relative"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main id="about-main-content" class="relative z-10 flex-1">
+
+    <!-- HERO / TITLE -->
+    <section id="about-hero-section" class="pt-12 sm:pt-16 lg:pt-20 pb-12 sm:pb-16 border-b border-stone-200/80 dark:border-white/[0.06]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-3xl space-y-5">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[#2D5542]/10 dark:bg-[#4EBA87]/10 text-[#2D5542] dark:text-[#4EBA87] border border-[#2D5542]/20 dark:border-[#4EBA87]/20">
+            <span class="material-symbols-outlined text-[14px]">school</span>
+            <span>Institutional Synergy & Strategic Mission</span>
+          </div>
+
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-display font-bold tracking-tight text-stone-900 dark:text-stone-100 leading-[1.1]">
+            Architecting the Bridge Between <span class="font-serif italic font-normal text-[#2D5542] dark:text-[#4EBA87]">Academic Rigor</span> and Industrial Mandates.
+          </h1>
+
+          <p class="text-base sm:text-lg text-stone-600 dark:text-stone-400 font-normal leading-relaxed">
+            JOBLEX is an outcome-driven platform bridging university curriculum design, verifiable student skill vectors, and corporate hiring pipelines under national accreditation standards.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 1: THE CORE OBJECTIVE -->
+    <section id="about-objective-section" class="py-16 sm:py-20 border-b border-stone-200/80 dark:border-white/[0.06] bg-stone-50/50 dark:bg-white/[0.01]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+          
+          <div class="lg:col-span-5 space-y-4">
+            <span class="text-xs font-mono font-bold uppercase tracking-widest text-[#2D5542] dark:text-[#4EBA87]">01 / Foundational Purpose</span>
+            <h2 class="text-2xl sm:text-3xl font-display font-bold text-stone-900 dark:text-stone-100 tracking-tight">
+              The Objective of the Platform
+            </h2>
+            <p class="text-sm text-stone-600 dark:text-stone-400 leading-relaxed font-normal">
+              Higher education curricula typically operate on 3-to-5 year syllabus revision cycles. Conversely, modern industrial technologies, software frameworks, and automated engineering stacks evolve every 6 to 12 months.
+            </p>
+            <p class="text-sm text-stone-600 dark:text-stone-400 leading-relaxed font-normal">
+              This structural discrepancy produces an acute employability gap. Graduating students frequently possess solid foundational theory but lack exposure to production-grade engineering workflows, modern containerization, and distributed AI tooling.
+            </p>
+            <div class="p-4 rounded-xl bg-white dark:bg-[#101115] border border-stone-200 dark:border-white/[0.08] shadow-xs">
+              <div class="flex items-center gap-3 mb-2">
+                <div class="w-2 h-2 rounded-full bg-[#2D5542] dark:bg-[#4EBA87]"></div>
+                <h4 class="text-xs font-bold uppercase tracking-wider text-stone-800 dark:text-stone-200">The JOBLEX Solution</h4>
+              </div>
+              <p class="text-xs text-stone-600 dark:text-stone-400 leading-relaxed">
+                JOBLEX continuous-syncs academic syllabi with live enterprise requisitions. Through high-dimensional vector embeddings, dynamic curriculum diffs, and authenticated candidate dossiers, we turn static degree credentials into continuous proof-of-work.
+              </p>
+            </div>
+          </div>
+
+          <div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Objective Pillar 1 -->
+            <div id="objective-pillar-1" class="bento-card rounded-2xl p-6 bg-white dark:bg-[#101115] border border-stone-200 dark:border-white/[0.08] shadow-xs flex flex-col justify-between">
+              <div>
+                <div class="w-10 h-10 rounded-xl bg-[#2D5542]/10 border border-[#2D5542]/20 flex items-center justify-center mb-4 text-[#2D5542] dark:text-[#4EBA87]">
+                  <span class="material-symbols-outlined text-xl">sync_alt</span>
+                </div>
+                <h3 class="text-base font-display font-bold text-stone-900 dark:text-stone-100 mb-2">Continuous Curriculum Calibration</h3>
+                <p class="text-xs text-stone-600 dark:text-stone-400 leading-relaxed font-normal">
+                  Eliminating the 4-year curriculum lag by surfacing real-time syllabus modernization recommendations aligned with live corporate hiring data.
+                </p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-stone-100 dark:border-white/[0.06] flex items-center gap-2 text-[11px] font-mono text-[#2D5542] dark:text-[#4EBA87]">
+                <span class="material-symbols-outlined text-[14px]">verified</span>
+                <span>NEP-2020 & OBE Compliant</span>
+              </div>
+            </div>
+
+            <!-- Objective Pillar 2 -->
+            <div id="objective-pillar-2" class="bento-card rounded-2xl p-6 bg-white dark:bg-[#101115] border border-stone-200 dark:border-white/[0.08] shadow-xs flex flex-col justify-between">
+              <div>
+                <div class="w-10 h-10 rounded-xl bg-[#944C23]/10 border border-[#944C23]/20 flex items-center justify-center mb-4 text-[#944C23] dark:text-[#E07A48]">
+                  <span class="material-symbols-outlined text-xl">fingerprint</span>
+                </div>
+                <h3 class="text-base font-display font-bold text-stone-900 dark:text-stone-100 mb-2">Verifiable Skill Ontologies</h3>
+                <p class="text-xs text-stone-600 dark:text-stone-400 leading-relaxed font-normal">
+                  Replacing unverified bullet points on paper resumes with interactive skill-tree code assessments, timed challenges, and proof-of-competence scores.
+                </p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-stone-100 dark:border-white/[0.06] flex items-center gap-2 text-[11px] font-mono text-[#944C23] dark:text-[#E07A48]">
+                <span class="material-symbols-outlined text-[14px]">lock</span>
+                <span>HMAC Signed Dossiers</span>
+              </div>
+            </div>
+
+            <!-- Objective Pillar 3 -->
+            <div id="objective-pillar-3" class="bento-card rounded-2xl p-6 bg-white dark:bg-[#101115] border border-stone-200 dark:border-white/[0.08] shadow-xs flex flex-col justify-between">
+              <div>
+                <div class="w-10 h-10 rounded-xl bg-[#855828]/10 border border-[#855828]/20 flex items-center justify-center mb-4 text-[#855828] dark:text-[#D4973B]">
+                  <span class="material-symbols-outlined text-xl">handshake</span>
+                </div>
+                <h3 class="text-base font-display font-bold text-stone-900 dark:text-stone-100 mb-2">Bilateral Institutional MoUs</h3>
+                <p class="text-xs text-stone-600 dark:text-stone-400 leading-relaxed font-normal">
+                  Connecting industry corporate social responsibility (CSR) and R&D funds directly with university labs, faculty development, and student bootcamps.
+                </p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-stone-100 dark:border-white/[0.06] flex items-center gap-2 text-[11px] font-mono text-[#855828] dark:text-[#D4973B]">
+                <span class="material-symbols-outlined text-[14px]">account_balance</span>
+                <span>Direct Bilateral Grants</span>
+              </div>
+            </div>
+
+            <!-- Objective Pillar 4 -->
+            <div id="objective-pillar-4" class="bento-card rounded-2xl p-6 bg-white dark:bg-[#101115] border border-stone-200 dark:border-white/[0.08] shadow-xs flex flex-col justify-between">
+              <div>
+                <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-4 text-purple-600 dark:text-purple-400">
+                  <span class="material-symbols-outlined text-xl">psychology</span>
+                </div>
+                <h3 class="text-base font-display font-bold text-stone-900 dark:text-stone-100 mb-2">Zulu AI Autonomous Mentorship</h3>
+                <p class="text-xs text-stone-600 dark:text-stone-400 leading-relaxed font-normal">
+                  Democratizing elite career coaching for students in Tier-2 and Tier-3 institutions through conversational AI tailored to regional curricula.
+                </p>
+              </div>
+              <div class="mt-4 pt-3 border-t border-stone-100 dark:border-white/[0.06] flex items-center gap-2 text-[11px] font-mono text-purple-600 dark:text-purple-400">
+                <span class="material-symbols-outlined text-[14px]">neurology</span>
+                <span>Multi-tier AI Engine</span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: HOW IT SERVES USERS -->
+    <section id="about-serves-users-section" class="py-16 sm:py-20 border-b border-stone-200/80 dark:border-white/[0.06]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="max-w-3xl mb-12">
+          <span class="text-xs font-mono font-bold uppercase tracking-widest text-[#944C23] dark:text-[#E07A48]">02 / User Empowerment</span>
+          <h2 class="text-3xl sm:text-4xl font-display font-bold text-stone-900 dark:text-stone-100 tracking-tight mt-2">
+            How JOBLEX Serves Each Ecosystem Stakeholder
+          </h2>
+          <p class="text-sm sm:text-base text-stone-600 dark:text-stone-400 mt-2 font-normal leading-relaxed">
+            Three dedicated, interlinked portals built around the exact daily workflows of students, academic deans, and corporate recruiters.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+          
+          <!-- Card 1: Students -->
+          <div id="serve-students-card" class="bento-card rounded-2xl p-6 sm:p-8 bg-white dark:bg-[#101115] border border-stone-200 dark:border-white/[0.08] shadow-xs flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-6">
+                <div class="w-12 h-12 rounded-xl bg-[#2D5542]/10 border border-[#2D5542]/20 flex items-center justify-center text-[#2D5542] dark:text-[#4EBA87]">
+                  <span class="material-symbols-outlined text-2xl">person_pin</span>
+                </div>
+                <span class="px-2.5 py-1 rounded-full text-[11px] font-mono font-semibold uppercase tracking-wider bg-[#2D5542]/10 text-[#2D5542] dark:text-[#4EBA87]">
+                  For Students
+                </span>
+              </div>
+
+              <h3 class="text-xl font-display font-bold text-stone-900 dark:text-stone-100 mb-3">
+                Actionable Career Acceleration
+              </h3>
+
+              <p class="text-xs text-stone-600 dark:text-stone-400 leading-relaxed font-normal mb-6">
+                Empowering candidates from their first collegiate semester to final placement offers with structured mastery paths and verifiable credentials.
+              </p>
+
+              <ul class="space-y-3 text-xs text-stone-700 dark:text-stone-300">
+                <li class="flex items-start gap-2.5">
+                  <span class="material-symbols-outlined text-[16px] text-[#2D5542] dark:text-[#4EBA87] shrink-0 mt-0.5">check_circle</span>
+                  <span><strong>4-Phase Roadmap:</strong> Step-by-step milestones spanning Foundational Core, Applied Labs, Industry Specialization, and Placement Sprints.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="material-symbols-outlined text-[16px] text-[#2D5542] dark:text-[#4EBA87] shrink-0 mt-0.5">check_circle</span>
+                  <span><strong>Zulu AI Career Guidance:</strong> Personalized resume reviews, mock interviews, and tailored study modules.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="material-symbols-outlined text-[16px] text-[#2D5542] dark:text-[#4EBA87] shrink-0 mt-0.5">check_circle</span>
+                  <span><strong>Skill Decay Protection:</strong> Spaced repetition alerts and micro-quizzes that keep learned concepts active and placement-ready.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="material-symbols-outlined text-[16px] text-[#2D5542] dark:text-[#4EBA87] shrink-0 mt-0.5">check_circle</span>
+                  <span><strong>Authenticated Dossier:</strong> Shareable portfolio with cryptographic skill badges recognized directly by hiring companies.</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="mt-8 pt-4 border-t border-stone-100 dark:border-white/[0.06]">
+              <a href="student.html" class="inline-flex items-center gap-2 text-xs font-bold text-[#2D5542] dark:text-[#4EBA87] hover:underline">
+                <span>Explore Student Portal</span>
+                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Card 2: Academia / Universities -->
+          <div id="serve-academy-card" class="bento-card rounded-2xl p-6 sm:p-8 bg-white dark:bg-[#101115] border border-stone-200 dark:border-white/[0.08] shadow-xs flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-6">
+                <div class="w-12 h-12 rounded-xl bg-[#855828]/10 border border-[#855828]/20 flex items-center justify-center text-[#855828] dark:text-[#D4973B]">
+                  <span class="material-symbols-outlined text-2xl">account_balance</span>
+                </div>
+                <span class="px-2.5 py-1 rounded-full text-[11px] font-mono font-semibold uppercase tracking-wider bg-[#855828]/10 text-[#855828] dark:text-[#D4973B]">
+                  For Universities
+                </span>
+              </div>
+
+              <h3 class="text-xl font-display font-bold text-stone-900 dark:text-stone-100 mb-3">
+                Curriculum Intelligence & OBE Compliance
+              </h3>
+
+              <p class="text-xs text-stone-600 dark:text-stone-400 leading-relaxed font-normal mb-6">
+                Providing academic deans and department heads with quantitative tools to maintain cutting-edge curricula and streamline accreditation.
+              </p>
+
+              <ul class="space-y-3 text-xs text-stone-700 dark:text-stone-300">
+                <li class="flex items-start gap-2.5">
+                  <span class="material-symbols-outlined text-[16px] text-[#855828] dark:text-[#D4973B] shrink-0 mt-0.5">check_circle</span>
+                  <span><strong>Syllabus Gap Radar:</strong> Automated vector audit benchmarking collegiate course modules against current industrial job requisitions.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="material-symbols-outlined text-[16px] text-[#855828] dark:text-[#D4973B] shrink-0 mt-0.5">check_circle</span>
+                  <span><strong>NAAC / NBA Alignment:</strong> Ready-to-export compliance matrices for Criterion 1, 2, and 5 under Outcome-Based Education (OBE).</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="material-symbols-outlined text-[16px] text-[#855828] dark:text-[#D4973B] shrink-0 mt-0.5">check_circle</span>
+                  <span><strong>Bilateral MoUs:</strong> Digital repository for executing and monitoring collaborative industry partnerships and student internships.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="material-symbols-outlined text-[16px] text-[#855828] dark:text-[#D4973B] shrink-0 mt-0.5">check_circle</span>
+                  <span><strong>Faculty Development (FDP):</strong> Direct avenues for professors to participate in corporate tech immersion programs.</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="mt-8 pt-4 border-t border-stone-100 dark:border-white/[0.06]">
+              <a href="academy.html" class="inline-flex items-center gap-2 text-xs font-bold text-[#855828] dark:text-[#D4973B] hover:underline">
+                <span>Explore Academy Portal</span>
+                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Card 3: Industry / Companies -->
+          <div id="serve-industry-card" class="bento-card rounded-2xl p-6 sm:p-8 bg-white dark:bg-[#101115] border border-stone-200 dark:border-white/[0.08] shadow-xs flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-6">
+                <div class="w-12 h-12 rounded-xl bg-[#944C23]/10 border border-[#944C23]/20 flex items-center justify-center text-[#944C23] dark:text-[#E07A48]">
+                  <span class="material-symbols-outlined text-2xl">domain</span>
+                </div>
+                <span class="px-2.5 py-1 rounded-full text-[11px] font-mono font-semibold uppercase tracking-wider bg-[#944C23]/10 text-[#944C23] dark:text-[#E07A48]">
+                  For Industry
+                </span>
+              </div>
+
+              <h3 class="text-xl font-display font-bold text-stone-900 dark:text-stone-100 mb-3">
+                Vector Talent Matching & Pipeline Building
+              </h3>
+
+              <p class="text-xs text-stone-600 dark:text-stone-400 leading-relaxed font-normal mb-6">
+                Supplying talent acquisition teams with validated competencies, custom hiring filters, and direct university co-innovation channels.
+              </p>
+
+              <ul class="space-y-3 text-xs text-stone-700 dark:text-stone-300">
+                <li class="flex items-start gap-2.5">
+                  <span class="material-symbols-outlined text-[16px] text-[#944C23] dark:text-[#E07A48] shrink-0 mt-0.5">check_circle</span>
+                  <span><strong>Cosine Vector Search:</strong> Match candidate capabilities directly with project requirements via multi-dimensional skill vectors.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="material-symbols-outlined text-[16px] text-[#944C23] dark:text-[#E07A48] shrink-0 mt-0.5">check_circle</span>
+                  <span><strong>Verified Dossiers:</strong> Review actual problem-solving telemetry and verified challenge submissions without manual pre-screening.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="material-symbols-outlined text-[16px] text-[#944C23] dark:text-[#E07A48] shrink-0 mt-0.5">check_circle</span>
+                  <span><strong>R&D Grant Sponsorship:</strong> Direct financial and equipment grants to university research labs with verifiable milestone tracking.</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="material-symbols-outlined text-[16px] text-[#944C23] dark:text-[#E07A48] shrink-0 mt-0.5">check_circle</span>
+                  <span><strong>Competency Calibrator:</strong> Feed future-quarter talent requirements back to university departments to influence upcoming syllabi.</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="mt-8 pt-4 border-t border-stone-100 dark:border-white/[0.06]">
+              <a href="industry.html" class="inline-flex items-center gap-2 text-xs font-bold text-[#944C23] dark:text-[#E07A48] hover:underline">
+                <span>Explore Industry Portal</span>
+                <span class="material-symbols-outlined text-sm">arrow_forward</span>
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: WHAT ARE OUR GOALS -->
+    <section id="about-goals-section" class="py-16 sm:py-20 border-b border-stone-200/80 dark:border-white/[0.06] bg-stone-50/50 dark:bg-white/[0.01]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="max-w-3xl mb-12">
+          <span class="text-xs font-mono font-bold uppercase tracking-widest text-[#855828] dark:text-[#D4973B]">03 / Strategic Vision</span>
+          <h2 class="text-3xl sm:text-4xl font-display font-bold text-stone-900 dark:text-stone-100 tracking-tight mt-2">
+            What Are Our Core Goals?
+          </h2>
+          <p class="text-sm sm:text-base text-stone-600 dark:text-stone-400 mt-2 font-normal leading-relaxed">
+            Four structural commitments driving every algorithmic model, institutional partnership, and user experience on JOBLEX.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+          
+          <!-- Goal 1 -->
+          <div id="goal-item-1" class="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#101115] border border-stone-200 dark:border-white/[0.08] shadow-xs space-y-4">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-lg bg-[#2D5542]/10 text-[#2D5542] dark:text-[#4EBA87] flex items-center justify-center font-mono font-bold text-xs">01</span>
+              <h3 class="text-lg font-display font-bold text-stone-900 dark:text-stone-100">Eliminating the National Curriculum Latency</h3>
+            </div>
+            <p class="text-xs sm:text-sm text-stone-600 dark:text-stone-400 leading-relaxed font-normal">
+              Our target is reducing curriculum update cycles from the traditional 48 months to quarterly micro-adjustments. By equipping curriculum boards with automated diffs against live job postings, universities can integrate emerging technical domains such as generative AI, rust, and quantum computing without multi-year bureaucratic roadblocks.
+            </p>
+          </div>
+
+          <!-- Goal 2 -->
+          <div id="goal-item-2" class="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#101115] border border-stone-200 dark:border-white/[0.08] shadow-xs space-y-4">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-lg bg-[#944C23]/10 text-[#944C23] dark:text-[#E07A48] flex items-center justify-center font-mono font-bold text-xs">02</span>
+              <h3 class="text-lg font-display font-bold text-stone-900 dark:text-stone-100">True Meritocracy Through Proof-of-Skill</h3>
+            </div>
+            <p class="text-xs sm:text-sm text-stone-600 dark:text-stone-400 leading-relaxed font-normal">
+              We believe a student's career trajectory should not be bounded by their collegiate postal code or collegiate prestige. By standardizing high-dimensional skill vectors verified through timed coding challenges, live Git repositories, and domain quizzes, every candidate is evaluated purely on verified output.
+            </p>
+          </div>
+
+          <!-- Goal 3 -->
+          <div id="goal-item-3" class="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#101115] border border-stone-200 dark:border-white/[0.08] shadow-xs space-y-4">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-lg bg-[#855828]/10 text-[#855828] dark:text-[#D4973B] flex items-center justify-center font-mono font-bold text-xs">03</span>
+              <h3 class="text-lg font-display font-bold text-stone-900 dark:text-stone-100">Transparent Bilateral R&D Investment</h3>
+            </div>
+            <p class="text-xs sm:text-sm text-stone-600 dark:text-stone-400 leading-relaxed font-normal">
+              University research labs often suffer from funding opacity, while corporate R&D divisions struggle to find specialized academic research talent. Our goal is establishing a verified digital clearinghouse for bilateral MoUs, lab sponsorships, and patent commercialization with verifiable milestone tracking.
+            </p>
+          </div>
+
+          <!-- Goal 4 -->
+          <div id="goal-item-4" class="p-6 sm:p-8 rounded-2xl bg-white dark:bg-[#101115] border border-stone-200 dark:border-white/[0.08] shadow-xs space-y-4">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-mono font-bold text-xs">04</span>
+              <h3 class="text-lg font-display font-bold text-stone-900 dark:text-stone-100">Democratizing AI Mentorship</h3>
+            </div>
+            <p class="text-xs sm:text-sm text-stone-600 dark:text-stone-400 leading-relaxed font-normal">
+              Every student deserves dedicated 1-on-1 interview preparation, code debugging assistance, and syllabus contextualization regardless of their socio-economic background. Through Zulu AI, we provide round-the-clock guidance tailored to both English and regional language learners.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: PLATFORM TELEMETRY & TRUST -->
+    <section id="about-telemetry-section" class="py-16 sm:py-20 border-b border-stone-200/80 dark:border-white/[0.06]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+          
+          <div id="stat-card-1" class="p-6 rounded-2xl bg-white dark:bg-[#101115] border border-stone-200 dark:border-white/[0.08]">
+            <span class="text-3xl sm:text-4xl font-mono font-bold text-stone-900 dark:text-stone-100">12,500+</span>
+            <p class="text-xs text-stone-500 dark:text-stone-400 mt-1 uppercase font-semibold tracking-wider">Candidate Dossiers</p>
+          </div>
+
+          <div id="stat-card-2" class="p-6 rounded-2xl bg-white dark:bg-[#101115] border border-stone-200 dark:border-white/[0.08]">
+            <span class="text-3xl sm:text-4xl font-mono font-bold text-[#2D5542] dark:text-[#4EBA87]">450+</span>
+            <p class="text-xs text-stone-500 dark:text-stone-400 mt-1 uppercase font-semibold tracking-wider">Academic Syllabi Audited</p>
+          </div>
+
+          <div id="stat-card-3" class="p-6 rounded-2xl bg-white dark:bg-[#101115] border border-stone-200 dark:border-white/[0.08]">
+            <span class="text-3xl sm:text-4xl font-mono font-bold text-[#944C23] dark:text-[#E07A48]">180+</span>
+            <p class="text-xs text-stone-500 dark:text-stone-400 mt-1 uppercase font-semibold tracking-wider">Corporate Partners</p>
+          </div>
+
+          <div id="stat-card-4" class="p-6 rounded-2xl bg-white dark:bg-[#101115] border border-stone-200 dark:border-white/[0.08]">
+            <span class="text-3xl sm:text-4xl font-mono font-bold text-[#855828] dark:text-[#D4973B]">$2.4M</span>
+            <p class="text-xs text-stone-500 dark:text-stone-400 mt-1 uppercase font-semibold tracking-wider">Bilateral Grants Coordinated</p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 5: CALL TO ACTION -->
+    <section id="about-cta-section" class="py-16 sm:py-20 text-center">
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+        <h2 class="text-3xl sm:text-4xl font-display font-bold text-stone-900 dark:text-stone-100 tracking-tight">
+          Ready to Connect Academic Potential With Corporate Demand?
+        </h2>
+        <p class="text-sm sm:text-base text-stone-600 dark:text-stone-400 max-w-2xl mx-auto leading-relaxed">
+          Whether you are a student preparing for upcoming placements, an academic leader modernizing syllabus outcomes, or an industry partner scouting top-tier technical talent.
+        </p>
+        
+        <div class="flex flex-wrap items-center justify-center gap-3 pt-4">
+          <a id="cta-pricing-btn" href="pricing.html" class="px-6 py-3 rounded-xl bg-stone-900 dark:bg-white text-white dark:text-stone-900 font-bold text-xs tracking-wide shadow-sm hover:opacity-90 transition tactile-btn flex items-center gap-2">
+            <span class="material-symbols-outlined text-[16px]">payments</span>
+            <span>View Subscription Plans</span>
+          </a>
+          <button id="cta-student-btn" onclick="JoblexApiClient.navigateToPortal('student')" class="px-5 py-3 rounded-xl border border-stone-300 dark:border-white/[0.1] bg-white dark:bg-white/[0.04] text-stone-800 dark:text-stone-200 font-bold text-xs hover:bg-stone-100 dark:hover:bg-white/[0.08] transition tactile-btn flex items-center gap-2">
+            <span class="material-symbols-outlined text-[16px] text-[#2D5542] dark:text-[#4EBA87]">school</span>
+            <span>Student Portal</span>
+          </button>
+          <button id="cta-academy-btn" onclick="JoblexApiClient.navigateToPortal('academy')" class="px-5 py-3 rounded-xl border border-stone-300 dark:border-white/[0.1] bg-white dark:bg-white/[0.04] text-stone-800 dark:text-stone-200 font-bold text-xs hover:bg-stone-100 dark:hover:bg-white/[0.08] transition tactile-btn flex items-center gap-2">
+            <span class="material-symbols-outlined text-[16px] text-[#855828] dark:text-[#D4973B]">account_balance</span>
+            <span>Academy Portal</span>
+          </button>
+          <button id="cta-industry-btn" onclick="JoblexApiClient.navigateToPortal('industry')" class="px-5 py-3 rounded-xl border border-stone-300 dark:border-white/[0.1] bg-white dark:bg-white/[0.04] text-stone-800 dark:text-stone-200 font-bold text-xs hover:bg-stone-100 dark:hover:bg-white/[0.08] transition tactile-btn flex items-center gap-2">
+            <span class="material-symbols-outlined text-[16px] text-[#944C23] dark:text-[#E07A48]">domain</span>
+            <span>Industry Portal</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Comprehensive Platform Footer with All Important Links -->
+  <footer id="site-comprehensive-footer" class="pt-16 pb-12 border-t border-stone-200/90 dark:border-white/[0.08] bg-[#FAF8F5]/90 dark:bg-[#070709] text-xs text-stone-600 dark:text-stone-400 transition-colors duration-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+      
+      <!-- Top Grid: 3 Organized Column Sets -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+        
+        <!-- Col 1: Brand & Platform Identity -->
+        <div class="lg:col-span-2 space-y-4">
+          <div class="flex items-center gap-2">
+            <span class="text-xl font-display font-bold tracking-tight text-stone-900 dark:text-stone-100 uppercase">JOBLEX</span>
+          </div>
+          <p class="text-xs text-stone-600 dark:text-stone-400 leading-relaxed max-w-sm">
+            National unified academia-industry collaboration and placement architecture. Aligning dynamic collegiate curricula with live industrial competency vectors and NEP-2020 accreditation standards.
+          </p>
+          <div class="pt-2 flex items-center gap-2 text-[11px] font-mono text-[#2D5542] dark:text-[#4EBA87]">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>Live Platform • 450+ Universities Connected</span>
+          </div>
+        </div>
+
+        <!-- Col 2: Portals -->
+        <div class="space-y-3">
+          <h4 class="text-xs font-mono font-bold uppercase tracking-wider text-stone-900 dark:text-stone-100">Portals</h4>
+          <ul class="space-y-2 text-xs">
+            <li><a id="footer-link-portal-student" href="student.html" class="hover:text-stone-900 dark:hover:text-stone-100 transition">Student Portal</a></li>
+            <li><a id="footer-link-portal-academy" href="academy.html" class="hover:text-stone-900 dark:hover:text-stone-100 transition">Academy Portal</a></li>
+            <li><a id="footer-link-portal-industry" href="industry.html" class="hover:text-stone-900 dark:hover:text-stone-100 transition">Company Portal</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: Pricing & Company -->
+        <div class="space-y-3">
+          <h4 class="text-xs font-mono font-bold uppercase tracking-wider text-stone-900 dark:text-stone-100">Pricing & Company</h4>
+          <ul class="space-y-2 text-xs">
+            <li><a id="footer-link-home" href="index.html" class="hover:text-stone-900 dark:hover:text-stone-100 transition">Home</a></li>
+            <li><a id="footer-link-about" href="about.html" class="hover:text-stone-900 dark:hover:text-stone-100 transition">About Us & Goals</a></li>
+            <li><a id="footer-link-pricing" href="pricing.html" class="hover:text-stone-900 dark:hover:text-stone-100 transition">Pricing Overview</a></li>
+            <li><a id="footer-link-student-plans" href="pricing.html" class="hover:text-stone-900 dark:hover:text-stone-100 transition">Student Plans</a></li>
+            <li><a id="footer-link-uni-plans" href="pricing.html" class="hover:text-stone-900 dark:hover:text-stone-100 transition">University Plans</a></li>
+            <li><a id="footer-link-company-plan" href="pricing.html" class="hover:text-stone-900 dark:hover:text-stone-100 transition">Company Plans</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Bottom Sub-Footer: Copyright, Standards, Legal -->
+      <div class="pt-8 border-t border-stone-200/60 dark:border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-stone-500 dark:text-stone-500">
+        <div class="flex items-center gap-2">
+          <span>&copy; 2026 JOBLEX Platform. All rights reserved.</span>
+          <span>•</span>
+          <span>NEP-2020 Compliant</span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-4 sm:gap-6">
+          <a id="footer-link-privacy" href="about.html#security" class="hover:text-stone-900 dark:hover:text-stone-300 transition">Privacy & Data Governance</a>
+          <a id="footer-link-terms" href="about.html#terms" class="hover:text-stone-900 dark:hover:text-stone-300 transition">Institutional Terms</a>
+          <a id="footer-link-accreditation" href="about.html#outcomes" class="hover:text-stone-900 dark:hover:text-stone-300 transition">Accreditation Standards</a>
+          <a id="footer-link-security" href="about.html#security" class="hover:text-stone-900 dark:hover:text-stone-300 transition">Security Telemetry</a>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- Background Three.js & Animation scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="/js/frontend/three-scene.js"></script>
+  <script src="/js/frontend/api-client.js"></script>
+  <script src="/js/frontend/animations.js"></script>
+</body>
+</html>

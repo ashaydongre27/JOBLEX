@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Onboarding & Personalization | JOBLEX</title>
+  <!-- Google Fonts Preconnect -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script src="/js/frontend/theme.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            sans: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+            serif: ['Newsreader', 'Georgia', 'serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          colors: {
+            bone: { 50: '#FAF9F6', 100: '#F4F2EC', 200: '#E8E5DC', 300: '#D7D2C5' },
+            obsidian: { 950: '#070709', 900: '#0C0D10', 800: '#111215', 700: '#16181D', 600: '#22252C' },
+            sage: { 50: '#F2F6F3', 100: '#E3EDE6', 500: '#3D7055', 600: '#2D5542', 700: '#1E3C2E', glow: '#4EBA87' },
+            terracotta: { 50: '#FAF4F0', 100: '#F4E7DF', 500: '#B85E2E', 600: '#944C23', glow: '#E07A48' },
+            ochre: { 50: '#FAF6EF', 100: '#F4EBDA', 500: '#A67332', 600: '#855828', glow: '#D4973B' }
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    .glass-card { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(16px); border: 1px solid rgba(139, 92, 246, 0.2); }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between p-4 sm:p-8 relative overflow-x-hidden bg-gradient-to-br from-gray-950 via-[#0a051d] to-gray-950">
+
+  <!-- Background Decorative Glowing Orbs -->
+  <div class="fixed top-10 left-10 w-96 h-96 bg-purple-600/15 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="fixed bottom-10 right-10 w-96 h-96 bg-cyan-600/15 rounded-full blur-3xl pointer-events-none"></div>
+
+  <!-- Header Logo & User Navbar -->
+  <header class="w-full max-w-4xl mx-auto flex items-center justify-between py-4 border-b border-gray-800/80 mb-6 relative z-10">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-cyan-500 flex items-center justify-center font-black text-white text-xl shadow-lg">
+        ⚡
+      </div>
+      <div>
+        <h1 class="font-extrabold text-lg text-white tracking-wide">JOBLEX <span class="text-xs px-2 py-0.5 rounded-full bg-purple-950 border border-purple-500/40 text-purple-300">Nexus AI</span></h1>
+        <p class="text-[11px] text-gray-400">Student Personalization Wizard</p>
+      </div>
+    </div>
+    <div class="nav-user-account-container"></div>
+  </header>
+
+  <!-- Main Wizard Container -->
+  <main class="w-full max-w-2xl mx-auto relative z-10 my-auto">
+    <div class="glass-card rounded-3xl p-6 sm:p-10 shadow-2xl space-y-8">
+
+      <!-- Progress Header -->
+      <div class="space-y-3">
+        <div class="flex justify-between items-center text-xs font-semibold">
+          <span class="text-purple-400 font-mono tracking-wider uppercase" id="wizard-step-label">Step 1 of 4: Academic Background</span>
+          <span class="text-gray-400 font-mono" id="wizard-percent-label">25% Completed</span>
+        </div>
+        <div class="w-full bg-gray-900 rounded-full h-2 overflow-hidden border border-gray-800">
+          <div id="wizard-progress-bar" class="bg-gradient-to-r from-purple-600 via-indigo-500 to-cyan-400 h-full w-1/4 transition-all duration-500"></div>
+        </div>
+      </div>
+
+      <!-- Form Steps Container -->
+      <form id="onboarding-form" onsubmit="handleOnboardingSubmit(event)" class="space-y-6">
+
+        <!-- STEP 1: Academic Profile & Specialization -->
+        <div id="step-1" class="step-panel space-y-5">
+          <div>
+            <h2 class="text-xl font-bold text-white flex items-center gap-2">
+              <span>🎓</span> Tell us about your Academic Specialization
+            </h2>
+            <p class="text-xs text-gray-400 mt-1">This allows JOBLEX to tailor research projects, internships, and skill pathways to your institution.</p>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Higher Education Institution</label>
+              <input type="text" id="ob-institution" required placeholder="e.g. Delhi University / IIT / NIT / BITS / State University" class="w-full px-4 py-3 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-purple-500 focus:outline-none transition">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Degree / Course</label>
+                <select id="ob-degree" class="w-full px-4 py-3 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-purple-500 focus:outline-none transition">
+                  <option value="BAMS Undergraduate">BAMS (Bachelor of Ayurvedic Med. & Surgery)</option>
+                  <option value="B.Tech / B.E. Computer Science">B.Tech / B.E. Computer Science</option>
+                  <option value="B.Sc / M.Sc Bio-Technology">B.Sc / M.Sc Bio-Technology & Phytochemistry</option>
+                  <option value="M.D. / M.S. Dravyaguna">M.D. / M.S. Dravyaguna & Pharmacology</option>
+                  <option value="B.Pharm / M.Pharm">B.Pharm / M.Pharm</option>
+                  <option value="Other Science & Tech Degree">Other Science & Tech Degree</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Academic Year</label>
+                <select id="ob-year" class="w-full px-4 py-3 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-purple-500 focus:outline-none transition">
+                  <option value="1st Year">1st Year</option>
+                  <option value="2nd Year">2nd Year</option>
+                  <option value="3rd Year" selected>3rd Year</option>
+                  <option value="4th Year / Final Year">4th Year / Final Year</option>
+                  <option value="Postgraduate / PhD Scholar">Postgraduate / PhD Scholar</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Department / Specialization</label>
+              <input type="text" id="ob-department" placeholder="e.g. Phytopharmacology, Health Informatics, AI Systems" class="w-full px-4 py-3 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-purple-500 focus:outline-none transition">
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: Social & Developer Profile Links -->
+        <div id="step-2" class="step-panel hidden space-y-5">
+          <div>
+            <h2 class="text-xl font-bold text-white flex items-center gap-2">
+              <span>🔗</span> Link your Professional & Coding Profiles
+            </h2>
+            <p class="text-xs text-gray-400 mt-1">Recruiters and corporate R&D leads inspect verified portfolios and competitive coding profiles.</p>
+          </div>
+
+          <div class="space-y-3.5">
+            <div>
+              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                <span class="text-blue-400">🌐</span> LinkedIn Profile URL
+              </label>
+              <input type="url" id="link-linkedin" placeholder="https://linkedin.com/in/yourname" class="w-full px-4 py-2.5 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-blue-500 focus:outline-none transition">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                <span class="text-purple-400">💻</span> GitHub Profile URL
+              </label>
+              <input type="url" id="link-github" placeholder="https://github.com/yourusername" class="w-full px-4 py-2.5 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-purple-500 focus:outline-none transition">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                <span class="text-amber-400">🧩</span> LeetCode Profile URL
+              </label>
+              <input type="url" id="link-leetcode" placeholder="https://leetcode.com/u/yourusername" class="w-full px-4 py-2.5 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-amber-500 focus:outline-none transition">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                <span class="text-emerald-400">🏆</span> HackerRank Profile URL
+              </label>
+              <input type="url" id="link-hackerrank" placeholder="https://hackerrank.com/profile/yourusername" class="w-full px-4 py-2.5 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-emerald-500 focus:outline-none transition">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                <span class="text-cyan-400">🚀</span> Personal Portfolio Website
+              </label>
+              <input type="url" id="link-portfolio" placeholder="https://yourname.dev" class="w-full px-4 py-2.5 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-cyan-500 focus:outline-none transition">
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: Skill Verification & Technical Interests -->
+        <div id="step-3" class="step-panel hidden space-y-5">
+          <div>
+            <h2 class="text-xl font-bold text-white flex items-center gap-2">
+              <span>🔬</span> Select your Verified Competencies & Tech Stack
+            </h2>
+            <p class="text-xs text-gray-400 mt-1">Select the core technologies, laboratory methods, and tools you have experience with.</p>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">Technical & Laboratory Skills (Click to Select)</label>
+              <div class="flex flex-wrap gap-2" id="skills-pills-container">
+                <!-- Dynamically generated pills -->
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Add Custom Skill (Comma Separated)</label>
+              <input type="text" id="ob-custom-skills" placeholder="e.g. PyTorch, AutoDock Vina, Schedule T Compliance" class="w-full px-4 py-2.5 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-purple-500 focus:outline-none transition">
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4: Career Goals & Work Preferences -->
+        <div id="step-4" class="step-panel hidden space-y-5">
+          <div>
+            <h2 class="text-xl font-bold text-white flex items-center gap-2">
+              <span>🎯</span> Career Target & Work Preferences
+            </h2>
+            <p class="text-xs text-gray-400 mt-1">Help Zulu AI recommend matching internships, micro-gigs, and corporate job openings.</p>
+          </div>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Primary Target Job Role</label>
+              <input type="text" id="ob-target-role" placeholder="e.g. Phytochemical Research Intern / Software Engineer" class="w-full px-4 py-3 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-purple-500 focus:outline-none transition">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Preferred Opportunity Type</label>
+                <select id="ob-opportunity-type" class="w-full px-4 py-3 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-purple-500 focus:outline-none transition">
+                  <option value="Internship">Corporate Internship</option>
+                  <option value="Job">Full-Time Corporate Job</option>
+                  <option value="Micro-Gig">Micro-Gigs & Research Bounties</option>
+                  <option value="All">Open to All Opportunities</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Work Mode</label>
+                <select id="ob-work-mode" class="w-full px-4 py-3 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-purple-500 focus:outline-none transition">
+                  <option value="Hybrid">Hybrid (On-Site + Remote)</option>
+                  <option value="Remote">100% Remote / Online</option>
+                  <option value="Onsite">On-Site Laboratory / Office</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Preferred Cities / Locations</label>
+              <input type="text" id="ob-location" placeholder="e.g. Delhi-NCR, Bengaluru, Haridwar, Remote" class="w-full px-4 py-3 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-purple-500 focus:outline-none transition">
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="pt-6 border-t border-gray-800/80 flex justify-between items-center">
+          <button type="button" id="wizard-prev-btn" onclick="navigateWizardStep(-1)" class="hidden px-5 py-2.5 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-700 text-gray-300 font-bold text-xs transition">
+            ◀ Back
+          </button>
+          <div></div>
+          <button type="button" id="wizard-next-btn" onclick="navigateWizardStep(1)" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg transition">
+            Next Step ➔
+          </button>
+          <button type="submit" id="wizard-submit-btn" class="hidden px-8 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-xs uppercase tracking-wider shadow-lg transition">
+            🚀 Launch Personalized Dashboard
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </main>
+
+  <footer class="w-full max-w-4xl mx-auto text-center py-4 text-xs text-gray-500 relative z-10">
+    JOBLEX Academia-Industry Portal &copy; 2026. All rights reserved.
+  </footer>
+
+  <script src="/js/frontend/api-client.js"></script>
+  <script>
+    let currentStep = 1;
+    const totalSteps = 4;
+    const SELECTED_SKILLS = new Set(["Herbal Formulation", "Pharmacognosy", "HPTLC", "Python"]);
+
+    const ALL_SKILL_OPTIONS = [
+      "Herbal Formulation", "Pharmacognosy", "HPTLC Densitometry", "HPLC Fingerprinting",
+      "Good Laboratory Practice (GLP)", "In-Silico AutoDock", "Python", "Machine Learning",
+      "Data Analysis", "React", "Node.js", "SQL", "Pandas", "Phytochemistry", "Clinical Trials (GCP)"
+    ];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = JoblexApiClient.getCurrentUser();
+      if (user) {
+        if (user.institution) document.getElementById('ob-institution').value = user.institution;
+        if (user.department) document.getElementById('ob-department').value = user.department;
+        if (user.year) document.getElementById('ob-year').value = user.year;
+        if (user.social_links) {
+          if (user.social_links.linkedin) document.getElementById('link-linkedin').value = user.social_links.linkedin;
+          if (user.social_links.github) document.getElementById('link-github').value = user.social_links.github;
+          if (user.social_links.leetcode) document.getElementById('link-leetcode').value = user.social_links.leetcode;
+          if (user.social_links.hackerrank) document.getElementById('link-hackerrank').value = user.social_links.hackerrank;
+          if (user.social_links.portfolio) document.getElementById('link-portfolio').value = user.social_links.portfolio;
+        }
+      }
+      renderSkillPills();
+    });
+
+    function renderSkillPills() {
+      const container = document.getElementById('skills-pills-container');
+      if (!container) return;
+      container.innerHTML = ALL_SKILL_OPTIONS.map(skill => {
+        const isSelected = SELECTED_SKILLS.has(skill);
+        return `
+          <button type="button" onclick="toggleSkillPill('${skill}')" class="px-3 py-1.5 rounded-xl text-xs font-semibold transition border ${
+            isSelected 
+              ? 'bg-purple-950/80 border-purple-500 text-purple-200 shadow-sm' 
+              : 'bg-black/40 border-gray-800 text-gray-400 hover:border-purple-500/40'
+          }">
+            ${isSelected ? '✓ ' : '+ '}${skill}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function toggleSkillPill(skill) {
+      if (SELECTED_SKILLS.has(skill)) {
+        SELECTED_SKILLS.delete(skill);
+      } else {
+        SELECTED_SKILLS.add(skill);
+      }
+      renderSkillPills();
+    }
+
+    function navigateWizardStep(delta) {
+      const targetStep = currentStep + delta;
+      if (targetStep < 1 || targetStep > totalSteps) return;
+
+      document.getElementById(`step-${currentStep}`).classList.add('hidden');
+      currentStep = targetStep;
+      document.getElementById(`step-${currentStep}`).classList.remove('hidden');
+
+      // Update Header Progress
+      const stepsText = [
+        "Step 1 of 4: Academic Background",
+        "Step 2 of 4: Social & Developer Profiles",
+        "Step 3 of 4: Skill Verification",
+        "Step 4 of 4: Career Goals & Work Mode"
+      ];
+      document.getElementById('wizard-step-label').innerText = stepsText[currentStep - 1];
+      document.getElementById('wizard-percent-label').innerText = `${currentStep * 25}% Completed`;
+      document.getElementById('wizard-progress-bar').style.width = `${currentStep * 25}%`;
+
+      // Update Navigation Buttons
+      const prevBtn = document.getElementById('wizard-prev-btn');
+      const nextBtn = document.getElementById('wizard-next-btn');
+      const submitBtn = document.getElementById('wizard-submit-btn');
+
+      if (currentStep === 1) {
+        prevBtn.classList.add('hidden');
+      } else {
+        prevBtn.classList.remove('hidden');
+      }
+
+      if (currentStep === totalSteps) {
+        nextBtn.classList.add('hidden');
+        submitBtn.classList.remove('hidden');
+      } else {
+        nextBtn.classList.remove('hidden');
+        submitBtn.classList.add('hidden');
+      }
+    }
+
+    async function handleOnboardingSubmit(e) {
+      e.preventDefault();
+      const submitBtn = document.getElementById('wizard-submit-btn');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Persisting Profile...';
+      }
+
+      const customSkills = (document.getElementById('ob-custom-skills').value || '')
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
+
+      const allSkills = [...new Set([...SELECTED_SKILLS, ...customSkills])];
+
+      const onboardingData = {
+        institution: document.getElementById('ob-institution').value,
+        degree: document.getElementById('ob-degree').value,
+        year: document.getElementById('ob-year').value,
+        department: document.getElementById('ob-department').value,
+        selectedSkills: allSkills,
+        targetRole: document.getElementById('ob-target-role').value || 'Phytochemical Research Intern',
+        opportunityType: document.getElementById('ob-opportunity-type').value,
+        workMode: document.getElementById('ob-work-mode').value,
+        location: document.getElementById('ob-location').value || 'Delhi-NCR / Hybrid'
+      };
+
+      const socialLinks = {
+        linkedin: document.getElementById('link-linkedin').value,
+        github: document.getElementById('link-github').value,
+        leetcode: document.getElementById('link-leetcode').value,
+        hackerrank: document.getElementById('link-hackerrank').value,
+        portfolio: document.getElementById('link-portfolio').value
+      };
+
+      await JoblexApiClient.completeStudentOnboarding(onboardingData, socialLinks);
+
+      window.location.href = '/student.html';
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "name": "JOBLEX",
+  "description": "Academia-Industry Collaboration & Placement Portal with AI competency vector matching, dynamic syllabus modernization, and verified placement dossiers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
