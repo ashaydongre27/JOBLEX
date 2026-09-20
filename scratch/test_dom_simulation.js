@@ -186,16 +186,14 @@ assert.ok(html.includes("arrowSvg.style.transform = isPastHero ? 'rotate(180deg)
 console.log('✓ Floating Scroll Capsule & direction state passed');
 
 // ==========================================
-// 6. Test Hero Vertical Scroll Line Indicator & Reduced Motion Support
+// 6. Test Clean Hero Lines Removal & Accessibility Reduced Motion Support
 // ==========================================
-console.log('\n=== TEST 6: Scroll Line Indicator & Accessibility Reduced Motion ===');
-assert.ok(html.includes('scroll-line-anim'), 'scroll-line-anim element must exist in index.html');
-assert.ok(css.includes('.scroll-line-anim'), '.scroll-line-anim rule must exist in css/styles.css');
-assert.ok(css.includes('@keyframes scroll-line-drop'), 'scroll-line-drop keyframes must exist in css/styles.css');
-
+console.log('\n=== TEST 6: Clean Hero & Accessibility Reduced Motion ===');
+const heroSlice = html.slice(html.indexOf('id="hero"'), html.indexOf('id="hero-main-container"'));
+assert.ok(!heroSlice.includes('crosshair'), 'Hero crosshairs must be removed');
 assert.ok(css.includes('@media (prefers-reduced-motion: reduce)'), 'prefers-reduced-motion query must exist in css/styles.css');
 assert.ok(css.includes('animation: none !important;'), 'Keyframes must be disabled under prefers-reduced-motion');
-console.log('✓ Scroll line indicator & reduced motion passed');
+console.log('✓ Clean hero & reduced motion passed');
 
 // ==========================================
 // 7. Test Inner Frame Cross-Dots in Synergy Cards
