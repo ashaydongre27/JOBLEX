@@ -783,7 +783,7 @@
 
       <!-- The pinned sticky scroll area — height = viewport × (cards - 1) + 100vh for the pin -->
       <div id="sticky-cards-scroll-driver" class="sticky-cards-driver">
-        <div class="sticky-cards sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden px-4 sm:px-8">
+        <div class="sticky-cards h-screen w-full flex items-center justify-center overflow-hidden px-4 sm:px-8">
           <!-- Card stack container -->
           <div id="sticky-card-stack" class="relative" style="height: min(82vh, 620px); width: min(90vw, 700px); max-width: 700px;">
             <!-- Card 1: Student Portal -->
@@ -1300,10 +1300,7 @@
       const total = cards.length;
       if (!total || !driver) return;
 
-      // Set scroll driver height so there's room for (total-1) transitions
-      driver.style.height = (total * 100) + 'vh';
-
-      // Initial state: card 0 visible, rest below
+      // Initial state: card 0 visible, rest translated below
       gsap.set(cards[0], { yPercent: 0, scale: 1, rotation: 0 });
       for (let i = 1; i < total; i++) {
         gsap.set(cards[i], { yPercent: 100, scale: 1, rotation: 0 });
@@ -1314,17 +1311,16 @@
         dots.forEach((d, i) => d.classList.toggle('active', i === index));
       }
 
-      // Build one scrubbed timeline pinned to the driver div
+      // Build one scrubbed timeline — GSAP pins .sticky-cards and adds its own spacer
       const tl = gsap.timeline({
         scrollTrigger: {
-          trigger: '#sticky-cards-scroll-driver',
+          trigger: '.sticky-cards',
           start: 'top top',
           end: () => '+=' + (window.innerHeight * (total - 1)),
-          pin: '.sticky-cards',
+          pin: true,          // pin the trigger element itself
           scrub: 0.6,
-          pinSpacing: false,
+          pinSpacing: true,   // GSAP manages the scroll spacer
           onUpdate(self) {
-            // Update dots based on progress
             const step = Math.round(self.progress * (total - 1));
             setActiveDot(Math.min(step, total - 1));
           },

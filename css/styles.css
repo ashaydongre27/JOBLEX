@@ -1422,9 +1422,6 @@ html:not(.dark) .scroll-floating-btn:hover {
 /* ===================================================================
    STICKY CARD STACK — Portal Showcase
    =================================================================== */
-.sticky-cards-driver {
-  height: calc(var(--sticky-card-count, 5) * 100vh);
-}
 
 .sticky-card {
   position: absolute;
