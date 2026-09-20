@@ -1426,14 +1426,14 @@ html:not(.dark) .scroll-floating-btn:hover {
 .synergy-stack-stage {
   position: relative;
   width: 100%;
-  max-width: 44rem;
-  height: 380px;
+  max-width: 54rem;
+  height: 420px;
   margin: 0 auto;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .synergy-stack-stage {
-    height: 430px;
+    height: 560px;
   }
 }
 

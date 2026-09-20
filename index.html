@@ -820,10 +820,10 @@
 
         <!-- Sticky Card Stage for Synergy Tripartite Nodes (StickyCard002 Port) -->
         <div class="synergy-stack-wrapper relative w-full flex justify-center items-center py-2">
-          <div id="synergy-card-stage" class="synergy-stack-stage relative w-full max-w-2xl h-[390px] sm:h-[370px] mx-auto">
+          <div id="synergy-card-stage" class="synergy-stack-stage relative w-full max-w-4xl h-[440px] sm:h-[410px] mx-auto">
             
             <!-- Node 1: Academy -->
-            <div id="synergy-card-1" class="synergy-stack-card liquid-glass synergy-node glow-border-hover rounded-2xl p-6 sm:p-7 border-2 border-[#2D5542] dark:border-[#4EBA87] shadow-xl space-y-4 sm:space-y-5 transition-colors duration-300 absolute inset-0">
+            <div id="synergy-card-1" class="synergy-stack-card liquid-glass synergy-node glow-border-hover rounded-2xl p-6 sm:p-7 border-2 border-[#2D5542] dark:border-[#4EBA87] shadow-xl transition-colors duration-300 absolute inset-0 overflow-hidden">
               <div class="bracket bracket-tl"></div>
               <div class="bracket bracket-tr"></div>
               <div class="bracket bracket-bl"></div>
@@ -836,33 +836,50 @@
                 <div class="cross-dot" style="top: 100%; left: 100%;"></div>
               </div>
 
-              <div class="flex items-center justify-between">
-                <span class="w-10 h-10 rounded-xl bg-[#2D5542]/10 text-[#2D5542] dark:text-[#4EBA87] flex items-center justify-center border border-[#2D5542]/20">
-                  <span class="material-symbols-outlined text-lg">school</span>
-                </span>
-                <span class="font-space-mono text-[10px] tracking-wider px-2.5 py-0.5 rounded-full bg-[#2D5542]/10 text-[#2D5542] dark:text-[#4EBA87] font-semibold border border-[#2D5542]/20 uppercase">NEP-2020 OBE</span>
-              </div>
-              
-              <div>
-                <div class="font-space-mono text-[10px] text-stone-500 dark:text-neutral-500 tracking-wider mb-1">[NODE_01 :: ACADEMIA]</div>
-                <h3 class="text-base sm:text-lg font-bold font-display text-stone-900 dark:text-stone-100">Academia & Universities</h3>
-              </div>
-              
-              <p class="text-xs sm:text-[13px] text-stone-600 dark:text-stone-400 leading-relaxed">
-                Receives live corporate requisition vectors to automatically identify syllabus deficits, generate Board of Studies amendments, and meet NAAC/NBA accreditation criteria.
-              </p>
-              
-              <div class="p-3.5 rounded-xl bg-stone-50/80 dark:bg-white/[0.03] border border-stone-200/60 dark:border-white/[0.06] text-[11px] space-y-1.5 backdrop-blur-md font-space-mono">
-                <div class="text-[10px] text-stone-500 dark:text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
-                  <span class="w-1.5 h-1.5 rounded-full bg-[#2D5542] dark:bg-[#4EBA87] animate-pulse"></span>
-                  <span>Output Signal</span>
+              <div class="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-5 h-full items-center">
+                <!-- Info Column -->
+                <div class="md:col-span-5 flex flex-col justify-between h-full space-y-3">
+                  <div class="flex items-center justify-between">
+                    <span class="w-10 h-10 rounded-xl bg-[#2D5542]/10 text-[#2D5542] dark:text-[#4EBA87] flex items-center justify-center border border-[#2D5542]/20">
+                      <span class="material-symbols-outlined text-lg">school</span>
+                    </span>
+                    <span class="font-space-mono text-[10px] tracking-wider px-2.5 py-0.5 rounded-full bg-[#2D5542]/10 text-[#2D5542] dark:text-[#4EBA87] font-semibold border border-[#2D5542]/20 uppercase">NEP-2020 OBE</span>
+                  </div>
+                  
+                  <div>
+                    <div class="font-space-mono text-[10px] text-stone-500 dark:text-neutral-500 tracking-wider mb-1">[NODE_01 :: ACADEMIA]</div>
+                    <h3 class="text-base sm:text-lg font-bold font-display text-stone-900 dark:text-stone-100">Academia & Universities</h3>
+                  </div>
+                  
+                  <p class="text-xs sm:text-[13px] text-stone-600 dark:text-stone-400 leading-relaxed">
+                    Receives live corporate requisition vectors to automatically identify syllabus deficits, generate Board of Studies amendments, and meet NAAC/NBA accreditation criteria.
+                  </p>
+                  
+                  <div class="p-3 rounded-xl bg-stone-50/80 dark:bg-white/[0.03] border border-stone-200/60 dark:border-white/[0.06] text-[11px] space-y-1 backdrop-blur-md font-space-mono">
+                    <div class="text-[10px] text-stone-500 dark:text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
+                      <span class="w-1.5 h-1.5 rounded-full bg-[#2D5542] dark:bg-[#4EBA87] animate-pulse"></span>
+                      <span>Output Signal</span>
+                    </div>
+                    <div class="font-semibold text-stone-900 dark:text-stone-100 text-xs">Accredited Course Outcomes (CO-PO)</div>
+                  </div>
                 </div>
-                <div class="font-semibold text-stone-900 dark:text-stone-100">Accredited Course Outcomes (CO-PO)</div>
+
+                <!-- Unique Image Column -->
+                <div class="md:col-span-7 h-48 md:h-full flex items-center justify-center">
+                  <div class="relative w-full h-full max-h-[330px] rounded-xl overflow-hidden border border-[#2D5542]/30 dark:border-[#4EBA87]/30 shadow-md bg-stone-900/20">
+                    <div class="absolute top-2 left-2 z-10 px-2 py-0.5 rounded bg-black/75 backdrop-blur-md text-[9px] font-mono text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                      <span>SYS_PREVIEW // CURRICULUM_GAP_AUDIT</span>
+                    </div>
+                    <img src="assets/screenshots/academy-curriculum.png" alt="Curriculum Gap Audit Matrix" class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none"></div>
+                  </div>
+                </div>
               </div>
             </div>
 
             <!-- Node 2: Students -->
-            <div id="synergy-card-2" class="synergy-stack-card liquid-glass synergy-node glow-border-hover rounded-2xl p-6 sm:p-7 border border-stone-200/90 dark:border-white/[0.08] shadow-xl space-y-4 sm:space-y-5 transition-colors duration-300 absolute inset-0">
+            <div id="synergy-card-2" class="synergy-stack-card liquid-glass synergy-node glow-border-hover rounded-2xl p-6 sm:p-7 border border-stone-200/90 dark:border-white/[0.08] shadow-xl transition-colors duration-300 absolute inset-0 overflow-hidden">
               <div class="bracket bracket-tl"></div>
               <div class="bracket bracket-tr"></div>
               <div class="bracket bracket-bl"></div>
@@ -875,33 +892,50 @@
                 <div class="cross-dot" style="top: 100%; left: 100%;"></div>
               </div>
 
-              <div class="flex items-center justify-between">
-                <span class="w-10 h-10 rounded-xl bg-[#855828]/10 text-[#855828] dark:text-[#D4973B] flex items-center justify-center border border-[#855828]/20">
-                  <span class="material-symbols-outlined text-lg">badge</span>
-                </span>
-                <span class="font-space-mono text-[10px] tracking-wider px-2.5 py-0.5 rounded-full bg-[#855828]/10 text-[#855828] dark:text-[#D4973B] font-semibold border border-[#855828]/20 uppercase">CANDIDATE DOSSIERS</span>
-              </div>
-              
-              <div>
-                <div class="font-space-mono text-[10px] text-stone-500 dark:text-neutral-500 tracking-wider mb-1">[NODE_02 :: CANDIDATES]</div>
-                <h3 class="text-base sm:text-lg font-bold font-display text-stone-900 dark:text-stone-100">Certified Students</h3>
-              </div>
+              <div class="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-5 h-full items-center">
+                <!-- Info Column -->
+                <div class="md:col-span-5 flex flex-col justify-between h-full space-y-3">
+                  <div class="flex items-center justify-between">
+                    <span class="w-10 h-10 rounded-xl bg-[#855828]/10 text-[#855828] dark:text-[#D4973B] flex items-center justify-center border border-[#855828]/20">
+                      <span class="material-symbols-outlined text-lg">badge</span>
+                    </span>
+                    <span class="font-space-mono text-[10px] tracking-wider px-2.5 py-0.5 rounded-full bg-[#855828]/10 text-[#855828] dark:text-[#D4973B] font-semibold border border-[#855828]/20 uppercase">CANDIDATE DOSSIERS</span>
+                  </div>
+                  
+                  <div>
+                    <div class="font-space-mono text-[10px] text-stone-500 dark:text-neutral-500 tracking-wider mb-1">[NODE_02 :: CANDIDATES]</div>
+                    <h3 class="text-base sm:text-lg font-bold font-display text-stone-900 dark:text-stone-100">Certified Students</h3>
+                  </div>
 
-              <p class="text-xs sm:text-[13px] text-stone-600 dark:text-stone-400 leading-relaxed">
-                Progress through phased 4-year roadmaps, maintain anti-decay skill XP streaks, and convert academic coursework into verified high-dimensional cosine vectors.
-              </p>
-              
-              <div class="p-3.5 rounded-xl bg-stone-50/80 dark:bg-white/[0.03] border border-stone-200/60 dark:border-white/[0.06] text-[11px] space-y-1.5 backdrop-blur-md font-space-mono">
-                <div class="text-[10px] text-stone-500 dark:text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
-                  <span class="w-1.5 h-1.5 rounded-full bg-[#855828] dark:bg-[#D4973B] animate-pulse"></span>
-                  <span>Output Signal</span>
+                  <p class="text-xs sm:text-[13px] text-stone-600 dark:text-stone-400 leading-relaxed">
+                    Progress through phased 4-year roadmaps, maintain anti-decay skill XP streaks, and convert academic coursework into verified high-dimensional cosine vectors.
+                  </p>
+                  
+                  <div class="p-3 rounded-xl bg-stone-50/80 dark:bg-white/[0.03] border border-stone-200/60 dark:border-white/[0.06] text-[11px] space-y-1 backdrop-blur-md font-space-mono">
+                    <div class="text-[10px] text-stone-500 dark:text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
+                      <span class="w-1.5 h-1.5 rounded-full bg-[#855828] dark:bg-[#D4973B] animate-pulse"></span>
+                      <span>Output Signal</span>
+                    </div>
+                    <div class="font-semibold text-stone-900 dark:text-stone-100 text-xs">Mathematically Verified Skill Vectors</div>
+                  </div>
                 </div>
-                <div class="font-semibold text-stone-900 dark:text-stone-100">Mathematically Verified Skill Vectors</div>
+
+                <!-- Unique Image Column -->
+                <div class="md:col-span-7 h-48 md:h-full flex items-center justify-center">
+                  <div class="relative w-full h-full max-h-[330px] rounded-xl overflow-hidden border border-[#855828]/30 dark:border-[#D4973B]/30 shadow-md bg-stone-900/20">
+                    <div class="absolute top-2 left-2 z-10 px-2 py-0.5 rounded bg-black/75 backdrop-blur-md text-[9px] font-mono text-amber-400 border border-amber-500/30 flex items-center gap-1.5">
+                      <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                      <span>SYS_PREVIEW // SKILL_CONSTELLATION</span>
+                    </div>
+                    <img src="assets/screenshots/student-skilltree.png" alt="Skill Constellation & Dependency Map" class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none"></div>
+                  </div>
+                </div>
               </div>
             </div>
 
             <!-- Node 3: Industry -->
-            <div id="synergy-card-3" class="synergy-stack-card liquid-glass synergy-node glow-border-hover rounded-2xl p-6 sm:p-7 border border-stone-200/90 dark:border-white/[0.08] shadow-xl space-y-4 sm:space-y-5 transition-colors duration-300 absolute inset-0">
+            <div id="synergy-card-3" class="synergy-stack-card liquid-glass synergy-node glow-border-hover rounded-2xl p-6 sm:p-7 border border-stone-200/90 dark:border-white/[0.08] shadow-xl transition-colors duration-300 absolute inset-0 overflow-hidden">
               <div class="bracket bracket-tl"></div>
               <div class="bracket bracket-tr"></div>
               <div class="bracket bracket-bl"></div>
@@ -914,28 +948,45 @@
                 <div class="cross-dot" style="top: 100%; left: 100%;"></div>
               </div>
 
-              <div class="flex items-center justify-between">
-                <span class="w-10 h-10 rounded-xl bg-[#944C23]/10 text-[#944C23] dark:text-[#E07A48] flex items-center justify-center border border-[#944C23]/20">
-                  <span class="material-symbols-outlined text-lg">domain</span>
-                </span>
-                <span class="font-space-mono text-[10px] tracking-wider px-2.5 py-0.5 rounded-full bg-[#944C23]/10 text-[#944C23] dark:text-[#E07A48] font-semibold border border-[#944C23]/20 uppercase">CORPORATE CAPITAL</span>
-              </div>
-              
-              <div>
-                <div class="font-space-mono text-[10px] text-stone-500 dark:text-neutral-500 tracking-wider mb-1">[NODE_03 :: INDUSTRY]</div>
-                <h3 class="text-base sm:text-lg font-bold font-display text-stone-900 dark:text-stone-100">Corporate Industry</h3>
-              </div>
+              <div class="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-5 h-full items-center">
+                <!-- Info Column -->
+                <div class="md:col-span-5 flex flex-col justify-between h-full space-y-3">
+                  <div class="flex items-center justify-between">
+                    <span class="w-10 h-10 rounded-xl bg-[#944C23]/10 text-[#944C23] dark:text-[#E07A48] flex items-center justify-center border border-[#944C23]/20">
+                      <span class="material-symbols-outlined text-lg">domain</span>
+                    </span>
+                    <span class="font-space-mono text-[10px] tracking-wider px-2.5 py-0.5 rounded-full bg-[#944C23]/10 text-[#944C23] dark:text-[#E07A48] font-semibold border border-[#944C23]/20 uppercase">CORPORATE CAPITAL</span>
+                  </div>
+                  
+                  <div>
+                    <div class="font-space-mono text-[10px] text-stone-500 dark:text-neutral-500 tracking-wider mb-1">[NODE_03 :: INDUSTRY]</div>
+                    <h3 class="text-base sm:text-lg font-bold font-display text-stone-900 dark:text-stone-100">Corporate Industry</h3>
+                  </div>
 
-              <p class="text-xs sm:text-[13px] text-stone-600 dark:text-stone-400 leading-relaxed">
-                Deploys live hiring mandates, recruits pre-screened talent without cold resume screening overhead, and sponsors bilateral R&D grants directly to collegiate laboratories.
-              </p>
-              
-              <div class="p-3.5 rounded-xl bg-stone-50/80 dark:bg-white/[0.03] border border-stone-200/60 dark:border-white/[0.06] text-[11px] space-y-1.5 backdrop-blur-md font-space-mono">
-                <div class="text-[10px] text-stone-500 dark:text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
-                  <span class="w-1.5 h-1.5 rounded-full bg-[#944C23] dark:bg-[#E07A48] animate-pulse"></span>
-                  <span>Output Signal</span>
+                  <p class="text-xs sm:text-[13px] text-stone-600 dark:text-stone-400 leading-relaxed">
+                    Deploys live hiring mandates, recruits pre-screened talent without cold resume screening overhead, and sponsors bilateral R&D grants directly to collegiate laboratories.
+                  </p>
+                  
+                  <div class="p-3 rounded-xl bg-stone-50/80 dark:bg-white/[0.03] border border-stone-200/60 dark:border-white/[0.06] text-[11px] space-y-1 backdrop-blur-md font-space-mono">
+                    <div class="text-[10px] text-stone-500 dark:text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
+                      <span class="w-1.5 h-1.5 rounded-full bg-[#944C23] dark:bg-[#E07A48] animate-pulse"></span>
+                      <span>Output Signal</span>
+                    </div>
+                    <div class="font-semibold text-stone-900 dark:text-stone-100 text-xs">Live Placement Mandates & R&D Grants</div>
+                  </div>
                 </div>
-                <div class="font-semibold text-stone-900 dark:text-stone-100">Live Placement Mandates & R&D Grants</div>
+
+                <!-- Unique Image Column -->
+                <div class="md:col-span-7 h-48 md:h-full flex items-center justify-center">
+                  <div class="relative w-full h-full max-h-[330px] rounded-xl overflow-hidden border border-[#944C23]/30 dark:border-[#E07A48]/30 shadow-md bg-stone-900/20">
+                    <div class="absolute top-2 left-2 z-10 px-2 py-0.5 rounded bg-black/75 backdrop-blur-md text-[9px] font-mono text-orange-400 border border-orange-500/30 flex items-center gap-1.5">
+                      <span class="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse"></span>
+                      <span>SYS_PREVIEW // CANDIDATE_DOSSIERS</span>
+                    </div>
+                    <img src="assets/screenshots/industry-candidates.png" alt="Candidate Dossiers & Verified Talent Ledger" class="w-full h-full object-cover object-top hover:scale-105 transition-transform duration-500">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none"></div>
+                  </div>
+                </div>
               </div>
             </div>
 
