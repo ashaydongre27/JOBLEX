@@ -764,69 +764,8 @@
       </div>
     </section>
 
-    <!-- STICKY CARD STACK — Portal Showcase (GSAP ScrollTrigger pinned) -->
-    <section id="sticky-cards-section" class="relative border-b border-stone-200/80 dark:border-white/[0.08]">
-      <!-- Section label -->
-      <div class="sticky-cards-label max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-28 pb-8 text-center">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-stone-300/70 dark:border-white/[0.1] bg-stone-100/60 dark:bg-white/[0.04] text-[10px] font-mono tracking-[0.15em] uppercase text-stone-500 dark:text-stone-400 mb-5 reveal-on-scroll">
-          <span class="w-1.5 h-1.5 rounded-full bg-[#2D5542] dark:bg-[#4EBA87] animate-pulse inline-block"></span>
-          Platform Preview
-        </div>
-        <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-stone-900 dark:text-white reveal-on-scroll delay-100">
-          Every Portal.<br class="hidden sm:block">
-          <em class="font-newsreader font-light not-italic text-[#2D5542] dark:text-[#4EBA87]">Precision-Built.</em>
-        </h2>
-        <p class="mt-4 text-stone-500 dark:text-stone-400 text-sm sm:text-base max-w-lg mx-auto reveal-on-scroll delay-200">
-          Scroll through JOBLEX — from the student dashboard to industry workflows and academy intelligence.
-        </p>
-      </div>
-
-      <!-- The pinned sticky scroll area — height = viewport × (cards - 1) + 100vh for the pin -->
-      <div id="sticky-cards-scroll-driver" class="sticky-cards-driver">
-        <div class="sticky-cards h-screen w-full flex items-center justify-center overflow-hidden px-4 sm:px-8">
-          <!-- Card stack container -->
-          <div id="sticky-card-stack" class="relative" style="height: min(82vh, 620px); width: min(90vw, 700px); max-width: 700px;">
-            <!-- Card 1: Student Portal -->
-            <div class="sticky-card" data-card="0" data-label="Student Portal">
-              <img src="assets/screenshots/student-portal.png" alt="Student Portal" class="w-full h-full object-cover" loading="eager">
-              <div class="sticky-card-pill">Student Portal</div>
-            </div>
-            <!-- Card 2: Academy Portal -->
-            <div class="sticky-card" data-card="1" data-label="Academy Portal">
-              <img src="assets/screenshots/academy-portal.png" alt="Academy Portal" class="w-full h-full object-cover" loading="lazy">
-              <div class="sticky-card-pill">Academy Portal</div>
-            </div>
-            <!-- Card 3: Industry Portal -->
-            <div class="sticky-card" data-card="2" data-label="Industry Portal">
-              <img src="assets/screenshots/industry-portal.png" alt="Industry Portal" class="w-full h-full object-cover" loading="lazy">
-              <div class="sticky-card-pill">Industry Portal</div>
-            </div>
-            <!-- Card 4: Zulu AI -->
-            <div class="sticky-card" data-card="3" data-label="Zulu AI">
-              <img src="assets/screenshots/zulu-ai.png" alt="Zulu AI" class="w-full h-full object-cover" loading="lazy">
-              <div class="sticky-card-pill">Zulu AI</div>
-            </div>
-            <!-- Card 5: Resume Analyzer -->
-            <div class="sticky-card" data-card="4" data-label="Resume Analyzer">
-              <img src="assets/screenshots/resume-analyzer.png" alt="Resume Analyzer" class="w-full h-full object-cover" loading="lazy">
-              <div class="sticky-card-pill">Resume Analyzer</div>
-            </div>
-          </div>
-
-          <!-- Progress dots -->
-          <div id="sticky-card-dots" class="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2.5 z-20">
-            <div class="sticky-dot active" data-dot="0"></div>
-            <div class="sticky-dot" data-dot="1"></div>
-            <div class="sticky-dot" data-dot="2"></div>
-            <div class="sticky-dot" data-dot="3"></div>
-            <div class="sticky-dot" data-dot="4"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-
-    <section id="synergy-section" class="py-24 sm:py-32 relative overflow-hidden bg-graph z-10">
+    <!-- INTERACTIVE TRIPARTITE ECOSYSTEM SYNERGY SECTION (Futuristic Editorial Collaborative Network) -->
+    <section id="synergy-section" class="min-h-screen py-12 sm:py-16 relative overflow-hidden bg-graph z-10 flex flex-col justify-center">
       <!-- Architectural HUD perimeter frame lines -->
       <div class="frame-line absolute top-0 left-0 right-0 h-px"></div>
       <div class="frame-line absolute bottom-0 left-0 right-0 h-px"></div>
@@ -843,13 +782,13 @@
       <div class="crosshair bottom-0 left-4 sm:left-12 -translate-x-1/2 translate-y-1/2 hidden md:flex">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 0V14M0 7H14" stroke="currentColor" stroke-width="1"/></svg>
       </div>
-      <div class="crosshair bottom-0 right-4 sm:right-12 translate-x-1/2 translate-y-1/2 hidden md:flex">
+      <div class="crosshair bottom-0 right-4 sm:right-12 translate-x-1/2 -translate-y-1/2 hidden md:flex">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 0V14M0 7H14" stroke="currentColor" stroke-width="1"/></svg>
       </div>
 
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full flex flex-col items-center">
         
-        <div class="max-w-3xl space-y-3 mb-10 text-left reveal-from-left">
+        <div class="max-w-3xl w-full space-y-3 mb-6 text-left sm:text-center mx-auto">
           <div class="inline-flex items-center gap-2 font-space-mono text-[10px] tracking-[0.25em] text-[#2D5542] dark:text-[#4EBA87] uppercase font-semibold">
             <span class="beacon-dot bg-emerald-500"></span>
             <span>03 // TRIPARTITE COLLABORATIVE ENGINE</span>
@@ -858,13 +797,13 @@
           <h2 class="text-3xl sm:text-4xl lg:text-5xl font-display font-bold tracking-tight text-stone-900 dark:text-stone-100 leading-[1.1]">
             Unified Closed-Loop <span class="font-newsreader italic font-normal text-gradient-sage">Symbiosis</span>
           </h2>
-          <p class="font-space-mono text-xs sm:text-[13px] text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl">
+          <p class="font-space-mono text-xs sm:text-[13px] text-stone-600 dark:text-stone-400 leading-relaxed max-w-2xl mx-auto">
             An interconnected mathematical feedback loop linking academic curriculum development, verified student mastery, and live industrial talent pipelines.
           </p>
         </div>
 
         <!-- Interactive Synergy Stage Buttons -->
-        <div class="flex flex-wrap items-center gap-2 mb-10 reveal-scale delay-75">
+        <div class="flex flex-wrap items-center justify-start sm:justify-center gap-2 mb-6">
           <button id="synergy-btn-1" data-step="1" onclick="selectSynergyStep(1)" class="synergy-step-btn active px-4 py-2.5 rounded-xl font-space-mono text-xs font-semibold border border-stone-200/90 dark:border-white/[0.08] flex items-center gap-2 glass-pill transition-all">
             <span class="material-symbols-outlined text-sm">auto_stories</span>
             <span>1. Curriculum Alignment</span>
@@ -879,126 +818,128 @@
           </button>
         </div>
 
-        <!-- 3 Interactive Node Columns with dynamic focus -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8" data-stagger>
-          
-          <!-- Node 1: Academy -->
-          <div id="synergy-card-1" class="liquid-glass synergy-node tilt-card glow-border-hover rounded-2xl p-6 sm:p-7 border-2 border-[#2D5542] dark:border-[#4EBA87] shadow-sm space-y-5 transition-all duration-300 reveal-from-left delay-100 relative">
-            <div class="bracket bracket-tl"></div>
-            <div class="bracket bracket-tr"></div>
-            <div class="bracket bracket-bl"></div>
-            <div class="bracket bracket-br"></div>
-            <div class="inner-frame">
-              <div class="f-top"></div><div class="f-bottom"></div><div class="f-left"></div><div class="f-right"></div>
-              <div class="cross-dot" style="top: 0; left: 0;"></div>
-              <div class="cross-dot" style="top: 0; left: 100%;"></div>
-              <div class="cross-dot" style="top: 100%; left: 0;"></div>
-              <div class="cross-dot" style="top: 100%; left: 100%;"></div>
-            </div>
-
-            <div class="flex items-center justify-between">
-              <span class="w-10 h-10 rounded-xl bg-[#2D5542]/10 text-[#2D5542] dark:text-[#4EBA87] flex items-center justify-center border border-[#2D5542]/20">
-                <span class="material-symbols-outlined text-lg">school</span>
-              </span>
-              <span class="font-space-mono text-[10px] tracking-wider px-2.5 py-0.5 rounded-full bg-[#2D5542]/10 text-[#2D5542] dark:text-[#4EBA87] font-semibold border border-[#2D5542]/20 uppercase">NEP-2020 OBE</span>
-            </div>
+        <!-- Sticky Card Stage for Synergy Tripartite Nodes (StickyCard002 Port) -->
+        <div class="synergy-stack-wrapper relative w-full flex justify-center items-center py-2">
+          <div id="synergy-card-stage" class="synergy-stack-stage relative w-full max-w-2xl h-[390px] sm:h-[370px] mx-auto">
             
-            <div>
-              <div class="font-space-mono text-[10px] text-stone-500 dark:text-neutral-500 tracking-wider mb-1">[NODE_01 :: ACADEMIA]</div>
-              <h3 class="text-base sm:text-lg font-bold font-display text-stone-900 dark:text-stone-100">Academia & Universities</h3>
-            </div>
-            
-            <p class="text-xs sm:text-[13px] text-stone-600 dark:text-stone-400 leading-relaxed">
-              Receives live corporate requisition vectors to automatically identify syllabus deficits, generate Board of Studies amendments, and meet NAAC/NBA accreditation criteria.
-            </p>
-            
-            <div class="p-3.5 rounded-xl bg-stone-50/80 dark:bg-white/[0.03] border border-stone-200/60 dark:border-white/[0.06] text-[11px] space-y-1.5 backdrop-blur-md font-space-mono">
-              <div class="text-[10px] text-stone-500 dark:text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
-                <span class="w-1.5 h-1.5 rounded-full bg-[#2D5542] dark:bg-[#4EBA87] animate-pulse"></span>
-                <span>Output Signal</span>
+            <!-- Node 1: Academy -->
+            <div id="synergy-card-1" class="synergy-stack-card liquid-glass synergy-node glow-border-hover rounded-2xl p-6 sm:p-7 border-2 border-[#2D5542] dark:border-[#4EBA87] shadow-xl space-y-4 sm:space-y-5 transition-colors duration-300 absolute inset-0">
+              <div class="bracket bracket-tl"></div>
+              <div class="bracket bracket-tr"></div>
+              <div class="bracket bracket-bl"></div>
+              <div class="bracket bracket-br"></div>
+              <div class="inner-frame">
+                <div class="f-top"></div><div class="f-bottom"></div><div class="f-left"></div><div class="f-right"></div>
+                <div class="cross-dot" style="top: 0; left: 0;"></div>
+                <div class="cross-dot" style="top: 0; left: 100%;"></div>
+                <div class="cross-dot" style="top: 100%; left: 0;"></div>
+                <div class="cross-dot" style="top: 100%; left: 100%;"></div>
               </div>
-              <div class="font-semibold text-stone-900 dark:text-stone-100">Accredited Course Outcomes (CO-PO)</div>
-            </div>
-          </div>
 
-          <!-- Node 2: Students -->
-          <div id="synergy-card-2" class="liquid-glass synergy-node tilt-card glow-border-hover rounded-2xl p-6 sm:p-7 border border-stone-200/90 dark:border-white/[0.08] shadow-sm space-y-5 transition-all duration-300 reveal-scale delay-200 relative">
-            <div class="bracket bracket-tl"></div>
-            <div class="bracket bracket-tr"></div>
-            <div class="bracket bracket-bl"></div>
-            <div class="bracket bracket-br"></div>
-            <div class="inner-frame">
-              <div class="f-top"></div><div class="f-bottom"></div><div class="f-left"></div><div class="f-right"></div>
-              <div class="cross-dot" style="top: 0; left: 0;"></div>
-              <div class="cross-dot" style="top: 0; left: 100%;"></div>
-              <div class="cross-dot" style="top: 100%; left: 0;"></div>
-              <div class="cross-dot" style="top: 100%; left: 100%;"></div>
-            </div>
-
-            <div class="flex items-center justify-between">
-              <span class="w-10 h-10 rounded-xl bg-[#855828]/10 text-[#855828] dark:text-[#D4973B] flex items-center justify-center border border-[#855828]/20">
-                <span class="material-symbols-outlined text-lg">badge</span>
-              </span>
-              <span class="font-space-mono text-[10px] tracking-wider px-2.5 py-0.5 rounded-full bg-[#855828]/10 text-[#855828] dark:text-[#D4973B] font-semibold border border-[#855828]/20 uppercase">CANDIDATE DOSSIERS</span>
-            </div>
-            
-            <div>
-              <div class="font-space-mono text-[10px] text-stone-500 dark:text-neutral-500 tracking-wider mb-1">[NODE_02 :: CANDIDATES]</div>
-              <h3 class="text-base sm:text-lg font-bold font-display text-stone-900 dark:text-stone-100">Certified Students</h3>
-            </div>
-
-            <p class="text-xs sm:text-[13px] text-stone-600 dark:text-stone-400 leading-relaxed">
-              Progress through phased 4-year roadmaps, maintain anti-decay skill XP streaks, and convert academic coursework into verified high-dimensional cosine vectors.
-            </p>
-            
-            <div class="p-3.5 rounded-xl bg-stone-50/80 dark:bg-white/[0.03] border border-stone-200/60 dark:border-white/[0.06] text-[11px] space-y-1.5 backdrop-blur-md font-space-mono">
-              <div class="text-[10px] text-stone-500 dark:text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
-                <span class="w-1.5 h-1.5 rounded-full bg-[#855828] dark:bg-[#D4973B] animate-pulse"></span>
-                <span>Output Signal</span>
+              <div class="flex items-center justify-between">
+                <span class="w-10 h-10 rounded-xl bg-[#2D5542]/10 text-[#2D5542] dark:text-[#4EBA87] flex items-center justify-center border border-[#2D5542]/20">
+                  <span class="material-symbols-outlined text-lg">school</span>
+                </span>
+                <span class="font-space-mono text-[10px] tracking-wider px-2.5 py-0.5 rounded-full bg-[#2D5542]/10 text-[#2D5542] dark:text-[#4EBA87] font-semibold border border-[#2D5542]/20 uppercase">NEP-2020 OBE</span>
               </div>
-              <div class="font-semibold text-stone-900 dark:text-stone-100">Mathematically Verified Skill Vectors</div>
-            </div>
-          </div>
-
-          <!-- Node 3: Industry -->
-          <div id="synergy-card-3" class="liquid-glass synergy-node tilt-card glow-border-hover rounded-2xl p-6 sm:p-7 border border-stone-200/90 dark:border-white/[0.08] shadow-sm space-y-5 transition-all duration-300 reveal-from-right delay-300 relative">
-            <div class="bracket bracket-tl"></div>
-            <div class="bracket bracket-tr"></div>
-            <div class="bracket bracket-bl"></div>
-            <div class="bracket bracket-br"></div>
-            <div class="inner-frame">
-              <div class="f-top"></div><div class="f-bottom"></div><div class="f-left"></div><div class="f-right"></div>
-              <div class="cross-dot" style="top: 0; left: 0;"></div>
-              <div class="cross-dot" style="top: 0; left: 100%;"></div>
-              <div class="cross-dot" style="top: 100%; left: 0;"></div>
-              <div class="cross-dot" style="top: 100%; left: 100%;"></div>
-            </div>
-
-            <div class="flex items-center justify-between">
-              <span class="w-10 h-10 rounded-xl bg-[#944C23]/10 text-[#944C23] dark:text-[#E07A48] flex items-center justify-center border border-[#944C23]/20">
-                <span class="material-symbols-outlined text-lg">domain</span>
-              </span>
-              <span class="font-space-mono text-[10px] tracking-wider px-2.5 py-0.5 rounded-full bg-[#944C23]/10 text-[#944C23] dark:text-[#E07A48] font-semibold border border-[#944C23]/20 uppercase">CORPORATE CAPITAL</span>
-            </div>
-            
-            <div>
-              <div class="font-space-mono text-[10px] text-stone-500 dark:text-neutral-500 tracking-wider mb-1">[NODE_03 :: INDUSTRY]</div>
-              <h3 class="text-base sm:text-lg font-bold font-display text-stone-900 dark:text-stone-100">Corporate Industry</h3>
-            </div>
-
-            <p class="text-xs sm:text-[13px] text-stone-600 dark:text-stone-400 leading-relaxed">
-              Deploys live hiring mandates, recruits pre-screened talent without cold resume screening overhead, and sponsors bilateral R&D grants directly to collegiate laboratories.
-            </p>
-            
-            <div class="p-3.5 rounded-xl bg-stone-50/80 dark:bg-white/[0.03] border border-stone-200/60 dark:border-white/[0.06] text-[11px] space-y-1.5 backdrop-blur-md font-space-mono">
-              <div class="text-[10px] text-stone-500 dark:text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
-                <span class="w-1.5 h-1.5 rounded-full bg-[#944C23] dark:bg-[#E07A48] animate-pulse"></span>
-                <span>Output Signal</span>
+              
+              <div>
+                <div class="font-space-mono text-[10px] text-stone-500 dark:text-neutral-500 tracking-wider mb-1">[NODE_01 :: ACADEMIA]</div>
+                <h3 class="text-base sm:text-lg font-bold font-display text-stone-900 dark:text-stone-100">Academia & Universities</h3>
               </div>
-              <div class="font-semibold text-stone-900 dark:text-stone-100">Live Placement Mandates & R&D Grants</div>
+              
+              <p class="text-xs sm:text-[13px] text-stone-600 dark:text-stone-400 leading-relaxed">
+                Receives live corporate requisition vectors to automatically identify syllabus deficits, generate Board of Studies amendments, and meet NAAC/NBA accreditation criteria.
+              </p>
+              
+              <div class="p-3.5 rounded-xl bg-stone-50/80 dark:bg-white/[0.03] border border-stone-200/60 dark:border-white/[0.06] text-[11px] space-y-1.5 backdrop-blur-md font-space-mono">
+                <div class="text-[10px] text-stone-500 dark:text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#2D5542] dark:bg-[#4EBA87] animate-pulse"></span>
+                  <span>Output Signal</span>
+                </div>
+                <div class="font-semibold text-stone-900 dark:text-stone-100">Accredited Course Outcomes (CO-PO)</div>
+              </div>
             </div>
-          </div>
 
+            <!-- Node 2: Students -->
+            <div id="synergy-card-2" class="synergy-stack-card liquid-glass synergy-node glow-border-hover rounded-2xl p-6 sm:p-7 border border-stone-200/90 dark:border-white/[0.08] shadow-xl space-y-4 sm:space-y-5 transition-colors duration-300 absolute inset-0">
+              <div class="bracket bracket-tl"></div>
+              <div class="bracket bracket-tr"></div>
+              <div class="bracket bracket-bl"></div>
+              <div class="bracket bracket-br"></div>
+              <div class="inner-frame">
+                <div class="f-top"></div><div class="f-bottom"></div><div class="f-left"></div><div class="f-right"></div>
+                <div class="cross-dot" style="top: 0; left: 0;"></div>
+                <div class="cross-dot" style="top: 0; left: 100%;"></div>
+                <div class="cross-dot" style="top: 100%; left: 0;"></div>
+                <div class="cross-dot" style="top: 100%; left: 100%;"></div>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <span class="w-10 h-10 rounded-xl bg-[#855828]/10 text-[#855828] dark:text-[#D4973B] flex items-center justify-center border border-[#855828]/20">
+                  <span class="material-symbols-outlined text-lg">badge</span>
+                </span>
+                <span class="font-space-mono text-[10px] tracking-wider px-2.5 py-0.5 rounded-full bg-[#855828]/10 text-[#855828] dark:text-[#D4973B] font-semibold border border-[#855828]/20 uppercase">CANDIDATE DOSSIERS</span>
+              </div>
+              
+              <div>
+                <div class="font-space-mono text-[10px] text-stone-500 dark:text-neutral-500 tracking-wider mb-1">[NODE_02 :: CANDIDATES]</div>
+                <h3 class="text-base sm:text-lg font-bold font-display text-stone-900 dark:text-stone-100">Certified Students</h3>
+              </div>
+
+              <p class="text-xs sm:text-[13px] text-stone-600 dark:text-stone-400 leading-relaxed">
+                Progress through phased 4-year roadmaps, maintain anti-decay skill XP streaks, and convert academic coursework into verified high-dimensional cosine vectors.
+              </p>
+              
+              <div class="p-3.5 rounded-xl bg-stone-50/80 dark:bg-white/[0.03] border border-stone-200/60 dark:border-white/[0.06] text-[11px] space-y-1.5 backdrop-blur-md font-space-mono">
+                <div class="text-[10px] text-stone-500 dark:text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#855828] dark:bg-[#D4973B] animate-pulse"></span>
+                  <span>Output Signal</span>
+                </div>
+                <div class="font-semibold text-stone-900 dark:text-stone-100">Mathematically Verified Skill Vectors</div>
+              </div>
+            </div>
+
+            <!-- Node 3: Industry -->
+            <div id="synergy-card-3" class="synergy-stack-card liquid-glass synergy-node glow-border-hover rounded-2xl p-6 sm:p-7 border border-stone-200/90 dark:border-white/[0.08] shadow-xl space-y-4 sm:space-y-5 transition-colors duration-300 absolute inset-0">
+              <div class="bracket bracket-tl"></div>
+              <div class="bracket bracket-tr"></div>
+              <div class="bracket bracket-bl"></div>
+              <div class="bracket bracket-br"></div>
+              <div class="inner-frame">
+                <div class="f-top"></div><div class="f-bottom"></div><div class="f-left"></div><div class="f-right"></div>
+                <div class="cross-dot" style="top: 0; left: 0;"></div>
+                <div class="cross-dot" style="top: 0; left: 100%;"></div>
+                <div class="cross-dot" style="top: 100%; left: 0;"></div>
+                <div class="cross-dot" style="top: 100%; left: 100%;"></div>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <span class="w-10 h-10 rounded-xl bg-[#944C23]/10 text-[#944C23] dark:text-[#E07A48] flex items-center justify-center border border-[#944C23]/20">
+                  <span class="material-symbols-outlined text-lg">domain</span>
+                </span>
+                <span class="font-space-mono text-[10px] tracking-wider px-2.5 py-0.5 rounded-full bg-[#944C23]/10 text-[#944C23] dark:text-[#E07A48] font-semibold border border-[#944C23]/20 uppercase">CORPORATE CAPITAL</span>
+              </div>
+              
+              <div>
+                <div class="font-space-mono text-[10px] text-stone-500 dark:text-neutral-500 tracking-wider mb-1">[NODE_03 :: INDUSTRY]</div>
+                <h3 class="text-base sm:text-lg font-bold font-display text-stone-900 dark:text-stone-100">Corporate Industry</h3>
+              </div>
+
+              <p class="text-xs sm:text-[13px] text-stone-600 dark:text-stone-400 leading-relaxed">
+                Deploys live hiring mandates, recruits pre-screened talent without cold resume screening overhead, and sponsors bilateral R&D grants directly to collegiate laboratories.
+              </p>
+              
+              <div class="p-3.5 rounded-xl bg-stone-50/80 dark:bg-white/[0.03] border border-stone-200/60 dark:border-white/[0.06] text-[11px] space-y-1.5 backdrop-blur-md font-space-mono">
+                <div class="text-[10px] text-stone-500 dark:text-neutral-500 uppercase tracking-wider flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#944C23] dark:bg-[#E07A48] animate-pulse"></span>
+                  <span>Output Signal</span>
+                </div>
+                <div class="font-semibold text-stone-900 dark:text-stone-100">Live Placement Mandates & R&D Grants</div>
+              </div>
+            </div>
+
+          </div>
         </div>
 
       </div>
@@ -1278,9 +1219,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
   <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js"></script>
 
-  <!-- Sticky Card Stack — GSAP ScrollTrigger (vanilla port of StickyCard002) -->
+  <!-- Synergy Stacking Cards — GSAP ScrollTrigger (StickyCard002 Port) -->
   <script>
-  (function initStickyCards() {
+  (function initSynergyStickyCards() {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     function setup() {
@@ -1289,64 +1230,89 @@
       gsap.registerPlugin(ScrollTrigger);
 
       // Lenis smooth scroll wired to GSAP ticker
-      const lenis = new Lenis();
-      lenis.on('scroll', ScrollTrigger.update);
-      gsap.ticker.add((time) => lenis.raf(time * 1000));
-      gsap.ticker.lagSmoothing(0);
-
-      const cards = Array.from(document.querySelectorAll('.sticky-card'));
-      const dots  = Array.from(document.querySelectorAll('.sticky-dot'));
-      const driver = document.getElementById('sticky-cards-scroll-driver');
-      const total = cards.length;
-      if (!total || !driver) return;
-
-      // Initial state: card 0 visible, rest translated below
-      gsap.set(cards[0], { yPercent: 0, scale: 1, rotation: 0 });
-      for (let i = 1; i < total; i++) {
-        gsap.set(cards[i], { yPercent: 100, scale: 1, rotation: 0 });
+      if (typeof Lenis !== 'undefined' && !window.__lenis_initialized) {
+        const lenis = new Lenis();
+        lenis.on('scroll', ScrollTrigger.update);
+        gsap.ticker.add((time) => lenis.raf(time * 1000));
+        gsap.ticker.lagSmoothing(0);
+        window.__lenis_initialized = true;
       }
 
-      // Active dot helper
-      function setActiveDot(index) {
-        dots.forEach((d, i) => d.classList.toggle('active', i === index));
-      }
+      const card1 = document.getElementById('synergy-card-1');
+      const card2 = document.getElementById('synergy-card-2');
+      const card3 = document.getElementById('synergy-card-3');
+      const section = document.getElementById('synergy-section');
 
-      // Build one scrubbed timeline — GSAP pins .sticky-cards and adds its own spacer
+      if (!card1 || !card2 || !card3 || !section) return;
+
+      const cards = [card1, card2, card3];
+      const totalCards = cards.length;
+
+      // Initial state: Card 1 on top, Cards 2 & 3 initially placed below stage
+      gsap.set(card1, { yPercent: 0, scale: 1, rotation: 0, opacity: 1 });
+      gsap.set(card2, { yPercent: 100, scale: 1, rotation: 0, opacity: 1 });
+      gsap.set(card3, { yPercent: 100, scale: 1, rotation: 0, opacity: 1 });
+
       const tl = gsap.timeline({
         scrollTrigger: {
-          trigger: '.sticky-cards',
+          trigger: '#synergy-section',
           start: 'top top',
-          end: () => '+=' + (window.innerHeight * (total - 1)),
-          pin: true,          // pin the trigger element itself
+          end: () => '+=' + (window.innerHeight * (totalCards - 1) * 1.25),
+          pin: true,
           scrub: 0.6,
-          pinSpacing: true,   // GSAP manages the scroll spacer
+          pinSpacing: true,
           onUpdate(self) {
-            const step = Math.round(self.progress * (total - 1));
-            setActiveDot(Math.min(step, total - 1));
+            const p = self.progress;
+            let currentStep = 1;
+            if (p >= 0.65) {
+              currentStep = 3;
+            } else if (p >= 0.25) {
+              currentStep = 2;
+            } else {
+              currentStep = 1;
+            }
+            if (typeof updateSynergyStepUI === 'function') {
+              updateSynergyStepUI(currentStep);
+            }
           },
         },
       });
 
-      for (let i = 0; i < total - 1; i++) {
-        // Outgoing card shrinks and tilts (same as Skiper StickyCard002)
-        tl.to(cards[i], {
-          scale: 0.88,
-          rotation: 4,
-          duration: 1,
-          ease: 'none',
-        }, i);
+      window.__synergyTimeline = tl;
 
-        // Incoming card slides up from below
-        tl.to(cards[i + 1], {
-          yPercent: 0,
-          duration: 1,
-          ease: 'none',
-        }, i);
-      }
+      // Card 1 -> Card 2 transition (StickyCard002 scale + tilt + slide)
+      tl.to(card1, {
+        scale: 0.90,
+        rotation: 3.5,
+        opacity: 0.45,
+        duration: 1,
+        ease: 'none',
+      }, 0);
+
+      tl.to(card2, {
+        yPercent: 0,
+        duration: 1,
+        ease: 'none',
+      }, 0);
+
+      // Card 2 -> Card 3 transition
+      tl.to(card2, {
+        scale: 0.90,
+        rotation: -3.5,
+        opacity: 0.45,
+        duration: 1,
+        ease: 'none',
+      }, 1);
+
+      tl.to(card3, {
+        yPercent: 0,
+        duration: 1,
+        ease: 'none',
+      }, 1);
 
       // Resize: refresh ScrollTrigger so pin heights recalculate
       const ro = new ResizeObserver(() => ScrollTrigger.refresh());
-      ro.observe(driver);
+      ro.observe(section);
     }
 
     // Run after all scripts loaded
@@ -1600,7 +1566,7 @@
     }
 
     // 4. Interactive Tripartite Synergy Step Controller
-    function selectSynergyStep(stepNum) {
+    function updateSynergyStepUI(stepNum) {
       const nodeColors = {
         1: { border: 'border-[#2D5542]', darkBorder: 'dark:border-[#4EBA87]' },
         2: { border: 'border-[#855828]', darkBorder: 'dark:border-[#D4973B]' },
@@ -1630,6 +1596,17 @@
           card.classList.add('border-stone-200/90', 'dark:border-white/[0.08]');
         }
       });
+    }
+
+    function selectSynergyStep(stepNum) {
+      updateSynergyStepUI(stepNum);
+
+      if (window.__synergyTimeline && window.__synergyTimeline.scrollTrigger) {
+        const st = window.__synergyTimeline.scrollTrigger;
+        const targetProgress = (stepNum - 1) / 2; // 0, 0.5, 1.0
+        const targetScroll = st.start + (st.end - st.start) * targetProgress;
+        window.scrollTo({ top: targetScroll, behavior: 'smooth' });
+      }
     }
 
     // 5. Floating Capsule Scroll Controller (Editorial deck interaction)
