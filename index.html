@@ -764,7 +764,68 @@
       </div>
     </section>
 
-    <!-- INTERACTIVE TRIPARTITE ECOSYSTEM SYNERGY SECTION (Futuristic Editorial Collaborative Network) -->
+    <!-- STICKY CARD STACK — Portal Showcase (GSAP ScrollTrigger pinned) -->
+    <section id="sticky-cards-section" class="relative border-b border-stone-200/80 dark:border-white/[0.08]">
+      <!-- Section label -->
+      <div class="sticky-cards-label max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-28 pb-8 text-center">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-stone-300/70 dark:border-white/[0.1] bg-stone-100/60 dark:bg-white/[0.04] text-[10px] font-mono tracking-[0.15em] uppercase text-stone-500 dark:text-stone-400 mb-5 reveal-on-scroll">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#2D5542] dark:bg-[#4EBA87] animate-pulse inline-block"></span>
+          Platform Preview
+        </div>
+        <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-stone-900 dark:text-white reveal-on-scroll delay-100">
+          Every Portal.<br class="hidden sm:block">
+          <em class="font-newsreader font-light not-italic text-[#2D5542] dark:text-[#4EBA87]">Precision-Built.</em>
+        </h2>
+        <p class="mt-4 text-stone-500 dark:text-stone-400 text-sm sm:text-base max-w-lg mx-auto reveal-on-scroll delay-200">
+          Scroll through JOBLEX — from the student dashboard to industry workflows and academy intelligence.
+        </p>
+      </div>
+
+      <!-- The pinned sticky scroll area — height = viewport × (cards - 1) + 100vh for the pin -->
+      <div id="sticky-cards-scroll-driver" class="sticky-cards-driver">
+        <div class="sticky-cards sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden px-4 sm:px-8">
+          <!-- Card stack container -->
+          <div id="sticky-card-stack" class="relative" style="height: min(82vh, 620px); width: min(90vw, 700px); max-width: 700px;">
+            <!-- Card 1: Student Portal -->
+            <div class="sticky-card" data-card="0" data-label="Student Portal">
+              <img src="assets/screenshots/student-portal.png" alt="Student Portal" class="w-full h-full object-cover" loading="eager">
+              <div class="sticky-card-pill">Student Portal</div>
+            </div>
+            <!-- Card 2: Academy Portal -->
+            <div class="sticky-card" data-card="1" data-label="Academy Portal">
+              <img src="assets/screenshots/academy-portal.png" alt="Academy Portal" class="w-full h-full object-cover" loading="lazy">
+              <div class="sticky-card-pill">Academy Portal</div>
+            </div>
+            <!-- Card 3: Industry Portal -->
+            <div class="sticky-card" data-card="2" data-label="Industry Portal">
+              <img src="assets/screenshots/industry-portal.png" alt="Industry Portal" class="w-full h-full object-cover" loading="lazy">
+              <div class="sticky-card-pill">Industry Portal</div>
+            </div>
+            <!-- Card 4: Zulu AI -->
+            <div class="sticky-card" data-card="3" data-label="Zulu AI">
+              <img src="assets/screenshots/zulu-ai.png" alt="Zulu AI" class="w-full h-full object-cover" loading="lazy">
+              <div class="sticky-card-pill">Zulu AI</div>
+            </div>
+            <!-- Card 5: Resume Analyzer -->
+            <div class="sticky-card" data-card="4" data-label="Resume Analyzer">
+              <img src="assets/screenshots/resume-analyzer.png" alt="Resume Analyzer" class="w-full h-full object-cover" loading="lazy">
+              <div class="sticky-card-pill">Resume Analyzer</div>
+            </div>
+          </div>
+
+          <!-- Progress dots -->
+          <div id="sticky-card-dots" class="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2.5 z-20">
+            <div class="sticky-dot active" data-dot="0"></div>
+            <div class="sticky-dot" data-dot="1"></div>
+            <div class="sticky-dot" data-dot="2"></div>
+            <div class="sticky-dot" data-dot="3"></div>
+            <div class="sticky-dot" data-dot="4"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
     <section id="synergy-section" class="py-24 sm:py-32 relative overflow-hidden bg-graph z-10">
       <!-- Architectural HUD perimeter frame lines -->
       <div class="frame-line absolute top-0 left-0 right-0 h-px"></div>
@@ -1211,12 +1272,102 @@
   <!-- Three.js Background Script -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script src="js/frontend/three-scene.js"></script>
-  
+
+  <!-- GSAP + ScrollTrigger + Lenis for sticky card stack effect -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js"></script>
+
+  <!-- Sticky Card Stack — GSAP ScrollTrigger (vanilla port of StickyCard002) -->
+  <script>
+  (function initStickyCards() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    function setup() {
+      if (typeof gsap === 'undefined' || typeof ScrollTrigger === 'undefined') return;
+
+      gsap.registerPlugin(ScrollTrigger);
+
+      // Lenis smooth scroll wired to GSAP ticker
+      const lenis = new Lenis();
+      lenis.on('scroll', ScrollTrigger.update);
+      gsap.ticker.add((time) => lenis.raf(time * 1000));
+      gsap.ticker.lagSmoothing(0);
+
+      const cards = Array.from(document.querySelectorAll('.sticky-card'));
+      const dots  = Array.from(document.querySelectorAll('.sticky-dot'));
+      const driver = document.getElementById('sticky-cards-scroll-driver');
+      const total = cards.length;
+      if (!total || !driver) return;
+
+      // Set scroll driver height so there's room for (total-1) transitions
+      driver.style.height = (total * 100) + 'vh';
+
+      // Initial state: card 0 visible, rest below
+      gsap.set(cards[0], { yPercent: 0, scale: 1, rotation: 0 });
+      for (let i = 1; i < total; i++) {
+        gsap.set(cards[i], { yPercent: 100, scale: 1, rotation: 0 });
+      }
+
+      // Active dot helper
+      function setActiveDot(index) {
+        dots.forEach((d, i) => d.classList.toggle('active', i === index));
+      }
+
+      // Build one scrubbed timeline pinned to the driver div
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: '#sticky-cards-scroll-driver',
+          start: 'top top',
+          end: () => '+=' + (window.innerHeight * (total - 1)),
+          pin: '.sticky-cards',
+          scrub: 0.6,
+          pinSpacing: false,
+          onUpdate(self) {
+            // Update dots based on progress
+            const step = Math.round(self.progress * (total - 1));
+            setActiveDot(Math.min(step, total - 1));
+          },
+        },
+      });
+
+      for (let i = 0; i < total - 1; i++) {
+        // Outgoing card shrinks and tilts (same as Skiper StickyCard002)
+        tl.to(cards[i], {
+          scale: 0.88,
+          rotation: 4,
+          duration: 1,
+          ease: 'none',
+        }, i);
+
+        // Incoming card slides up from below
+        tl.to(cards[i + 1], {
+          yPercent: 0,
+          duration: 1,
+          ease: 'none',
+        }, i);
+      }
+
+      // Resize: refresh ScrollTrigger so pin heights recalculate
+      const ro = new ResizeObserver(() => ScrollTrigger.refresh());
+      ro.observe(driver);
+    }
+
+    // Run after all scripts loaded
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', setup);
+    } else {
+      setup();
+    }
+  })();
+  </script>
+
   <!-- Frontend API Client -->
   <script src="js/frontend/api-client.js"></script>
 
   <!-- Animation Engine -->
   <script src="js/frontend/animations.js"></script>
+
 
   <!-- Home Page Interactive UX & Animation Logic -->
   <script>

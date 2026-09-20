@@ -1418,3 +1418,86 @@ html:not(.dark) .scroll-floating-btn:hover {
     transform: none !important;
   }
 }
+
+/* ===================================================================
+   STICKY CARD STACK — Portal Showcase
+   =================================================================== */
+.sticky-cards-driver {
+  height: calc(var(--sticky-card-count, 5) * 100vh);
+}
+
+.sticky-card {
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow:
+    0 4px 8px rgba(0,0,0,0.08),
+    0 24px 64px -12px rgba(0,0,0,0.22),
+    0 0 0 1px rgba(255,255,255,0.12);
+  will-change: transform;
+  transform-origin: center bottom;
+  background: #111;
+}
+
+html.dark .sticky-card {
+  box-shadow:
+    0 4px 8px rgba(0,0,0,0.4),
+    0 32px 80px -12px rgba(0,0,0,0.9),
+    0 0 0 1px rgba(255,255,255,0.06);
+}
+
+/* Card 1 starts visible; cards 2-5 start off-screen below */
+.sticky-card[data-card="0"] { transform: translateY(0%) scale(1) rotate(0deg); }
+.sticky-card[data-card="1"] { transform: translateY(100%) scale(1) rotate(0deg); }
+.sticky-card[data-card="2"] { transform: translateY(100%) scale(1) rotate(0deg); }
+.sticky-card[data-card="3"] { transform: translateY(100%) scale(1) rotate(0deg); }
+.sticky-card[data-card="4"] { transform: translateY(100%) scale(1) rotate(0deg); }
+
+/* Label pill at bottom of each card */
+.sticky-card-pill {
+  position: absolute;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.25);
+  color: #fff;
+  font-size: 11px;
+  font-family: 'Space Mono', monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 5px 14px;
+  border-radius: 100px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Progress dots */
+.sticky-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(45, 85, 66, 0.3);
+  transition: background 0.35s ease, transform 0.35s ease, width 0.35s ease;
+  cursor: default;
+}
+html.dark .sticky-dot {
+  background: rgba(255,255,255,0.2);
+}
+.sticky-dot.active {
+  background: #2D5542;
+  transform: scale(1.2);
+  width: 18px;
+  border-radius: 4px;
+}
+html.dark .sticky-dot.active {
+  background: #4EBA87;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticky-card { transition: none !important; }
+}
