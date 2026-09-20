@@ -10,12 +10,73 @@
   } catch(e) {}
 })();
 
-function toggleTheme() {
-  const isDark = document.documentElement.classList.toggle('dark');
-  try {
-    localStorage.setItem('joblex_theme', isDark ? 'dark' : 'light');
-  } catch(e) {}
-  updateThemeIcon();
+function toggleTheme(event) {
+  const switchTheme = () => {
+    const isDark = document.documentElement.classList.toggle('dark');
+    try {
+      localStorage.setItem('joblex_theme', isDark ? 'dark' : 'light');
+    } catch(e) {}
+    updateThemeIcon();
+  };
+
+  // Graceful fallback for browsers without View Transitions or users with reduced motion
+  if (!document.startViewTransition || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+    switchTheme();
+    return;
+  }
+
+  // Determine origin coordinates for circular ripple animation (Skiper26 effect)
+  let x = window.innerWidth / 2;
+  let y = window.innerHeight / 2;
+
+  if (event && typeof event.clientX === 'number' && typeof event.clientY === 'number' && (event.clientX > 0 || event.clientY > 0)) {
+    x = event.clientX;
+    y = event.clientY;
+  } else {
+    const btn = document.getElementById('theme-toggle-btn') || document.querySelector('[onclick*="toggleTheme"]');
+    if (btn) {
+      const rect = btn.getBoundingClientRect();
+      x = rect.left + rect.width / 2;
+      y = rect.top + rect.height / 2;
+    }
+  }
+
+  const endRadius = Math.hypot(
+    Math.max(x, window.innerWidth - x),
+    Math.max(y, window.innerHeight - y)
+  );
+
+  const styleId = 'joblex-theme-transition-styles';
+  let styleElement = document.getElementById(styleId);
+  if (!styleElement) {
+    styleElement = document.createElement('style');
+    styleElement.id = styleId;
+    document.head.appendChild(styleElement);
+  }
+
+  styleElement.textContent = `
+    ::view-transition-group(root) {
+      animation-duration: 0.65s;
+      animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    ::view-transition-new(root) {
+      animation: reveal-theme-ripple 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    ::view-transition-old(root) {
+      animation: none;
+      z-index: -1;
+    }
+    @keyframes reveal-theme-ripple {
+      from {
+        clip-path: circle(0px at ${x}px ${y}px);
+      }
+      to {
+        clip-path: circle(${endRadius}px at ${x}px ${y}px);
+      }
+    }
+  `;
+
+  document.startViewTransition(switchTheme);
 }
 
 function updateThemeIcon() {
