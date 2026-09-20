@@ -53,8 +53,11 @@
     // 2. Interactive Spotlight Cursor Tracking & 3D Tilt on Cards
     const cards = document.querySelectorAll('.bento-card, .portal-card, .glass-card, .liquid-glass, .tilt-card');
     cards.forEach(card => {
-      card.addEventListener('mousemove', function(e) {
-        const rect = card.getBoundingClientRect();
+      let rect = null;
+      let tiltRaf = false;
+
+      function updateTilt(e) {
+        if (!rect) rect = card.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
         card.style.setProperty('--mouse-x', x + 'px');
@@ -69,9 +72,22 @@
           card.style.setProperty('--tilt-x', tiltX + 'deg');
           card.style.setProperty('--tilt-y', tiltY + 'deg');
         }
+        tiltRaf = false;
+      }
+
+      card.addEventListener('mouseenter', () => {
+        rect = card.getBoundingClientRect();
+      }, { passive: true });
+
+      card.addEventListener('mousemove', function(e) {
+        if (!tiltRaf) {
+          tiltRaf = true;
+          requestAnimationFrame(() => updateTilt(e));
+        }
       }, { passive: true });
 
       card.addEventListener('mouseleave', function() {
+        rect = null;
         if (!prefersReducedMotion) {
           card.style.setProperty('--tilt-x', '0deg');
           card.style.setProperty('--tilt-y', '0deg');
@@ -111,10 +127,6 @@
     const progressBar = document.getElementById('scroll-progress-bar');
     const header = document.querySelector('header');
     const scrollToTopBtn = document.getElementById('scroll-to-top-btn');
-    const orb1 = document.querySelector('.ambient-glow-orb-1');
-    const orb2 = document.querySelector('.ambient-glow-orb-2');
-    const orb3 = document.querySelector('.ambient-glow-orb-3');
-
     let ticking = false;
 
     function onScroll() {
@@ -143,13 +155,6 @@
         } else {
           scrollToTopBtn.classList.remove('visible');
         }
-      }
-
-      // 4. Direct parallax via transform — CSS var hack doesn't work inside keyframes
-      if (!prefersReducedMotion) {
-        if (orb1) orb1.style.transform = `translate3d(0, ${scrollTop * 0.15}px, 0)`;
-        if (orb2) orb2.style.transform = `translate3d(0, ${-scrollTop * 0.10}px, 0)`;
-        if (orb3) orb3.style.transform = `translate3d(0, ${scrollTop * 0.08}px, 0)`;
       }
 
       ticking = false;

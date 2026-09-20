@@ -364,6 +364,8 @@ html.dark header.header-scrolled {
   z-index: 1;
   animation: floatGlow1 18s ease-in-out infinite alternate;
   will-change: transform;
+  transform: translateZ(0);
+  contain: paint layout;
 }
 
 html.dark .ambient-glow-orb-1 {
@@ -383,6 +385,8 @@ html.dark .ambient-glow-orb-1 {
   z-index: 1;
   animation: floatGlow2 18s ease-in-out infinite alternate;
   will-change: transform;
+  transform: translateZ(0);
+  contain: paint layout;
 }
 
 html.dark .ambient-glow-orb-2 {
@@ -684,6 +688,8 @@ html.dark .liquid-glass-nav.header-scrolled {
   z-index: 1;
   animation: floatGlow3 28s ease-in-out infinite alternate;
   will-change: transform;
+  transform: translateZ(0);
+  contain: paint layout;
 }
 
 html.dark .ambient-glow-orb-3 {
@@ -1511,22 +1517,21 @@ html.dark .synergy-stack-card {
   }
 }
 
-/* Interactive Persona Section - Scroll-Driven Dynamic Entrance */
-#hero-interactive-persona-section {
-  will-change: transform, opacity;
-  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.45s ease;
+/* Hero Split Scroll Controller: Centered text moves left, Persona enters from right */
+#hero-text-col {
+  will-change: transform;
 }
 
-#hero-interactive-persona-section:hover,
-#hero-interactive-persona-section:focus-within {
-  transform: translate3d(0, 0, 0) !important;
-  opacity: 1 !important;
+#hero-interactive-persona-section {
+  will-change: transform, opacity;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  #hero-text-col,
   #hero-interactive-persona-section {
     transform: none !important;
     opacity: 1 !important;
+    pointer-events: auto !important;
     transition: none !important;
   }
 }

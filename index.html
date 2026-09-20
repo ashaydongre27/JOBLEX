@@ -176,8 +176,7 @@
   <!-- Main Content Flow -->
   <main class="relative">
 
-    <!-- ASYMMETRIC FUTURISTIC EDITORIAL HERO SECTION -->
-    <section id="hero" class="relative min-h-[90vh] lg:min-h-screen w-full flex flex-col justify-center items-center overflow-hidden pt-12 pb-20 border-b border-stone-200/80 dark:border-white/[0.08] bg-transparent dark:bg-transparent transition-colors">
+    <section id="hero" class="relative min-h-[90vh] lg:min-h-screen w-full flex flex-col justify-center items-center overflow-hidden pt-20 sm:pt-24 lg:pt-24 pb-16 border-b border-stone-200/80 dark:border-white/[0.08] bg-transparent dark:bg-transparent transition-colors">
       
       <!-- Architectural HUD Frame Lines -->
       <div class="frame-line absolute top-10 left-0 w-full h-[1px]"></div>
@@ -210,11 +209,11 @@
         COSINE EMBEDDINGS // HIGH-DIMENSIONAL TALENT GRAPH
       </div>
       <!-- Main Container -->
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
+      <div id="hero-main-container" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
           
           <!-- Col 1-7: Editorial Tagline & Cyber Call to Action -->
-          <div class="lg:col-span-7 space-y-6 text-left reveal-from-left">
+          <div id="hero-text-col" class="lg:col-span-7 space-y-6 text-left">
             
             <!-- Luminous Status Pill Badge -->
             <div class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-stone-300/70 dark:border-white/10 bg-white/70 dark:bg-white/[0.04] backdrop-blur-md text-xs font-mono font-semibold text-stone-800 dark:text-stone-200 shadow-xs">
@@ -269,7 +268,7 @@
           </div>
 
           <!-- Col 8-12: Interactive Persona Switcher (High Opacity Card) -->
-          <div id="hero-interactive-persona-section" class="lg:col-span-5 space-y-3.5">
+          <div id="hero-interactive-persona-section" class="lg:col-span-5 space-y-3.5 mt-4 lg:mt-8">
             <div class="flex items-center justify-between">
               <span class="text-[11px] font-mono uppercase tracking-wider text-stone-600 dark:text-stone-300 font-bold">01 // Interactive Persona:</span>
               <div class="inline-flex p-1 rounded-2xl bg-white/95 dark:bg-[#161820] border border-stone-200 dark:border-white/[0.12] shadow-xs">
@@ -1193,8 +1192,17 @@
 
       // Lenis smooth scroll wired to GSAP ticker
       if (typeof Lenis !== 'undefined' && !window.__lenis_initialized) {
-        const lenis = new Lenis();
-        lenis.on('scroll', ScrollTrigger.update);
+        const lenis = new Lenis({
+          duration: 0.85,
+          easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+          smoothWheel: true,
+          wheelMultiplier: 1.0,
+          touchMultiplier: 1.2
+        });
+        lenis.on('scroll', () => {
+          ScrollTrigger.update();
+          if (typeof updateHeroScrollLayout === 'function') updateHeroScrollLayout();
+        });
         gsap.ticker.add((time) => lenis.raf(time * 1000));
         gsap.ticker.lagSmoothing(0);
         window.__lenis_initialized = true;
@@ -1610,26 +1618,96 @@
     window.addEventListener('scroll', updateScrollCapsuleState, { passive: true });
     updateScrollCapsuleState();
 
-    // 6. Interactive Persona Scroll-Driven Entrance Animation
-    function updatePersonaScrollEntrance() {
-      const el = document.getElementById('hero-interactive-persona-section');
-      if (!el) return;
-      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        el.style.transform = 'none';
-        el.style.opacity = '1';
-        return;
+    // 6. Hero Split Scroll Controller: Centered text moves left, Persona enters from right
+    let cachedCenterOffset = null;
+    let heroScrollTicking = false;
+
+    function recalculateHeroGeometry() {
+      const container = document.getElementById('hero-main-container');
+      const textCol = document.getElementById('hero-text-col');
+      if (container && textCol) {
+        cachedCenterOffset = Math.max(0, (container.clientWidth - textCol.offsetWidth) / 2);
       }
-      const scrollY = window.scrollY || window.pageYOffset || 0;
-      // Interpolate entrance over initial 140px of scroll
-      const progress = Math.min(1, Math.max(0, scrollY / 140));
-      const translateX = (1 - progress) * 90; // 90px -> 0px
-      const opacity = 0.35 + (progress * 0.65); // 0.35 -> 1.0
-      el.style.transform = `translate3d(${translateX.toFixed(2)}px, 0, 0)`;
-      el.style.opacity = opacity.toFixed(3);
     }
 
-    window.addEventListener('scroll', updatePersonaScrollEntrance, { passive: true });
-    updatePersonaScrollEntrance();
+    function performHeroScrollUpdate() {
+      heroScrollTicking = false;
+      const textCol = document.getElementById('hero-text-col');
+      const personaCol = document.getElementById('hero-interactive-persona-section');
+      if (!textCol || !personaCol) return;
+
+      if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        textCol.style.transform = 'none';
+        personaCol.style.transform = 'none';
+        personaCol.style.opacity = '1';
+        personaCol.style.pointerEvents = 'auto';
+        return;
+      }
+
+      const scrollY = window.scrollY || window.pageYOffset || 0;
+      const isDesktop = window.innerWidth >= 1024;
+
+      if (isDesktop) {
+        if (cachedCenterOffset === null) {
+          recalculateHeroGeometry();
+        }
+        const centerOffset = cachedCenterOffset !== null ? cachedCenterOffset : 200;
+        const scrollThreshold = 95;
+        const progress = Math.min(1, Math.max(0, scrollY / scrollThreshold));
+
+        // Pinned counter-scroll during transition keeps the upper headline in full view under navbar
+        const yPin = Math.min(scrollY, scrollThreshold);
+
+        // 1. Left text smoothly transitions from center (scrollY=0) to left (scrolled)
+        const textShift = (1 - progress) * centerOffset;
+        textCol.style.transform = `translate3d(${textShift.toFixed(2)}px, ${yPin.toFixed(2)}px, 0)`;
+
+        // 2. Persona section stays completely invisible at top, then enters from right shifted a little below
+        if (progress <= 0.05) {
+          personaCol.style.transform = 'translate3d(120px, 32px, 0)';
+          personaCol.style.opacity = '0';
+          personaCol.style.pointerEvents = 'none';
+        } else {
+          const personaProg = Math.min(1, (progress - 0.05) / 0.95);
+          const eased = personaProg * personaProg * (3 - 2 * personaProg); // Smooth ease-in-out curve
+          const personaShift = (1 - eased) * 120; // 120px -> 0px
+          const personaY = yPin + 32; // Shifted a little below (+32px)
+          personaCol.style.transform = `translate3d(${personaShift.toFixed(2)}px, ${personaY.toFixed(2)}px, 0)`;
+          personaCol.style.opacity = eased.toFixed(3);
+          personaCol.style.pointerEvents = personaProg > 0.85 ? 'auto' : 'none';
+        }
+      } else {
+        // Mobile / Tablet layout
+        textCol.style.transform = 'none';
+        const mobProg = Math.min(1, Math.max(0, (scrollY - 10) / 90));
+        const mobPersonaY = (1 - mobProg) * 30 + 16;
+        personaCol.style.transform = `translate3d(0, ${mobPersonaY.toFixed(2)}px, 0)`;
+        personaCol.style.opacity = mobProg.toFixed(3);
+        personaCol.style.pointerEvents = mobProg > 0.85 ? 'auto' : 'none';
+      }
+    }
+
+    function updateHeroScrollLayout(forceImmediate = false) {
+      if (forceImmediate) {
+        performHeroScrollUpdate();
+        return;
+      }
+      if (!heroScrollTicking) {
+        heroScrollTicking = true;
+        requestAnimationFrame(performHeroScrollUpdate);
+      }
+    }
+
+    window.addEventListener('scroll', () => updateHeroScrollLayout(false), { passive: true });
+    window.addEventListener('resize', () => {
+      recalculateHeroGeometry();
+      updateHeroScrollLayout(true);
+    }, { passive: true });
+    window.recalculateHeroGeometry = recalculateHeroGeometry;
+    window.updateHeroScrollLayout = updateHeroScrollLayout;
+    window.updatePersonaScrollEntrance = updateHeroScrollLayout;
+    recalculateHeroGeometry();
+    updateHeroScrollLayout(true);
 
     // 7. High-Tech Editorial Preloader Controller
     (function initJoblexPreloader() {
@@ -1672,6 +1750,8 @@
             preloader.classList.add('opacity-0', 'pointer-events-none', 'scale-105');
             setTimeout(() => {
               preloader.style.display = 'none';
+              recalculateHeroGeometry();
+              updateHeroScrollLayout(true);
             }, 750);
           }, 150);
         }

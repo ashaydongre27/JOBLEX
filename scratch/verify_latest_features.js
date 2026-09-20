@@ -13,7 +13,7 @@ console.log('✓ All 4 floating background shapes successfully removed');
 
 console.log('=== TEST 2: Interactive Persona Section & Entrance Animation ===');
 assert.ok(indexHtml.includes('id="hero-interactive-persona-section"'), 'hero-interactive-persona-section ID must exist in index.html');
-assert.ok(indexHtml.includes('updatePersonaScrollEntrance'), 'updatePersonaScrollEntrance function must exist');
+assert.ok(indexHtml.includes('updateHeroScrollLayout') || indexHtml.includes('updatePersonaScrollEntrance'), 'hero scroll layout function must exist');
 
 const stylesCss = fs.readFileSync(path.join(__dirname, '../css/styles.css'), 'utf8');
 assert.ok(stylesCss.includes('#hero-interactive-persona-section'), 'styles.css must have styles for #hero-interactive-persona-section');

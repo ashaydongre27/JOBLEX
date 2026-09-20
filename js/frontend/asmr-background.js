@@ -22,7 +22,7 @@
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const isMobile = window.innerWidth < 768 || ('ontouchstart' in window);
 
-    const PARTICLE_COUNT = prefersReducedMotion ? 60 : (isMobile ? 300 : 1000);
+    const PARTICLE_COUNT = prefersReducedMotion ? 40 : (isMobile ? 100 : 300);
     const MAGNETIC_RADIUS = isMobile ? 180 : 280;
     const VORTEX_STRENGTH = 0.07;
     const PULL_STRENGTH = 0.12;
@@ -32,9 +32,10 @@
     let animationFrameId = null;
     let particles = [];
     const mouse = { x: -1000, y: -1000 };
+    let cachedIsDark = document.documentElement.classList.contains('dark');
 
     function isDark() {
-      return document.documentElement.classList.contains('dark');
+      return cachedIsDark;
     }
 
     class Particle {
@@ -68,7 +69,7 @@
       }
 
       updateColor() {
-        if (isDark()) {
+        if (cachedIsDark) {
           this.color = this.isGlass ? '240, 245, 255' : '90, 95, 105';
         } else {
           this.color = this.isGlass ? '165, 115, 60' : '45, 55, 50';
@@ -123,23 +124,16 @@
         ctx.translate(this.x, this.y);
         ctx.rotate(this.rotation);
 
-        const dark = isDark();
-        const finalAlpha = Math.min(this.alpha + this.frictionGlow, 0.92);
+        const finalAlpha = Math.min(this.alpha + this.frictionGlow * 0.5, 0.95);
         ctx.fillStyle = `rgba(${this.color}, ${finalAlpha})`;
 
-        if (this.frictionGlow > 0.28) {
-          ctx.shadowBlur = 8 * this.frictionGlow;
-          ctx.shadowColor = dark
-            ? `rgba(180, 220, 255, ${this.frictionGlow * 0.9})`
-            : `rgba(45, 85, 66, ${this.frictionGlow * 0.8})`;
-        }
-
-        // Sharp diamond shard geometry
+        // Sharp diamond shard geometry (scaled slightly when energized)
+        const s = this.size * (1 + this.frictionGlow * 0.4);
         ctx.beginPath();
-        ctx.moveTo(0, -this.size * 2.5);
-        ctx.lineTo(this.size, 0);
-        ctx.lineTo(0, this.size * 2.5);
-        ctx.lineTo(-this.size, 0);
+        ctx.moveTo(0, -s * 2.5);
+        ctx.lineTo(s, 0);
+        ctx.lineTo(0, s * 2.5);
+        ctx.lineTo(-s, 0);
         ctx.closePath();
         ctx.fill();
 
@@ -162,8 +156,9 @@
     }
 
     function render() {
+      cachedIsDark = document.documentElement.classList.contains('dark');
       // Slight motion blur background clear
-      ctx.fillStyle = isDark() ? 'rgba(10, 10, 12, 0.20)' : 'rgba(247, 247, 245, 0.25)';
+      ctx.fillStyle = cachedIsDark ? 'rgba(10, 10, 12, 0.20)' : 'rgba(247, 247, 245, 0.25)';
       ctx.fillRect(0, 0, width, height);
 
       for (let i = 0; i < particles.length; i++) {
@@ -174,11 +169,25 @@
       animationFrameId = requestAnimationFrame(render);
     }
 
+    let mouseCssTicking = false;
+    let pendingMouseX = -1000;
+    let pendingMouseY = -1000;
+
+    function updateMouseCssVars() {
+      mouseCssTicking = false;
+      document.documentElement.style.setProperty('--mouse-x', pendingMouseX + 'px');
+      document.documentElement.style.setProperty('--mouse-y', pendingMouseY + 'px');
+    }
+
     function handleMouseMove(e) {
       mouse.x = e.clientX;
       mouse.y = e.clientY;
-      document.documentElement.style.setProperty('--mouse-x', e.clientX + 'px');
-      document.documentElement.style.setProperty('--mouse-y', e.clientY + 'px');
+      pendingMouseX = e.clientX;
+      pendingMouseY = e.clientY;
+      if (!mouseCssTicking) {
+        mouseCssTicking = true;
+        requestAnimationFrame(updateMouseCssVars);
+      }
     }
 
     function handleTouchMove(e) {
@@ -200,6 +209,7 @@
 
     // Watch for theme toggles to update particle colors
     const themeObserver = new MutationObserver(() => {
+      cachedIsDark = document.documentElement.classList.contains('dark');
       particles.forEach(p => p.updateColor());
     });
     themeObserver.observe(document.documentElement, {
