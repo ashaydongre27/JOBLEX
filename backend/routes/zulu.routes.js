@@ -20,6 +20,17 @@ async function generateWithZuluAI(userMessage, conversationHistory = [], student
   const contextSnippet = studentContext ? `\nStudent Context: Name=${studentContext.studentName || 'Scholar'}, Role=${studentContext.role || 'Student'}, Department=${studentContext.department || 'General'}${adaptiveSnippet}` : '';
   const systemInstruction = `You are Zulu, an expert AI Career and Research Counselor for students across academic disciplines and modern industries (software engineering, pharmaceuticals, health-tech, biotechnology, data science, AI). Guide students on comprehensive career roadmaps, corporate placements, verified skills, and project methodologies with clear, dynamic, and actionable steps.${contextSnippet}`;
 
+// System Prompt definition for Zulu AI
+const ZULU_SYSTEM_PROMPT = `
+You are Zulu AI, a concise and intelligent assistant for Joblex.
+
+RESPONSE RULES:
+1. Conciseness: Give direct, accurate, and to-the-point answers. Avoid long intros, outros, or unnecessary fluff.
+2. Clarity & Definition: Provide clear, well-defined answers so the user understands immediately.
+3. Structure: Use brief bullet points or bold text wherever applicable for easy reading.
+4. Output Limit: Keep your responses short (under 3-4 short paragraphs or key bullet points) unless the user explicitly asks for an in-depth/detailed explanation.
+`;
+  
   try {
     const result = await generateWithFailover({
       prompt: userMessage,
