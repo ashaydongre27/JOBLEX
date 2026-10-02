@@ -36,6 +36,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   updateHeaderMetrics();
   await updateDashboardStats(user);
 
+  // Check for assigned hiring exams and show alert if any
+  await checkAndShowExamAlert();
+
   // Page-specific initializations
   if (document.getElementById('roadmap-catalog-section') || document.getElementById('roadmap-cards-grid')) {
     initSectorRoadmaps();
@@ -76,6 +79,58 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderPortfolioGrid();
   }
 });
+
+// Exam Alert Functions
+async function checkAndShowExamAlert() {
+  try {
+    const assignedExams = await JoblexApiClient.getAssignedExams();
+    const unassignedExams = assignedExams.filter(exam => !exam.completed && !exam.started);
+
+    if (unassignedExams.length > 0) {
+      showExamAlert(unassignedExams[0]); // Show alert for the first unassigned exam
+    } else {
+      hideExamAlert();
+    }
+  } catch (error) {
+    console.error('Error checking for assigned exams:', error);
+    // Don't show alert on error
+    hideExamAlert();
+  }
+}
+
+function showExamAlert(exam) {
+  const alertBanner = document.getElementById('exam-alert-banner');
+  const alertMessage = document.getElementById('exam-alert-message');
+
+  if (alertBanner && alertMessage) {
+    alertMessage.textContent = `You have been assigned a new corporate screening exam: "${exam.title || 'Hiring Exam'}". Check your To-Do list for details.`;
+    alertBanner.classList.remove('hidden');
+
+    // Also show a toast notification
+    JoblexApiClient.showToast(
+      `New hiring exam assigned: ${exam.title || 'Hiring Exam'}`,
+      'Exam Assigned',
+      'success'
+    );
+  }
+}
+
+function hideExamAlert() {
+  const alertBanner = document.getElementById('exam-alert-banner');
+  if (alertBanner) {
+    alertBanner.classList.add('hidden');
+  }
+}
+
+function closeExamAlert() {
+  hideExamAlert();
+}
+
+// Bind closeExamAlert to window for HTML access
+window.closeExamAlert = closeExamAlert;
+
+// Periodically check for new exams (every 5 minutes)
+setInterval(checkAndShowExamAlert, 5 * 60 * 1000);
 
 async function updateDashboardStats(user) {
   if (!user) return;
@@ -3088,6 +3143,17 @@ function renderQuiz(errorMessage = '') {
           </div>
         </div>
 
+        ${result.explanation ? `
+          <div class="p-4 rounded-2xl ${result.isCorrect ? 'bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 text-emerald-900 dark:text-emerald-200' : 'bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800/40 text-rose-900 dark:text-rose-200'} text-left space-y-1.5 text-xs">
+            <div class="font-bold flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-base">${result.isCorrect ? 'check_circle' : 'cancel'}</span>
+              <span>${result.isCorrect ? 'Correct Solution Verified' : 'Conceptual Breakdown & Review'}</span>
+            </div>
+            ${result.correctAnswerText ? `<div class="font-mono text-[11px] font-bold">Verified Correct Answer: ${result.correctAnswerText}</div>` : ''}
+            <div class="text-[11px] leading-relaxed opacity-95">${result.explanation}</div>
+          </div>
+        ` : ''}
+
         <!-- Action Buttons including Download PDF -->
         <div class="flex flex-wrap items-center justify-center gap-3 pt-3">
           <button onclick="downloadQuizResultPdf()" id="quiz-pdf-btn" class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white dark:bg-white/10 dark:hover:bg-white/20 text-xs font-bold transition flex items-center gap-2 shadow-sm">
@@ -3164,9 +3230,14 @@ async function nextQuizQuestion() {
 
   const q = quizState.questions[quizState.currentIndex];
   if (!quizState.answers) quizState.answers = [];
+  const selectedOptId = (q.optionList && q.optionList[quizState.selectedAnswer]) 
+    ? q.optionList[quizState.selectedAnswer].id 
+    : `opt_${quizState.selectedAnswer + 1}`;
+
   quizState.answers.push({
     questionId: q.id,
-    selectedIndex: quizState.selectedAnswer
+    selectedIndex: quizState.selectedAnswer,
+    selectedOptionId: selectedOptId
   });
 
   if (quizState.currentIndex < quizState.questions.length - 1) {
@@ -3174,7 +3245,13 @@ async function nextQuizQuestion() {
     quizState.selectedAnswer = null;
     renderQuiz();
   } else {
-    const result = await JoblexApiClient.submitAdaptiveQuiz({ attemptId: quizState.attemptId, difficulty: quizState.difficulty, prompt: quizState.prompt, answers: quizState.answers });
+    const result = await JoblexApiClient.submitAdaptiveQuiz({ 
+      attemptId: quizState.attemptId, 
+      selectedOptionId: selectedOptId,
+      difficulty: quizState.difficulty, 
+      prompt: quizState.prompt, 
+      answers: quizState.answers 
+    });
     if (!result?.success) {
       showToast(result?.error || 'Could not record this attempt.', 'Quiz Arena', 'error');
       return;
@@ -3774,4 +3851,319 @@ window.nextQuizQuestion = nextQuizQuestion;
 window.resetAdaptiveQuiz = resetAdaptiveQuiz;
 window.downloadQuizResultPdf = downloadQuizResultPdf;
 window.openZuluQuizReview = openZuluQuizReview;
+window.switchQuizTab = switchQuizTab;
+
+// Switch between quiz tabs
+function switchQuizTab(tab) {
+  // Update tab active states
+  document.getElementById('quiz-arena-tab').className = tab === 'arena'
+    ? 'quiz-tab-active px-4 py-3 text-center font-medium text-[#0F172A] dark:text-white border-b-2 border-purple-600 dark:border-purple-400'
+    : 'quiz-tab px-4 py-3 text-center font-medium text-[#6E6962] dark:text-gray-400 hover:text-[#0F172A] dark:hover:text-white';
+
+  document.getElementById('screening-exams-tab').className = tab === 'screening'
+    ? 'quiz-tab-active px-4 py-3 text-center font-medium text-[#0F172A] dark:text-white border-b-2 border-purple-600 dark:border-purple-400'
+    : 'quiz-tab px-4 py-3 text-center font-medium text-[#6E6962] dark:text-gray-400 hover:text-[#0F172A] dark:hover:text-white';
+
+  // Render appropriate content
+  if (tab === 'screening') {
+    renderScreeningExams();
+  } else {
+    renderQuiz();
+  }
+}
+
+// Render enterprise screening exams tab
+async function renderScreeningExams() {
+  const container = document.getElementById('quiz-arena-container');
+  if (!container) return;
+
+  try {
+    const user = JoblexApiClient.getCurrentUser();
+    if (!user) {
+      container.innerHTML = '<div class="p-6 text-center">Please log in to view assigned exams.</div>';
+      return;
+    }
+
+    const assignedExams = await JoblexApiClient.getAssignedExams();
+
+    if (!assignedExams || assignedExams.length === 0) {
+      container.innerHTML = `
+        <div class="p-8 text-center space-y-4">
+          <span class="material-symbols-outlined text-6xl text-purple-200 dark:text-purple-800 mb-4">quiz</span>
+          <h3 class="text-xl font-bold text-[#0F172A] dark:text-white">No Assigned Screening Exams</h3>
+          <p class="text-lg text-[#6E6962] dark:text-gray-400">
+            You have not been assigned any corporate screening exams yet. Check back regularly for new opportunities.
+          </p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = `
+      <div class="space-y-6">
+        ${assignedExams.map(exam => `
+          <div class="p-6 rounded-2xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-white/[0.03] shadow-sm ${exam.status === 'pending' ? 'border-l-4 border-purple-500 dark:border-purple-400' : exam.status === 'completed' ? 'border-l-4 border-emerald-500 dark:border-emerald-400' : 'border-l-4 border-rose-500 dark:border-rose-400'}>
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <h3 class="text-lg font-bold text-[#0F172A] dark:text-white">${exam.title}</h3>
+                <p class="text-sm text-[#6E6962] dark:text-gray-400 mb-2">${exam.description}</p>
+                <div class="flex flex-wrap gap-3 mb-2">
+                  <span class="px-3 py-1 rounded-full text-xs font-medium ${exam.difficulty === 'easy' ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60' : exam.difficulty === 'hard' ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60' : 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60'}">
+                    ${exam.difficulty.charAt(0).toUpperCase() + exam.difficulty.slice(1)}
+                  </span>
+                  <span class="px-3 py-1 rounded-full text-xs font-medium ${exam.status === 'pending' ? 'bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/60' : exam.status === 'completed' ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60' : 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60'}">
+                    ${exam.status.charAt(0).toUpperCase() + exam.status.slice(1)}
+                  </span>
+                </div>
+              </div>
+              <div class="text-right">
+                ${exam.status === 'pending' ? `
+                  <button onclick="startScreeningExam(${exam.id})" class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition">
+                    Start Exam
+                  </button>
+                ` : exam.status === 'completed' ? `
+                  <button onclick="viewScreeningExamResults(${exam.id})" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition">
+                    View Results
+                  </button>
+                ` : `
+                  <span class="px-3 py-1 rounded-full text-xs font-medium bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/60">
+                    Expired
+                  </span>
+                `}
+              </div>
+            </div>
+            ${exam.status === 'pending' && exam.timeLimit ? `
+              <div class="text-xs text-[#6E6962] dark:text-gray-400 mb-2">
+                ⏱️ Time Limit: ${exam.timeLimit} minutes
+              </div>
+            ` : ''}
+            ${exam.status === 'pending' && exam.xpReward ? `
+              <div class="text-xs text-[#6E6962] dark:text-gray-400">
+                🎁 XP Reward: +${exam.xpReward}
+              </div>
+            ` : ''}
+          </div>
+        `).join('')}
+      </div>
+    `;
+  } catch (error) {
+    console.error('Error rendering screening exams:', error);
+    container.innerHTML = '<div class="p-6 text-center text-rose-500">Failed to load screening exams. Please try again.</div>';
+  }
+}
+
+// Start a screening exam
+async function startScreeningExam(examId) {
+  try {
+    const result = await JoblexApiClient.startExam(examId);
+    if (result.success) {
+      // Redirect to quiz arena with exam context
+      window.location.href = `student-quiz.html?exam=${examId}`;
+    } else {
+      showToast(result.error || 'Failed to start exam', 'Exam Error', 'error');
+    }
+  } catch (error) {
+    console.error('Error starting screening exam:', error);
+    showToast('Connection error. Please try again.', 'Exam Error', 'error');
+  }
+}
+
+// View screening exam results
+async function viewScreeningExamResults(examId) {
+  try {
+    const result = await JoblexApiClient.getExamResults(examId);
+    if (result.success) {
+      showExamResultsModal(result.results);
+    } else {
+      showToast(result.error || 'Failed to load results', 'Results Error', 'error');
+    }
+  } catch (error) {
+    console.error('Error viewing exam results:', error);
+    showToast('Connection error. Please try again.', 'Results Error', 'error');
+  }
+}
+
+// Show exam results modal
+function showExamResultsModal(results) {
+  // Create modal if it doesn't exist
+  let modal = document.getElementById('exam-results-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'exam-results-modal';
+    modal.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm hidden';
+    modal.innerHTML = `
+      <div class="bg-white dark:bg-white/[0.03] rounded-2xl border border-[#E7E4DC] dark:border-white/10 p-6 sm:p-8 w-full max-w-2xl mx-4">
+        <div class="flex justify-between items-start mb-4">
+          <h3 class="text-xl font-bold text-[#0F172A] dark:text-white">Exam Results</h3>
+          <button onclick="closeExamResultsModal()" class="text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-white">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <div id="exam-results-content" class="space-y-4">
+          <!-- Results content will be injected here -->
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+
+  const contentDiv = document.getElementById('exam-results-content');
+  contentDiv.innerHTML = `
+    <div class="text-center space-y-3">
+      <div class="w-16 h-16 rounded-full mx-auto ${results.passed ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-300' : 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-300'} flex items-center justify-center">
+        <span class="material-symbols-outlined text-3xl">${results.passed ? 'check_circle' : 'cancel'}</span>
+      </div>
+      <h3 class="text-lg font-bold text-[#0F172A] dark:text-white">${results.passed ? 'Exam Passed!' : 'Exam Failed'}</h3>
+      <p class="text-base text-[#6E6962] dark:text-gray-400">
+        You scored ${results.score}% (${results.correctAnswers}/${results.totalQuestions} correct)
+      </p>
+
+      ${results.passed ? `
+        <div class="text-sm text-emerald-600 dark:text-emerald-400 mb-2">
+          🎁 XP Earned: +${results.xpAwarded}
+        </div>
+      ` : ''}
+
+      <div class="mt-4 p-3 rounded-xl bg-slate-50 dark:bg-black/30">
+        <h4 class="text-sm font-bold text-[#0F172A] dark:text-white mb-2">Feedback:</h4>
+        <p class="text-sm text-[#6E6962] dark:text-gray-400">${results.feedback}</p>
+      </div>
+
+      ${results.incorrectAnswers && results.incorrectAnswers.length > 0 ? `
+        <div class="mt-4">
+          <h4 class="text-sm font-bold text-[#0F172A] dark:text-white mb-2">Review Incorrect Answers:</h4>
+          <div class="space-y-2">
+            ${results.incorrectAnswers.map((answer, index) => `
+              <div class="p-3 rounded-lg bg-slate-100 dark:bg-gray-900/30">
+                <p class="font-medium text-[#0F172A] dark:text-white mb-1">Question ${index + 1}: ${answer.question}</p>
+                <p class="text-sm text-[#6E6962] dark:text-gray-400 mb-1">
+                  Your answer: <span class="font-medium">${answer.selectedAnswer}</span><br>
+                  Correct answer: <span class="font-medium text-emerald-600">${answer.correctAnswer}</span>
+                </p>
+                ${answer.explanation ? `<p class="text-xs text-[#6E6962] dark:text-gray-400 mt-1 italic">${answer.explanation}</p>` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      ` : ''}
+
+      <div class="mt-6">
+        <button onclick="closeExamResultsModal()" class="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition">
+          Close Results
+        </button>
+      </div>
+    </div>
+  `;
+
+  modal.classList.remove('hidden');
+}
+
+// Close exam results modal
+function closeExamResultsModal() {
+  const modal = document.getElementById('exam-results-modal');
+  if (modal) {
+    modal.classList.add('hidden');
+  }
+}
+
+// Handle URL parameters for direct exam access
+function handleExamUrlParams() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const examId = urlParams.get('exam');
+  if (examId) {
+    // Auto-switch to screening tab and start exam
+    setTimeout(() => {
+      switchQuizTab('screening');
+      // Note: In a real implementation, we'd start the exam directly
+      // For now, we'll just show a notification
+      showToast('Exam access via URL detected. Please click "Start Exam" to begin.', 'Exam Ready', 'info');
+    }, 500);
+  }
+}
+
+// Exam alert banner functions
+function showExamAlertBanner() {
+  const banner = document.getElementById('exam-alert-banner');
+  if (banner) {
+    banner.classList.remove('hidden');
+  }
+}
+
+function hideExamAlertBanner() {
+  const banner = document.getElementById('exam-alert-banner');
+  if (banner) {
+    banner.classList.add('hidden');
+  }
+}
+
+async function checkAndShowExamAlert() {
+  try {
+    const user = JSON.parse(localStorage.getItem('joblex_user') || localStorage.getItem('joblex_auth_user') || '{}');
+    if (!user.id) return;
+
+    const apiBase = window.JOBLEX_API_BASE || window.JOBLEX_API_URL || '/api';
+    const token = localStorage.getItem('joblex_token');
+
+    const res = await fetch(`${apiBase}/student/assigned-exams`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {}
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && Array.isArray(data.assignedExams) && data.assignedExams.length > 0) {
+        // Check for new exams (not yet viewed)
+        const newExams = data.assignedExams.filter(exam => !exam.viewedAt);
+        if (newExams.length > 0) {
+          showExamAlertBanner();
+
+          // Add notification for each new exam
+          newExams.forEach(exam => {
+            JoblexNotifications.showToast(
+              `New hiring exam assigned: ${exam.title}`,
+              'Exam Assigned',
+              'info'
+            );
+
+            // Add to notification system
+            JoblexNotifications.addNotification({
+              id: `exam-${exam.id}-${Date.now()}`,
+              title: 'New Hiring Exam Assigned',
+              message: `You have been assigned to take "${exam.title}"`,
+              type: 'exam_assigned',
+              time: 'Just now',
+              unread: true,
+              link: `#/quiz?tab=screening&exam=${exam.id}`,
+              icon: 'description',
+              iconBg: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300'
+            });
+          });
+        }
+      }
+    }
+  } catch (err) {
+    console.error('[Exam Alert Error]:', err);
+  }
+}
+
+// Initialize quiz tab functionality
+function initQuizTabs() {
+  // Handle URL parameters on load
+  handleExamUrlParams();
+
+  // Check for new exam assignments and show alert if needed
+  checkAndShowExamAlert();
+
+  // Set up periodic checking for new exams (every 5 minutes)
+  setInterval(checkAndShowExamAlert, 5 * 60 * 1000);
+
+  // Add global bindings
+  window.switchQuizTab = switchQuizTab;
+  window.startScreeningExam = startScreeningExam;
+  window.viewScreeningExamResults = viewScreeningExamResults;
+  window.showExamResultsModal = showExamResultsModal;
+  window.closeExamResultsModal = closeExamResultsModal;
+}
+
+// Call init when DOM is loaded
+document.addEventListener('DOMContentLoaded', initQuizTabs);
 

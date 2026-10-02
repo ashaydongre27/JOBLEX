@@ -268,6 +268,16 @@
     } catch (e) {}
   }
 
+  function addNotification(notification) {
+    notifications.unshift(notification);
+    saveNotifications();
+    updateBadgeUI();
+    renderNotificationList();
+
+    // Also show a toast for immediate feedback
+    showToast(notification.message, notification.title || 'Notification', notification.type || 'info');
+  }
+
   function clearAll() {
     notifications = [];
     saveNotifications();
@@ -332,7 +342,8 @@
     markAllRead: markAllRead,
     clearAll: clearAll,
     handleClickItem: handleClickItem,
-    getUnreadCount: getUnreadCount
+    getUnreadCount: getUnreadCount,
+    addNotification: addNotification
   };
 
   window.toggleNotificationsDropdown = toggleDropdown;
