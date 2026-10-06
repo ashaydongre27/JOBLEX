@@ -14,6 +14,12 @@ const crypto = require('crypto');
 const { authenticateToken, requireRole } = require('../middleware/auth.middleware');
 
 const { generateWithFailover } = require('../services/ai.service');
+const { 
+  saveQuizAttempt, 
+  validateAndConsumeAttempt, 
+  getDistractorData, 
+  getStorageStats 
+} = require('../services/quizStorage.service');
 
 const ADAPTIVE_QUIZ_BANK = [
   { id: 'adaptive-hptlc-1', skill: 'HPTLC / HPLC Chromatography', difficulty: 'easy', section: 'Chromatography', question: 'Which technique is commonly used for herbal fingerprinting and marker quantification?', options: ['HPTLC', 'Gram staining', 'Simple distillation', 'pH titration'], correctIndex: 0 },
@@ -28,8 +34,7 @@ const ADAPTIVE_QUIZ_BANK = [
   { id: 'adaptive-dsa-2', skill: 'Algorithms & Data Structures', difficulty: 'hard', section: 'Computer Science', question: 'Which algorithm is best suited for finding all-pairs shortest paths in a dense directed graph with negative edge weights but no negative cycles?', options: ['Floyd-Warshall Algorithm', 'Dijkstra Algorithm', 'Prim Algorithm', 'Kruskal Algorithm'], correctIndex: 0 }
 ];
 
-// In-memory registry for dynamically AI-generated quiz sessions
-const ACTIVE_AI_QUIZZES = new Map();
+// Transient quiz attempts are handled by decoupled quizStorage.service.js
 
 function buildProceduralQuestions(topicPrompt, count, difficulty, attemptId) {
   const topic = (topicPrompt || 'Core Engineering & Technology').trim();
@@ -131,56 +136,133 @@ router.get('/adaptive/insights', authenticateStudentOptional, async (req, res) =
   }
 });
 
+function getProceduralSingleQuestion(topicPrompt, difficulty) {
+  const topic = (topicPrompt || 'Core Engineering & Technology').trim();
+  const match = ADAPTIVE_QUIZ_BANK.find(q => q.skill.toLowerCase().includes(topic.toLowerCase()));
+  if (match) {
+    const correctAnswer = match.options[match.correctIndex];
+    const distractors = match.options.filter((_, i) => i !== match.correctIndex);
+    return {
+      question: match.question,
+      correctAnswer,
+      distractors,
+      explanation: `Verified standard competency requirement for ${match.skill}.`,
+      skill: match.skill
+    };
+  }
+  const templates = [
+    {
+      skill: `${topic} Architecture`,
+      question: `Which fundamental principle is core to effective ${topic} system design?`,
+      correctAnswer: 'Modular separation of concerns and clear interface contracts',
+      distractors: [
+        'Global tight coupling across all operational modules',
+        'Unencrypted open communication channels without authentication',
+        'Hardcoding secret parameters and static state variables'
+      ],
+      explanation: 'Separation of concerns allows independent testing, maintenance, and fault isolation.'
+    },
+    {
+      skill: `${topic} Performance`,
+      question: `What is the primary method to optimize bottleneck throughput in ${topic}?`,
+      correctAnswer: 'Asynchronous event-driven processing and intelligent cache hierarchies',
+      distractors: [
+        'Synchronous blocking loops on the main event thread',
+        'Repeated unindexed linear scans over high-cardinality stores',
+        'Increasing lock contention across concurrent workers'
+      ],
+      explanation: 'Asynchronous processing and caching reduce latency and prevent blocking during high concurrency.'
+    },
+    {
+      skill: `${topic} Data Integrity`,
+      question: `Which approach best prevents race conditions during high-concurrency operations in ${topic}?`,
+      correctAnswer: 'Enforcing atomic transactions with strict isolation controls',
+      distractors: [
+        'Bypassing consistency checks during peak traffic',
+        'Unsynchronized shared memory writes without locks',
+        'Disabling foreign key constraints and schema validations'
+      ],
+      explanation: 'Atomic transactions ensure ACID compliance and prevent data corruption under concurrent updates.'
+    },
+    {
+      skill: `${topic} Reliability`,
+      question: `How should unexpected edge cases be handled when operating ${topic}?`,
+      correctAnswer: 'Implement graceful degradation with contextual telemetry and fallback paths',
+      distractors: [
+        'Ignore exception tracebacks and continue processing silently',
+        'Terminate the primary process without graceful cleanup',
+        'Expose internal memory pointers and stack frames to users'
+      ],
+      explanation: 'Graceful degradation ensures system availability even during partial upstream failure.'
+    },
+    {
+      skill: `${topic} Security`,
+      question: `What is a required security measure when exposing ${topic} API services?`,
+      correctAnswer: 'Strict server-side validation and parameterization',
+      distractors: [
+        'Relying solely on client-side input validation',
+        'Disabling CORS and TLS security headers',
+        'Hardcoding secret keys directly in client bundles'
+      ],
+      explanation: 'Server-side validation protects against injection, tampering, and unauthorized execution.'
+    }
+  ];
+  return templates[Math.floor(Math.random() * templates.length)];
+}
+
 /**
  * POST /api/assessment/adaptive/generate
- * Dynamic AI Quiz Generation via LangGraph (NVIDIA NIM -> Google Main -> Google Backup -> Bank)
+ * and alias POST /api/assessment/quiz/generate
+ * 
+ * Strict Single-Call AI Quiz Architecture:
+ * - Triggers strictly ONE AI/LLM call per attempt.
+ * - Generates 1 question, 1 correct answer, and 3 plausible distractors.
+ * - Stores correct answer in Store 1 (CORRECT_STORE) and distractors in Store 2 (DISTRACTOR_STORE).
+ * - Shuffles options with Fisher-Yates and maps to opaque option IDs (opt_1 .. opt_4).
+ * - Returns ZERO answer / explanation hints to the client.
  */
-router.post('/adaptive/generate', authenticateStudentOptional, async (req, res) => {
+router.post(['/adaptive/generate', '/quiz/generate'], authenticateStudentOptional, async (req, res) => {
   try {
-    const studentId = req.user.id || req.user.email;
+    const studentId = req.user?.id || req.user?.email || 'usr-student-01';
     const requestedDifficulty = ['easy', 'mixed', 'hard'].includes(req.body?.difficulty) ? req.body.difficulty : 'mixed';
     const focusPrompt = typeof req.body?.prompt === 'string' ? req.body.prompt.trim().slice(0, 180) : '';
-    const rawCount = parseInt(req.body?.questionCount, 10);
-    const targetCount = (!isNaN(rawCount) && rawCount >= 3 && rawCount <= 20) ? rawCount : 5;
     const insights = getAdaptiveInsights(studentId);
     const weakSkills = Object.entries(insights.bySkill).filter(([, stat]) => stat.accuracy < 70).map(([skill]) => skill);
 
-    const attemptId = `adaptive-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
-
-    // Build context-aware prompt for LangGraph
     const studentContext = req.user ? `${req.user.name || 'Student'} (${req.user.department || 'General'})` : 'Student';
-    const topicFocus = focusPrompt || (weakSkills.length ? `Weak areas to reinforce: ${weakSkills.join(', ')}` : 'Core software engineering, programming algorithms, data structures, and industry technology');
+    const topicFocus = focusPrompt || (weakSkills.length ? `Weak areas to reinforce: ${weakSkills.join(', ')}` : 'Core software engineering, algorithms, and cloud architecture');
 
-    const aiPrompt = `Generate exactly ${targetCount} multiple-choice assessment questions for a student: ${studentContext}.
+    const attemptId = `quiz-${crypto.randomUUID ? crypto.randomUUID() : (Date.now().toString(36) + '-' + crypto.randomBytes(4).toString('hex'))}`;
+
+    const singleQuestionPrompt = `Generate exactly ONE multiple-choice assessment question for a student: ${studentContext}.
 Focus / Domain: ${topicFocus}.
 Difficulty Level: ${requestedDifficulty}.
 
 Requirements:
-- Exactly ${targetCount} questions.
-- Each question must test practical application or conceptual understanding.
-- Exactly 4 realistic options per question.
-- "correctIndex" must be the 0-based integer index (0, 1, 2, or 3) of the correct option.
-- Return ONLY a valid JSON array of ${targetCount} question objects matching this schema:
-[
-  {
-    "id": "q1",
-    "skill": "Specific Competency Name",
-    "difficulty": "${requestedDifficulty}",
-    "section": "Topic Area",
-    "question": "Clear question text?",
-    "options": ["Option A", "Option B", "Option C", "Option D"],
-    "correctIndex": 0,
-    "explanation": "Brief explanation why this option is correct."
-  }
-]`;
+- Exactly 1 question.
+- Test deep conceptual understanding or practical application.
+- Exactly 1 unambiguous correct answer.
+- Exactly 3 plausible, realistic wrong answers (distractors).
+- Return ONLY a valid JSON object matching this schema:
+{
+  "question": "Clear question text?",
+  "correct_answer": "Accurate, concise correct answer",
+  "distractors": [
+    "Plausible wrong answer 1",
+    "Plausible wrong answer 2",
+    "Plausible wrong answer 3"
+  ],
+  "explanation": "Clear, educational explanation of why the correct answer is correct and why the distractors are wrong.",
+  "skill": "${topicFocus.slice(0, 40)}"
+}`;
 
-    let generatedQuestions = null;
+    let questionData = null;
     let providerUsed = 'static-bank';
 
     try {
       const aiResult = await generateWithFailover({
-        prompt: aiPrompt,
-        systemInstruction: `You are an expert academic and technical assessment engine. You MUST respond with ONLY a pure JSON array containing the ${targetCount} question objects, without markdown code fences.`,
+        prompt: singleQuestionPrompt,
+        systemInstruction: "You are an expert assessment engine. You MUST respond with ONLY a pure JSON object containing question, correct_answer, distractors (exactly 3 strings), explanation, and skill. Do not wrap in markdown fences.",
         temperature: 0.3,
         jsonMode: true
       });
@@ -193,17 +275,15 @@ Requirements:
         cleanText = cleanText.trim();
 
         const parsed = JSON.parse(cleanText);
-        if (Array.isArray(parsed) && parsed.length >= 2 && parsed[0].question && Array.isArray(parsed[0].options)) {
-          generatedQuestions = parsed.slice(0, targetCount).map((q, idx) => ({
-            id: `ai-${attemptId}-${idx + 1}`,
-            skill: q.skill || 'Technical Competency',
-            difficulty: q.difficulty || requestedDifficulty,
-            section: q.section || 'Assessment',
-            question: q.question,
-            options: q.options,
-            correctIndex: typeof q.correctIndex === 'number' ? q.correctIndex : 0,
-            explanation: q.explanation || ''
-          }));
+        const obj = Array.isArray(parsed) ? parsed[0] : parsed;
+        if (obj && obj.question && obj.correct_answer && Array.isArray(obj.distractors) && obj.distractors.length >= 3) {
+          questionData = {
+            question: obj.question,
+            correctAnswer: obj.correct_answer,
+            distractors: obj.distractors.slice(0, 3),
+            explanation: obj.explanation || 'Verified technical principle.',
+            skill: obj.skill || topicFocus
+          };
           providerUsed = aiResult.provider;
         }
       }
@@ -211,42 +291,43 @@ Requirements:
       console.warn('[Adaptive Quiz AI Generation Warning]:', aiErr.message);
     }
 
-    // Fallback to static bank and procedural generator if AI generation returned empty or incomplete
-    if (!generatedQuestions || generatedQuestions.length < targetCount) {
-      const existing = generatedQuestions || [];
-      const focusText = focusPrompt.toLowerCase();
-      const requestedSkills = Object.keys(insights.bySkill).filter(skill => focusText.includes(skill.toLowerCase().split(' ')[0]));
-      const targetSkills = requestedSkills.length ? requestedSkills : (weakSkills.length ? weakSkills : [...new Set(ADAPTIVE_QUIZ_BANK.map(q => q.skill))]);
-      const pool = ADAPTIVE_QUIZ_BANK
-        .filter(q => targetSkills.includes(q.skill))
-        .filter(q => requestedDifficulty === 'mixed' || q.difficulty === requestedDifficulty);
-      
-      const bankItems = pool.length ? pool : ADAPTIVE_QUIZ_BANK;
-      const combined = existing.concat(bankItems);
-      
-      if (combined.length < targetCount) {
-        const needed = targetCount - combined.length;
-        const procedural = buildProceduralQuestions(focusPrompt || 'Core Engineering & Technology', needed, requestedDifficulty, attemptId);
-        generatedQuestions = combined.concat(procedural).slice(0, targetCount);
-      } else {
-        generatedQuestions = combined.slice(0, targetCount);
-      }
+    if (!questionData) {
+      questionData = getProceduralSingleQuestion(focusPrompt || topicFocus, requestedDifficulty);
     }
 
-    // Cache the questions (with correctIndex) securely on server for this attempt
-    ACTIVE_AI_QUIZZES.set(attemptId, {
+    // Anti-Cheat: Fisher-Yates shuffle of 1 correct answer + 3 distractors
+    const rawOptions = [
+      { text: questionData.correctAnswer, isCorrect: true },
+      { text: questionData.distractors[0], isCorrect: false },
+      { text: questionData.distractors[1], isCorrect: false },
+      { text: questionData.distractors[2], isCorrect: false }
+    ];
+
+    for (let i = rawOptions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [rawOptions[i], rawOptions[j]] = [rawOptions[j], rawOptions[i]];
+    }
+
+    const clientOptions = rawOptions.map((opt, idx) => ({
+      id: `opt_${idx + 1}`,
+      text: opt.text
+    }));
+
+    const correctIndex = rawOptions.findIndex(o => o.isCorrect);
+    const correctOptionId = `opt_${correctIndex + 1}`;
+
+    // Store in Bifurcated Transient Stores (15-minute TTL)
+    saveQuizAttempt({
+      attemptId,
       studentId,
-      questions: generatedQuestions,
-      createdAt: Date.now()
+      question: questionData.question,
+      correctAnswer: questionData.correctAnswer,
+      correctOptionId,
+      distractors: questionData.distractors,
+      explanation: questionData.explanation,
+      skill: questionData.skill,
+      ttlMs: 15 * 60 * 1000
     });
-
-    // Clean up old cached quizzes (> 1 hour)
-    if (ACTIVE_AI_QUIZZES.size > 200) {
-      const now = Date.now();
-      for (const [key, val] of ACTIVE_AI_QUIZZES.entries()) {
-        if (now - val.createdAt > 3600000) ACTIVE_AI_QUIZZES.delete(key);
-      }
-    }
 
     return res.json({
       success: true,
@@ -254,9 +335,22 @@ Requirements:
       difficulty: requestedDifficulty,
       prompt: focusPrompt,
       provider: providerUsed,
-      recommendation: weakSkills.length ? `Zulu AI is reinforcing: ${weakSkills.join(', ')}.` : 'Zulu AI generated a tailored assessment for your profile.',
-      // Strip correctIndex from student response payload for security
-      questions: generatedQuestions.map(({ correctIndex, explanation, ...q }) => q)
+      skill: questionData.skill,
+      question: questionData.question,
+      options: clientOptions,
+      // Backward-compatible questions array so existing frontend works seamlessly
+      questions: [
+        {
+          id: `q-${attemptId}`,
+          skill: questionData.skill,
+          difficulty: requestedDifficulty,
+          section: 'Quiz Arena',
+          question: questionData.question,
+          options: clientOptions.map(o => o.text),
+          optionList: clientOptions
+        }
+      ],
+      recommendation: weakSkills.length ? `Zulu AI is reinforcing: ${weakSkills.join(', ')}.` : 'Zulu AI generated a tailored assessment for your profile.'
     });
   } catch (err) {
     console.error('[Adaptive Quiz Generate Error]:', err);
@@ -266,52 +360,82 @@ Requirements:
 
 /**
  * POST /api/assessment/adaptive/submit
- * Evaluate student answers against securely cached AI quiz questions
+ * and alias POST /api/assessment/quiz/submit
+ * 
+ * Deterministic Conditional Evaluation:
+ * - Emulates Redis GETDEL: retrieves and atomically deletes Store 1 (CORRECT_STORE).
+ * - Replay attacks immediately rejected.
+ * - Simple if/else evaluation: zero AI/LLM calls.
  */
-router.post('/adaptive/submit', authenticateStudentOptional, async (req, res) => {
+router.post(['/adaptive/submit', '/quiz/submit'], authenticateStudentOptional, async (req, res) => {
   try {
-    const studentId = req.user.id || req.user.email;
+    const studentId = req.user?.id || req.user?.email || 'usr-student-01';
     const attemptId = req.body?.attemptId;
-    const answers = Array.isArray(req.body?.answers) ? req.body.answers : [];
-    const answerMap = new Map(answers.map(answer => [answer.questionId, Number(answer.selectedIndex)]));
 
-    // Retrieve cached questions for this session, or fallback to ADAPTIVE_QUIZ_BANK
-    const session = attemptId ? ACTIVE_AI_QUIZZES.get(attemptId) : null;
-    const questionBank = session?.questions || ADAPTIVE_QUIZ_BANK;
+    if (!attemptId) {
+      return res.status(400).json({ success: false, error: 'Missing attemptId' });
+    }
 
-    const evaluatedAnswers = questionBank.filter(question => answerMap.has(question.id)).map(question => ({
-      questionId: question.id,
-      skill: question.skill,
-      selectedIndex: answerMap.get(question.id),
-      isCorrect: answerMap.get(question.id) === question.correctIndex,
-      explanation: question.explanation || ''
-    }));
+    // Determine selectedOptionId: support direct format or legacy answers array
+    let selectedOptionId = req.body?.selectedOptionId;
+    if (!selectedOptionId && Array.isArray(req.body?.answers) && req.body.answers.length > 0) {
+      const firstAns = req.body.answers[0];
+      if (firstAns.selectedOptionId) {
+        selectedOptionId = firstAns.selectedOptionId;
+      } else if (typeof firstAns.selectedIndex === 'number') {
+        selectedOptionId = `opt_${firstAns.selectedIndex + 1}`;
+      }
+    }
 
-    const correctCount = evaluatedAnswers.filter(answer => answer.isCorrect).length;
+    if (!selectedOptionId) {
+      return res.status(400).json({ success: false, error: 'Please select an option before submitting.' });
+    }
+
+    // Atomic consumption and deterministic validation (Zero API/LLM calls)
+    const result = validateAndConsumeAttempt(attemptId, selectedOptionId, studentId);
+
+    if (!result.valid) {
+      return res.status(400).json({ success: false, error: result.error });
+    }
+
     const attempt = {
-      id: attemptId || `adaptive-${Date.now().toString(36)}`,
+      id: attemptId,
       studentId,
       difficulty: req.body?.difficulty || 'mixed',
       prompt: typeof req.body?.prompt === 'string' ? req.body.prompt.trim().slice(0, 180) : '',
-      answers: evaluatedAnswers,
-      correctCount,
-      totalQuestions: evaluatedAnswers.length,
+      answers: [
+        {
+          questionId: `q-${attemptId}`,
+          skill: result.skill,
+          selectedOptionId,
+          isCorrect: result.isCorrect,
+          explanation: result.explanation
+        }
+      ],
+      correctCount: result.isCorrect ? 1 : 0,
+      totalQuestions: 1,
       createdAt: new Date().toISOString()
     };
 
     if (!Array.isArray(DB.adaptiveQuizAttempts)) DB.adaptiveQuizAttempts = [];
     DB.adaptiveQuizAttempts.unshift(attempt);
 
-    // Clean up active session
-    if (attemptId) ACTIVE_AI_QUIZZES.delete(attemptId);
-
     const insights = getAdaptiveInsights(studentId);
+
     return res.json({
       success: true,
-      attempt: { ...attempt, answers: undefined },
-      correctCount,
-      totalQuestions: evaluatedAnswers.length,
-      accuracy: evaluatedAnswers.length ? Math.round((correctCount / evaluatedAnswers.length) * 100) : 0,
+      valid: true,
+      attemptId,
+      isCorrect: result.isCorrect,
+      score: result.score,
+      selectedOptionId,
+      correctOptionId: result.correctOptionId,
+      correctAnswerText: result.correctAnswerText,
+      explanation: result.explanation,
+      skill: result.skill,
+      correctCount: result.isCorrect ? 1 : 0,
+      totalQuestions: 1,
+      accuracy: result.isCorrect ? 100 : 0,
       insights
     });
   } catch (err) {
@@ -319,6 +443,18 @@ router.post('/adaptive/submit', authenticateStudentOptional, async (req, res) =>
     return res.status(500).json({ success: false, error: 'Unable to record adaptive quiz results.' });
   }
 });
+
+/**
+ * GET /api/assessment/quiz/stats
+ * Telemetry endpoint for decoupled storage verification
+ */
+router.get(['/adaptive/stats', '/quiz/stats'], (req, res) => {
+  return res.json({
+    success: true,
+    stats: getStorageStats()
+  });
+});
+
 
 const isPublicVerification = req => req.path.startsWith('/verify/');
 router.use((req, res, next) => isPublicVerification(req) ? next() : authenticateToken(req, res, next));
@@ -495,6 +631,137 @@ router.get('/skill', (req, res) => {
   } catch (err) {
     console.error('[Get Skill Profile Error]:', err);
     res.status(500).json({ success: false, error: 'Could not fetch skill profile.' });
+  }
+});
+
+/**
+ * GET /api/assessment/skill-constellation
+ * Returns dynamic skill constellation graph based on student's verified skills,
+ * target role, and the canonical SKILL_ONTOLOGY with prerequisite relationships
+ */
+router.get('/skill-constellation', async (req, res) => {
+  try {
+    const userId = req.user?.id || req.user?.email;
+    const cluster = req.query.cluster || 'tech'; // 'tech', 'ai', 'ayush'
+    const targetRole = req.query.targetRole || 'Full Stack Software Engineer';
+
+    const user = (DB.users || []).find(u => u.id === userId || u.email === userId);
+    const verifiedSkills = user?.verified_skills || [];
+    const studentProfile = DB.skillProfiles?.[userId];
+
+    // Get role benchmark profile
+    const roleProfile = ROLE_BENCHMARK_PROFILES[targetRole] || ROLE_BENCHMARK_PROFILES["Full Stack Software Engineer"];
+    const mandatorySkillIds = roleProfile.mandatorySkills.map(m => m.id);
+    const mandatorySkillMap = {};
+    roleProfile.mandatorySkills.forEach(m => { mandatorySkillMap[m.id] = m.minProficiency; });
+
+    // Get student's adaptive quiz insights for in-progress tracking
+    const adaptiveInsights = getAdaptiveInsights(userId);
+    const inProgressSkills = new Set();
+    Object.entries(adaptiveInsights.bySkill || {}).forEach(([skill, stat]) => {
+      if (stat.total > 0 && stat.accuracy < 80) {
+        inProgressSkills.add(skill.toLowerCase());
+      }
+    });
+
+    // Filter skills by cluster category
+    const clusterCategories = {
+      tech: ['Software Engineering', 'Database & Cloud'],
+      ai: ['Data Science & AI', 'Health-Tech & Bio-Informatics'],
+      ayush: ['Ayush Pharmacology', 'Soft Skills & Professionalism', 'Aptitude & Reasoning']
+    };
+    const targetCategories = clusterCategories[cluster] || clusterCategories.tech;
+
+    // Filter ontology skills for this cluster
+    const clusterSkills = SKILL_ONTOLOGY.filter(s => targetCategories.includes(s.category));
+
+    // Build node data
+    const nodes = clusterSkills.map(skill => {
+      const isVerified = verifiedSkills.some(v => v.toLowerCase() === skill.name.toLowerCase());
+      const isInProgress = inProgressSkills.has(skill.name.toLowerCase()) ||
+                          studentProfile?.verifiedSkills?.some(v => v.toLowerCase() === skill.name.toLowerCase());
+      const isMandatory = mandatorySkillIds.includes(skill.id);
+      const minProficiency = mandatorySkillMap[skill.id] || 0;
+
+      let status = 'locked';
+      if (isVerified) {
+        status = 'acquired';
+      } else if (isInProgress) {
+        status = 'in_progress';
+      } else if (isMandatory) {
+        status = 'target_gap';
+      }
+
+      // Simple tier assignment based on weight and dependencies
+      let tier = 1;
+      if (skill.weight >= 1.2) tier = 2;
+      if (skill.weight >= 1.25) tier = 3;
+
+      // Industry demand based on role requirements and market data
+      let industryDemand = 'Medium';
+      if (isMandatory) industryDemand = 'Critical';
+      else if (skill.weight >= 1.25) industryDemand = 'High';
+      else if (skill.weight >= 1.2) industryDemand = 'High';
+      else if (skill.weight >= 1.1) industryDemand = 'Medium';
+      else industryDemand = 'Standard';
+
+      return {
+        id: skill.id,
+        label: skill.name,
+        category: skill.category,
+        tier,
+        status,
+        xpAwarded: isVerified ? Math.round(100 + skill.weight * 50) : 0,
+        industryDemand,
+        weight: skill.weight,
+        aliases: skill.aliases,
+        minProficiency: isMandatory ? Math.round(minProficiency * 100) : null,
+        progress: isInProgress ? Math.min(90, adaptiveInsights.bySkill[skill.name]?.accuracy || 30) : 0
+      };
+    });
+
+    // Build edges based on prerequisite relationships (tier-based + category)
+    const edges = [];
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        if (nodes[i].tier < nodes[j].tier) {
+          // Add edge if they share category or if one is a mandatory prerequisite
+          if (nodes[i].category === nodes[j].category ||
+              (mandatorySkillIds.includes(nodes[i].id) && mandatorySkillIds.includes(nodes[j].id))) {
+            edges.push({ from: nodes[i].id, to: nodes[j].id, type: 'prerequisite' });
+            break; // Each node connects to one next-tier node
+          }
+        }
+      }
+    }
+
+    // Count statuses
+    const acquiredCount = nodes.filter(n => n.status === 'acquired').length;
+    const inProgressCount = nodes.filter(n => n.status === 'in_progress').length;
+    const targetGapCount = nodes.filter(n => n.status === 'target_gap').length;
+    const lockedCount = nodes.filter(n => n.status === 'locked').length;
+
+    const clusterNames = {
+      tech: 'Software & Cloud Architecture',
+      ai: 'AI & Data Science',
+      ayush: 'Ayush Informatics'
+    };
+
+    return res.json({
+      success: true,
+      clusterName: clusterNames[cluster] || clusterNames.tech,
+      totalNodes: nodes.length,
+      acquiredCount,
+      inProgressCount,
+      targetGapCount,
+      lockedCount,
+      targetRole: roleProfile.title,
+      nodes,
+      edges
+    });
+  } catch (err) {
+    console.error('[Skill Constellation Error]:', err);
+    res.status(500).json({ success: false, error: 'Could not generate skill constellation.' });
   }
 });
 
@@ -1090,6 +1357,669 @@ router.get('/verify/:token', (req, res) => {
   } catch (err) {
     console.error('[Credential Verification Error]:', err);
     return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ============================================================================
+// FEATURE 8: Company Hiring Exam Module (SIH 26044)
+// ============================================================================
+
+/**
+ * GET /api/student/assigned-exams
+ * Retrieve active and pending corporate tests assigned to the current student.
+ */
+router.get('/student/assigned-exams', authenticateToken, requireRole(['student']), async (req, res) => {
+  try {
+    const studentId = req.user?.id || req.user?.email || 'usr-student-01';
+
+    // Get assignments for this student
+    let assignments = [];
+    if (isConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('candidate_exam_assignments')
+          .select('*')
+          .eq('candidate_email', req.user?.email || '')
+          .or(`candidate_email.eq.${req.user?.email || ''},candidate_name.ilike.%${req.user?.name || ''}%`)
+          .order('assigned_at', { ascending: false });
+
+        if (!error && data) {
+          assignments = data;
+        }
+      } catch (err) {
+        console.warn('[Get assigned exams] Supabase warning:', err.message);
+      }
+    }
+
+    // Fallback to in-memory storage
+    if (assignments.length === 0) {
+      assignments = DB.candidate_exam_assignments.filter(a =>
+        a.candidateEmail === (req.user?.email || '') ||
+        a.candidateName === (req.user?.name || '')
+      );
+    }
+
+    // Enhance assignments with exam details
+    const enhancedAssignments = [];
+    for (const assignment of assignments) {
+      let exam = null;
+      if (isConfigured && supabase) {
+        try {
+          const { data, error } = await supabase
+            .from('hiring_exams')
+            .select('*')
+            .eq('id', assignment.exam_id)
+            .single();
+
+          if (!error && data) {
+            exam = data;
+          }
+        } catch (err) {
+          console.warn('[Get exam for assignment] Supabase warning:', err.message);
+        }
+      }
+
+      if (!exam) {
+        exam = DB.hiring_exams.find(e => e.id === assignment.examId);
+      }
+
+      if (exam) {
+        // Check if assignment is still valid (not expired/completed)
+        const isValid = ['Pending', 'In Progress'].includes(assignment.status);
+        const daysSinceAssignment = Date.now() - new Date(assignment.assignedAt).getTime();
+        const isExpired = daysSinceAssignment > (7 * 24 * 60 * 60 * 1000); // 7 days expiry
+
+        enhancedAssignments.push({
+          ...assignment,
+          exam: {
+            id: exam.id,
+            title: exam.title,
+            roleTitle: exam.roleTitle,
+            companyName: exam.companyName,
+            durationMinutes: exam.durationMinutes,
+            passingPercentage: exam.passingPercentage,
+            totalQuestions: exam.totalQuestions
+          },
+          isValid: isValid && !isExpired,
+          isExpired: isExpired
+        });
+      }
+    }
+
+    return res.json({
+      success: true,
+      assignedExams: enhancedAssignments
+    });
+  } catch (err) {
+    console.error('[Get assigned exams] Error:', err);
+    return res.status(500).json({ success: false, error: 'Unable to retrieve assigned exams.' });
+  }
+});
+
+/**
+ * POST /api/student/assigned-exams/:id/start
+ * Begin the test session; stores transient attempt token in quizStorage.service.
+ */
+router.post('/student/assigned-exams/:id/start', authenticateToken, requireRole(['student']), async (req, res) => {
+  try {
+    const { id: assignmentId } = req.params;
+    const studentId = req.user?.id || req.user?.email || 'usr-student-01';
+    const studentEmail = req.user?.email || '';
+    const studentName = req.user?.name || 'Student Scholar';
+
+    // Verify assignment exists and belongs to this student
+    let assignment = null;
+    if (isConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('candidate_exam_assignments')
+          .select('*')
+          .eq('id', assignmentId)
+          .single();
+
+        if (!error && data) {
+          assignment = data;
+        }
+      } catch (err) {
+        console.warn('[Get assignment] Supabase warning:', err.message);
+      }
+    }
+
+    if (!assignment) {
+      assignment = DB.candidate_exam_assignments.find(a => a.id === assignmentId);
+    }
+
+    if (!assignment) {
+      return res.status(404).json({ success: false, error: 'Assignment not found.' });
+    }
+
+    // Verify assignment belongs to this student (by email or name match)
+    const belongsToStudent =
+      assignment.candidateEmail === studentEmail ||
+      assignment.candidateName === studentName ||
+      (assignment.candidateEmail && assignment.candidateEmail.toLowerCase() === studentEmail.toLowerCase());
+
+    if (!belongsToStudent) {
+      return res.status(403).json({ success: false, error: 'Not authorized to start this assignment.' });
+    }
+
+    // Verify assignment is in correct state
+    if (assignment.status !== 'Pending') {
+      return res.status(400).json({ success: false, error: `Assignment is not in Pending state. Current state: ${assignment.status}` });
+    }
+
+    // Get exam details
+    let exam = null;
+    if (isConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('hiring_exams')
+          .select('*')
+          .eq('id', assignment.exam_id)
+          .single();
+
+        if (!error && data) {
+          exam = data;
+        }
+      } catch (err) {
+        console.warn('[Get exam for start] Supabase warning:', err.message);
+      }
+    }
+
+    if (!exam) {
+      exam = DB.hiring_exams.find(e => e.id === assignment.examId);
+    }
+
+    if (!exam) {
+      return res.status(404).json({ success: false, error: 'Exam not found.' });
+    }
+
+    // Get questions for this exam
+    let questions = [];
+    if (isConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('hiring_exam_questions')
+          .select('*')
+          .eq('exam_id', exam.id)
+          .order('created_at', { ascending: true });
+
+        if (!error && data) {
+          questions = data;
+        }
+      } catch (err) {
+        console.warn('[Get exam questions] Supabase warning:', err.message);
+      }
+    }
+
+    if (questions.length === 0) {
+      questions = DB.hiring_exam_questions[exam.id] || [];
+    }
+
+    if (questions.length === 0) {
+      return res.status(500).json({ success: false, error: 'No questions found for this exam.' });
+    }
+
+    // Update assignment status to 'In Progress'
+    const updatedAssignment = {
+      ...assignment,
+      status: 'In Progress'
+    };
+
+    if (isConfigured && supabase) {
+      try {
+        await supabase
+          .from('candidate_exam_assignments')
+          .update({ status: 'In Progress' })
+          .eq('id', assignmentId);
+      } catch (err) {
+        console.warn('[Update assignment status] Supabase warning:', err.message);
+      }
+    } else {
+      const index = DB.candidate_exam_assignments.findIndex(a => a.id === assignmentId);
+      if (index !== -1) {
+        DB.candidate_exam_assignments[index] = updatedAssignment;
+      }
+    }
+
+    // Create transient quiz attempt using quizStorage.service
+    const attemptId = `hiring-exam-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`;
+
+    // Format questions for quizStorage.service
+    const formattedQuestions = questions.map(q => ({
+      id: q.id || `q-${Date.now()}-${Math.random()}`,
+      question: q.question_text || q.questionText,
+      options: Array.isArray(q.options) ? q.options : [],
+      correctIndex: q.correct_index !== undefined ? q.correct_index : q.correctIndex,
+      skill: q.skill_category || q.skillCategory || 'General',
+      difficulty: q.difficulty || 'medium',
+      explanation: q.explanation || ''
+    }));
+
+    // Save the attempt with exam-specific data
+    saveQuizAttempt({
+      attemptId,
+      studentId,
+      question: `Hiring Exam: ${exam.title}`, // Main question description
+      correctAnswer: '', // Not used for multi-question exams
+      correctOptionId: 'opt_1', // Placeholder
+      distractors: [], // Placeholder
+      explanation: `Enterprise screening exam for ${exam.roleTitle} at ${exam.companyName}`,
+      skill: exam.roleTitle,
+      ttlMs: exam.durationMinutes * 60 * 1000, // Exam duration in milliseconds
+      // Custom metadata for hiring exam
+      metadata: {
+        examId: exam.id,
+        assignmentId: assignmentId,
+        totalQuestions: formattedQuestions.length,
+        questions: formattedQuestions,
+        examTitle: exam.title,
+        companyName: exam.companyName,
+        roleTitle: exam.roleTitle
+      }
+    });
+
+    return res.json({
+      success: true,
+      message: 'Hiring exam session started successfully!',
+      attemptId,
+      exam: {
+        id: exam.id,
+        title: exam.title,
+        roleTitle: exam.roleTitle,
+        companyName: exam.companyName,
+        durationMinutes: exam.durationMinutes,
+        totalQuestions: questions.length
+      },
+      questions: formattedQuestions.map(q => ({
+        id: q.id,
+        question: q.question,
+        options: q.options
+      }))
+    });
+  } catch (err) {
+    console.error('[Start hiring exam] Error:', err);
+    return res.status(500).json({ success: false, error: 'Unable to start hiring exam.' });
+  }
+});
+
+/**
+ * POST /api/student/assigned-exams/:id/submit
+ * Validate candidate submission against stored correct keys, compute percentage, update candidate assignment record, and grant XP.
+ */
+router.post('/student/assigned-exams/:id/submit', authenticateToken, requireRole(['student']), async (req, res) => {
+  try {
+    const { id: assignmentId } = req.params;
+    const studentId = req.user?.id || req.user?.email || 'usr-student-01';
+    const studentEmail = req.user?.email || '';
+    const studentName = req.user?.name || 'Student Scholar';
+    const { answers } = req.body; // Expected format: { questionId: selectedOptionIndex }
+
+    if (!answers || typeof answers !== 'object') {
+      return res.status(400).json({ success: false, error: 'Answers object is required.' });
+    }
+
+    // Verify assignment exists and belongs to this student
+    let assignment = null;
+    if (isConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('candidate_exam_assignments')
+          .select('*')
+          .eq('id', assignmentId)
+          .single();
+
+        if (!error && data) {
+          assignment = data;
+        }
+      } catch (err) {
+        console.warn('[Get assignment for submit] Supabase warning:', err.message);
+      }
+    }
+
+    if (!assignment) {
+      assignment = DB.candidate_exam_assignments.find(a => a.id === assignmentId);
+    }
+
+    if (!assignment) {
+      return res.status(404).json({ success: false, error: 'Assignment not found.' });
+    }
+
+    // Verify assignment belongs to this student (by email or name match)
+    const belongsToStudent =
+      assignment.candidateEmail === studentEmail ||
+      assignment.candidateName === studentName ||
+      (assignment.candidateEmail && assignment.candidateEmail.toLowerCase() === studentEmail.toLowerCase());
+
+    if (!belongsToStudent) {
+      return res.status(403).json({ success: false, error: 'Not authorized to submit this assignment.' });
+    }
+
+    // Verify assignment is in correct state
+    if (assignment.status !== 'In Progress') {
+      return res.status(400).json({ success: false, error: `Assignment is not in In Progress state. Current state: ${assignment.status}` });
+    }
+
+    // Get exam details
+    let exam = null;
+    if (isConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('hiring_exams')
+          .select('*')
+          .eq('id', assignment.exam_id)
+          .single();
+
+        if (!error && data) {
+          exam = data;
+        }
+      } catch (err) {
+        console.warn('[Get exam for submit] Supabase warning:', err.message);
+      }
+    }
+
+    if (!exam) {
+      exam = DB.hiring_exams.find(e => e.id === assignment.examId);
+    }
+
+    if (!exam) {
+      return res.status(404).json({ success: false, error: 'Exam not found.' });
+    }
+
+    // Get questions for this exam
+    let questions = [];
+    if (isConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('hiring_exam_questions')
+          .select('*')
+          .eq('exam_id', exam.id)
+          .order('created_at', { ascending: true });
+
+        if (!error && data) {
+          questions = data;
+        }
+      } catch (err) {
+        console.warn('[Get exam questions for submit] Supabase warning:', err.message);
+      }
+    }
+
+    if (questions.length === 0) {
+      questions = DB.hiring_exam_questions[exam.id] || [];
+    }
+
+    if (questions.length === 0) {
+      return res.status(500).json({ success: false, error: 'No questions found for this exam.' });
+    }
+
+    // Calculate score
+    let correctCount = 0;
+    const totalQuestions = questions.length;
+
+    questions.forEach(question => {
+      const questionId = question.id || `q-${question.question_text?.substring(0, 10)}` || '';
+      const selectedOptionIndex = answers[questionId];
+
+      if (selectedOptionIndex !== undefined &&
+          parseInt(selectedOptionIndex, 10) === question.correct_index) {
+        correctCount++;
+      }
+    });
+
+    const scorePercentage = Math.round((correctCount / totalQuestions) * 1000) / 10; // 1 decimal place
+    const passed = scorePercentage >= exam.passingPercentage;
+
+    // Update assignment with results
+    const completedAt = new Date().toISOString();
+    const updatedAssignment = {
+      ...assignment,
+      status: passed ? 'Completed' : 'Failed',
+      score: scorePercentage,
+      passed: passed,
+      completedAt: completedAt
+    };
+
+    if (isConfigured && supabase) {
+      try {
+        await supabase
+          .from('candidate_exam_assignments')
+          .update({
+            status: updatedAssignment.status,
+            score: updatedAssignment.score,
+            passed: updatedAssignment.passed,
+            completed_at: updatedAssignment.completedAt
+          })
+          .eq('id', assignmentId);
+      } catch (err) {
+        console.warn('[Update assignment results] Supabase warning:', err.message);
+      }
+    } else {
+      const index = DB.candidate_exam_assignments.findIndex(a => a.id === assignmentId);
+      if (index !== -1) {
+        DB.candidate_exam_assignments[index] = updatedAssignment;
+      }
+    }
+
+    // Award XP based on performance
+    let xpAwarded = 0;
+    if (passed) {
+      xpAwarded = 100 + Math.floor((scorePercentage - exam.passingPercentage) / 2); // Bonus for exceeding passing mark
+    } else {
+      xpAwarded = 50; // Consolation XP for attempting
+    }
+
+    // Update student XP
+    const user = (DB.users || []).find(u => u.id === studentId || u.email === studentEmail);
+    if (user) {
+      user.xp = (user.xp || 1000) + xpAwarded;
+
+      // Add skill to verified skills if passed
+      if (passed && exam.roleTitle) {
+        if (!user.verified_skills) user.verified_skills = [];
+        if (!user.verified_skills.includes(exam.roleTitle)) {
+          user.verified_skills.push(exam.roleTitle);
+        }
+      }
+    }
+
+    // Persist to Supabase if configured
+    if (isConfigured && supabase) {
+      try {
+        await supabase.from('profiles').update({
+          xp: user ? user.xp : 1000 + xpAwarded,
+          verified_skills: user ? user.verified_skills : [exam.roleTitle]
+        }).eq('id', studentId);
+      } catch (e) {
+        console.warn('[Update student XP] Supabase warning:', e.message);
+      }
+    }
+
+    // Create notification for student
+    if (!DB.inPortalNotifications) DB.inPortalNotifications = [];
+    DB.inPortalNotifications.unshift({
+      id: `notif-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
+      recipientId: studentId,
+      senderId: assignment.companyId || 'usr-industry-01',
+      title: passed ? `Exam Completed: ${exam.title}` : `Exam Results: ${exam.title}`,
+      message: passed
+        ? `Congratulations! You scored ${scorePercentage}% and passed the hiring assessment for ${exam.roleTitle} at ${exam.companyName}. (+${xpAwarded} XP)`
+        : `You scored ${scorePercentage}% on the hiring assessment for ${exam.roleTitle} at ${exam.companyName}. Passing score: ${exam.passingPercentage}%. (+${xpAwarded} XP)`,
+      actionUrl: '/student.html#exam-results',
+      category: passed ? 'system_alert' : 'assessment_result',
+      isRead: false,
+      createdAt: new Date().toISOString()
+    });
+
+    // Add to todo list for completed exam (for review)
+    if (!DB.todos) DB.todos = [];
+    DB.todos.unshift({
+      id: `todo-exam-${Date.now().toString(36)}`,
+      studentId: studentId,
+      title: `Review Exam Results: ${exam.title}`,
+      description: `You completed the hiring assessment for ${exam.roleTitle} at ${exam.companyName}. Score: ${scorePercentage}%${passed ? ' - PASSED' : ''}`,
+      category: 'Assessment',
+      priority: 'Medium',
+      dueDate: new Date(Date.now() + 86400000 * 2).toISOString(), // 2 days
+      isCompleted: false,
+      completedAt: null,
+      sourceType: 'exam_completed',
+      sourceRefId: assignmentId
+    });
+
+    return res.json({
+      success: true,
+      message: passed
+        ? `Congratulations! You scored ${scorePercentage}% and passed the hiring assessment.`
+        : `You scored ${scorePercentage}% on the hiring assessment. Passing score: ${exam.passingPercentage}%.`,
+      score: scorePercentage,
+      passed: passed,
+      xpAwarded: xpAwarded,
+      correctCount: correctCount,
+      totalQuestions: totalQuestions,
+      exam: {
+        id: exam.id,
+        title: exam.title,
+        roleTitle: exam.roleTitle,
+        companyName: exam.companyName
+      }
+    });
+  } catch (err) {
+    console.error('[Submit hiring exam] Error:', err);
+    return res.status(500).json({ success: false, error: 'Unable to submit hiring exam.' });
+  }
+});
+
+// GET /api/student/assigned-exams/:id/results: Get results for a completed exam assignment
+router.get('/student/assigned-exams/:id/results', authenticateToken, requireRole(['student']), async (req, res) => {
+  try {
+    const { id: assignmentId } = req.params;
+    const studentId = req.user?.id || req.user?.email || 'usr-student-01';
+
+    // Get assignment with exam details
+    let assignment = null;
+    let exam = null;
+
+    if (isConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('candidate_exam_assignments')
+          .select('*')
+          .eq('id', assignmentId)
+          .single();
+        if (!error && data) {
+          assignment = data;
+        }
+      } catch (err) {
+        console.warn('[Get exam results] Supabase warning:', err.message);
+      }
+    }
+    if (!assignment) {
+      assignment = DB.candidate_exam_assignments.find(a => a.id === assignmentId);
+    }
+
+    if (!assignment) {
+      return res.status(404).json({ success: false, error: 'Exam assignment not found.' });
+    }
+
+    // Get exam details
+    if (isConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('hiring_exams')
+          .select('*')
+          .eq('id', assignment.exam_id)
+          .single();
+        if (!error && data) {
+          exam = data;
+        }
+      } catch (err) {
+        console.warn('[Get exam for results] Supabase warning:', err.message);
+      }
+    }
+    if (!exam) {
+      exam = DB.hiring_exams.find(e => e.id === assignment.exam_id);
+    }
+
+    // Get questions with correct answers for review
+    let questions = [];
+    if (isConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('hiring_exam_questions')
+          .select('*')
+          .eq('exam_id', assignment.exam_id)
+          .order('id', { ascending: true });
+        if (!error && data) {
+          questions = data;
+        }
+      } catch (err) {
+        console.warn('[Get exam questions for results] Supabase warning:', err.message);
+      }
+    }
+    if (questions.length === 0 && DB.hiring_exam_questions) {
+      questions = DB.hiring_exam_questions[assignment.exam_id] || [];
+    }
+
+    // Get student's answers from quizStorage
+    let studentAnswers = {};
+    try {
+      const { QuizStorage } = require('../../services/quizStorage.service.js');
+      const storage = new QuizStorage();
+      const attempt = await storage.getAttempt(assignmentId, studentId);
+      if (attempt && attempt.answers) {
+        studentAnswers = attempt.answers;
+      }
+    } catch (err) {
+      console.warn('[Get student answers] Warning:', err.message);
+    }
+
+    // Build detailed results
+    const detailedQuestions = questions.map((q, idx) => {
+      const studentAnswer = studentAnswers[idx];
+      return {
+        questionId: q.id,
+        questionText: q.question_text,
+        options: q.options,
+        correctIndex: q.correct_index,
+        studentAnswer: studentAnswer,
+        isCorrect: studentAnswer === q.correct_index,
+        skillCategory: q.skill_category,
+        difficulty: q.difficulty,
+        explanation: q.explanation
+      };
+    });
+
+    return res.json({
+      success: true,
+      assignment: {
+        id: assignment.id,
+        examId: assignment.exam_id,
+        status: assignment.status,
+        score: assignment.score,
+        passed: assignment.passed,
+        completedAt: assignment.completed_at,
+        assignedAt: assignment.assigned_at
+      },
+      exam: exam ? {
+        id: exam.id,
+        title: exam.title,
+        roleTitle: exam.role_title,
+        companyName: exam.company_name,
+        durationMinutes: exam.duration_minutes,
+        passingPercentage: exam.passing_percentage,
+        totalQuestions: exam.total_questions
+      } : null,
+      questions: detailedQuestions,
+      summary: {
+        totalQuestions: questions.length,
+        correctCount: detailedQuestions.filter(q => q.isCorrect).length,
+        scorePercentage: assignment.score,
+        passed: assignment.passed
+      }
+    });
+  } catch (err) {
+    console.error('[Get exam results] Error:', err);
+    return res.status(500).json({ success: false, error: 'Unable to retrieve exam results.' });
   }
 });
 

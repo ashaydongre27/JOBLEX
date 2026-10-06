@@ -10,14 +10,10 @@ let BASE_URL = 'http://localhost:5000';
 let server;
 
 async function runTests() {
-  // Try connecting or start local server instance
-  try {
-    await fetch(`${BASE_URL}/api/health`);
-  } catch (e) {
-    server = app.listen(0);
-    const port = server.address().port;
-    BASE_URL = `http://localhost:${port}`;
-  }
+  // Always start fresh server instance for isolated testing
+  server = app.listen(0);
+  const port = server.address().port;
+  BASE_URL = `http://localhost:${port}`;
 
   console.log('====================================================');
   console.log('STARTING CROSS-PORTAL CONNECTIVITY E2E TEST SUITE');
@@ -63,10 +59,13 @@ async function runTests() {
   const appId = applyData.application.id;
   console.log(`✓ Student successfully applied. Application ID: ${appId}`);
 
-  // Check Recruiter Notification
-  const recruiterNotifRes = await fetch(`${BASE_URL}/api/notifications?recipientId=usr-industry-01`);
+  // Check Recruiter Notification (using industry user auth)
+  const recruiterNotifRes = await fetch(`${BASE_URL}/api/notifications`, {
+    headers: { 'Authorization': 'Bearer demo-usr-industry-01' }
+  });
   assert.strictEqual(recruiterNotifRes.status, 200);
   const recruiterNotifs = await recruiterNotifRes.json();
+  console.log('DEBUG - All notifications:', JSON.stringify(recruiterNotifs.notifications || [], null, 2));
   const recruiterNotice = (recruiterNotifs.notifications || []).find(n => n.message && n.message.includes(testStudentName));
   assert(recruiterNotice, `Expected recruiter notification for ${testStudentName}`);
   console.log(`✓ Recruiter received real-time notification: "${recruiterNotice.title}"`);
@@ -75,7 +74,10 @@ async function runTests() {
   const interviewSlotTime = '2026-09-15 11:30 AM IST';
   const statusRes = await fetch(`${BASE_URL}/api/industry/applications/${appId}/status`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer demo-usr-industry-01'
+    },
     body: JSON.stringify({
       status: 'Interview Scheduled',
       interviewSlot: interviewSlotTime
@@ -86,8 +88,10 @@ async function runTests() {
   assert(statusData.success, 'Status update failed');
   console.log(`✓ Recruiter scheduled interview for slot: ${interviewSlotTime}`);
 
-  // Check Student Notification
-  const studentNotifRes = await fetch(`${BASE_URL}/api/notifications?userId=${encodeURIComponent(testStudentEmail)}`);
+  // Check Student Notification (using student demo auth)
+  const studentNotifRes = await fetch(`${BASE_URL}/api/notifications`, {
+    headers: { 'Authorization': 'Bearer demo-usr-student-01' }
+  });
   assert.strictEqual(studentNotifRes.status, 200);
   const studentNotifs = await studentNotifRes.json();
   const studentStatusNotice = (studentNotifs.notifications || []).find(n => n.title && n.title.includes('Interview Scheduled'));
@@ -95,19 +99,25 @@ async function runTests() {
   console.log(`✓ Student received notification: "${studentStatusNotice.title}"`);
 
   // Check Student Contextual To-Do Injected
-  const todoRes = await fetch(`${BASE_URL}/api/todos?studentId=${encodeURIComponent(testStudentEmail)}`);
+  const todoRes = await fetch(`${BASE_URL}/api/todos`, {
+    headers: { 'Authorization': 'Bearer demo-usr-student-01' }
+  });
   assert.strictEqual(todoRes.status, 200);
   const todoData = await todoRes.json();
+  console.log('DEBUG - All todos:', JSON.stringify(todoData.todos || [], null, 2));
   const interviewTodo = (todoData.todos || []).find(t => t.sourceType === 'system_interview' && t.sourceRefId === appId);
   assert(interviewTodo, 'Student should have an auto-injected interview preparation To-Do task');
   console.log(`✓ Contextual To-Do auto-injected into student backlog: "${interviewTodo.title}" (Priority: ${interviewTodo.priority})\n`);
 
   // Loop 2: Reverse Talent Search / Inbound Direct Invite
   console.log('--- Loop 2: Reverse Talent Search & Direct Inbound Invite ---');
-  const candidateId = `usr-cand-${Date.now()}`;
+  const candidateId = 'usr-student-01';  // Use existing demo student
   const inviteRes = await fetch(`${BASE_URL}/api/industry/inbound-invite`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer demo-usr-industry-01'
+    },
     body: JSON.stringify({
       candidateId: candidateId,
       candidateName: 'Rohan Deshmukh',
@@ -121,16 +131,20 @@ async function runTests() {
   assert(inviteData.success, 'Invite should return success');
 
   // Verify candidate notification
-  const candNotifRes = await fetch(`${BASE_URL}/api/notifications?userId=${candidateId}`);
+  const candNotifRes = await fetch(`${BASE_URL}/api/notifications`, {
+    headers: { 'Authorization': 'Bearer demo-usr-student-01' }
+  });
   const candNotifs = await candNotifRes.json();
   const inviteNotice = (candNotifs.notifications || []).find(n => n.category === 'interview_invite');
   assert(inviteNotice, 'Candidate should have interview_invite notification');
   console.log(`✓ Inbound invite received by candidate: "${inviteNotice.title}"`);
 
   // Verify candidate To-Do
-  const candTodoRes = await fetch(`${BASE_URL}/api/todos?studentId=${candidateId}`);
+  const candTodoRes = await fetch(`${BASE_URL}/api/todos`, {
+    headers: { 'Authorization': 'Bearer demo-usr-student-01' }
+  });
   const candTodos = await candTodoRes.json();
-  const inviteTodo = (candTodos.todos || []).find(t => t.sourceType === 'system_interview');
+  const inviteTodo = (candTodos.todos || []).find(t => t.sourceType === 'system_interview' && t.title.includes('Inbound'));
   assert(inviteTodo, 'Candidate should have auto-injected To-Do for inbound interview');
   console.log(`✓ Candidate To-Do injected: "${inviteTodo.title}"\n`);
 
@@ -138,7 +152,10 @@ async function runTests() {
   console.log('--- Loop 3: Industry Opportunity Publication & Feed Sync ---');
   const newOppRes = await fetch(`${BASE_URL}/api/industry/opportunities`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer demo-usr-industry-01'
+    },
     body: JSON.stringify({
       title: 'Senior AYUSH Phytochemistry Analyst',
       company: 'Baidyanath Research Labs',
@@ -167,7 +184,10 @@ async function runTests() {
   console.log('--- Loop 4: Industry Tech Stack Disclosure & Academy Tech Radar ---');
   const techStackRes = await fetch(`${BASE_URL}/api/industry/tech-stack`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer demo-usr-industry-01'
+    },
     body: JSON.stringify({
       companyId: 'usr-industry-01',
       companyName: 'Dabur India Ltd.',
@@ -184,15 +204,19 @@ async function runTests() {
   assert(techStackData.success, 'Tech stack creation failed');
   console.log(`✓ Industry tech stack registered: "${techStackData.techStack.techName}"`);
 
-  // Check University Dean notification
-  const deanNotifRes = await fetch(`${BASE_URL}/api/notifications?userId=usr-academy-01`);
+  // Check University Dean notification (using academy demo auth)
+  const deanNotifRes = await fetch(`${BASE_URL}/api/notifications`, {
+    headers: { 'Authorization': 'Bearer demo-usr-academy-01' }
+  });
   const deanNotifs = await deanNotifRes.json();
   const techNotice = (deanNotifs.notifications || []).find(n => n.title.includes('Tech Stack Published'));
   assert(techNotice, 'University Dean should receive Tech Stack publication notification');
   console.log(`✓ Dean notified of industrial technology shift: "${techNotice.message}"`);
 
   // Check Academy Tech Radar Endpoint
-  const radarRes = await fetch(`${BASE_URL}/api/academy/tech-radar`);
+  const radarRes = await fetch(`${BASE_URL}/api/academy/tech-radar`, {
+    headers: { 'Authorization': 'Bearer demo-usr-academy-01' }
+  });
   assert.strictEqual(radarRes.status, 200);
   const radarData = await radarRes.json();
   assert(radarData.success && radarData.totalDisclosures > 0, 'Tech radar should reflect disclosures');
@@ -202,7 +226,7 @@ async function runTests() {
   console.log('--- Loop 5: Virtual Masterclass Lifecycle (Propose -> Sanction -> RSVP) ---');
   const proposeRes = await fetch(`${BASE_URL}/api/industry/workshops/propose`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer demo-usr-industry-01' },
     body: JSON.stringify({
       hostCompanyId: 'usr-industry-01',
       hostCompanyName: 'Dabur India Ltd.',
@@ -226,7 +250,7 @@ async function runTests() {
   // Dean approves proposal
   const sanctionRes = await fetch(`${BASE_URL}/api/academy/workshops/${wspId}/decision`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer demo-usr-academy-01' },
     body: JSON.stringify({
       decision: 'Approved',
       notes: 'Sanctioned under Continuing Ayush Medical Education initiative.'
@@ -241,7 +265,7 @@ async function runTests() {
   const rsvpStudentId = `usr-student-${Date.now()}`;
   const rsvpRes = await fetch(`${BASE_URL}/api/assessment/workshops/${wspId}/rsvp`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer demo-usr-student-01' },
     body: JSON.stringify({
       studentId: rsvpStudentId,
       studentName: 'Aarav Sharma'
@@ -254,7 +278,9 @@ async function runTests() {
   console.log(`✓ Student RSVP completed. Enrolled count: ${rsvpData.workshop.enrolledCount}`);
 
   // Verify attendance To-Do injected into student backlog
-  const studentWspTodosRes = await fetch(`${BASE_URL}/api/todos?studentId=${rsvpStudentId}`);
+  const studentWspTodosRes = await fetch(`${BASE_URL}/api/todos?studentId=${rsvpStudentId}`, {
+    headers: { 'Authorization': 'Bearer demo-usr-student-01' }
+  });
   const studentWspTodos = await studentWspTodosRes.json();
   const wspTodo = (studentWspTodos.todos || []).find(t => t.sourceRefId === wspId);
   assert(wspTodo, 'Student should receive calendar attendance reminder To-Do');
@@ -263,7 +289,9 @@ async function runTests() {
   // Loop 6: Student Quiz Assessment -> SHA-256 HMAC Credential -> Public Verification
   console.log('--- Loop 6: Skill Certification & Cryptographic Credential Verification ---');
   // 1. Fetch available quizzes
-  const quizzesRes = await fetch(`${BASE_URL}/api/assessment/quizzes?studentId=${rsvpStudentId}`);
+  const quizzesRes = await fetch(`${BASE_URL}/api/assessment/quizzes?studentId=${rsvpStudentId}`, {
+    headers: { 'Authorization': 'Bearer demo-usr-student-01' }
+  });
   assert.strictEqual(quizzesRes.status, 200);
   const quizzesData = await quizzesRes.json();
   assert(quizzesData.quizzes && quizzesData.quizzes.length > 0, 'Should have company quizzes available');
@@ -271,7 +299,9 @@ async function runTests() {
   console.log(`✓ Fetched active quizzes. Selected: "${targetQuiz.badgeTitle}" (${targetQuiz.companyName})`);
 
   // 2. Fetch full quiz details for taking
-  const quizDetailRes = await fetch(`${BASE_URL}/api/assessment/quiz/${targetQuiz.id}`);
+  const quizDetailRes = await fetch(`${BASE_URL}/api/assessment/quiz/${targetQuiz.id}`, {
+    headers: { 'Authorization': 'Bearer demo-usr-student-01' }
+  });
   assert.strictEqual(quizDetailRes.status, 200);
   const quizDetail = await quizDetailRes.json();
   assert(quizDetail.quiz && quizDetail.quiz.questions.length > 0, 'Quiz must have questions');
@@ -284,7 +314,7 @@ async function runTests() {
 
   const submitQuizRes = await fetch(`${BASE_URL}/api/assessment/quiz/${targetQuiz.id}/submit`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer demo-usr-student-01' },
     body: JSON.stringify({
       studentId: rsvpStudentId,
       studentName: 'Aarav Sharma',

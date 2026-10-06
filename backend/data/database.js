@@ -18,7 +18,9 @@ const DB = {
       year: "4th Year Undergraduate",
       xp: 1450,
       streak: 7,
-      verified_skills: ["CAMAG HPTLC Densitometry", "Phytochemical Profiling", "Good Laboratory Practice (GLP)"]
+      verified_skills: ["CAMAG HPTLC Densitometry", "Phytochemical Profiling", "Good Laboratory Practice (GLP)"],
+      isOnboardingCompleted: true,
+      onboarding_completed: true
     },
     {
       id: "usr-academy-01",
@@ -607,6 +609,11 @@ const DB = {
       grantAmount: "₹24,00,000"
     }
   ],
+
+  // Hiring Exam Module Tables
+  hiring_exams: [],
+  hiring_exam_questions: [],
+  candidate_exam_assignments: [],
 
   // Feature 1: Student Contextual To-Do Engine
   todos: [],
@@ -1285,7 +1292,311 @@ const DB = {
       category: "Hiring Event",
       created_at: "2026-09-05T09:00:00.000Z"
     }
-  ]
+  ],
+
+  // Feature 10: Company Hiring Exam Conduction Engine
+  hiring_exams: [],
+
+  hiring_exam_questions: [],
+
+  candidate_exam_assignments: [],
+
+  // Feature 12: University Syllabus Review & MoU Module
+  curriculums: [
+    {
+      id: "curr-001",
+      institution: "All India Institute of Ayurveda",
+      department: "Dravyaguna & Ayurvedic Pharmacology",
+      degree: "BAMS / MD (Ayurveda)",
+      academic_year: "2025-26",
+      units: [
+        {
+          title: "Unit 1: Introduction to Dravyaguna & Classical Nomenclature",
+          topics: ["Rasa Panchaka", "Guna Karma", "Veerya Vipaka", "Sanskrit Botanical Lexicon"],
+          credits: 4
+        },
+        {
+          title: "Unit 2: Classical Herbal Pharmacognosy",
+          topics: ["Organoleptic Evaluation", "Macroscopic & Microscopic Analysis", "Powder Microscopy", "Ash Values & Extractive Values"],
+          credits: 4
+        },
+        {
+          title: "Unit 3: Traditional Herbal Pharmacognosy",
+          topics: ["Classical Identification Methods", "Varnya & Kandughna Dravyas", "Rasayana Dravyas", "Substitution & Adulteration"],
+          credits: 3
+        },
+        {
+          title: "Unit 4: Phytochemistry & Standardization",
+          topics: ["Primary & Secondary Metabolites", "Chromatography Basics", "TLC Fingerprinting", "Marker Compound Quantification"],
+          credits: 4
+        },
+        {
+          title: "Unit 5: Herbal Quality Control & Regulatory",
+          topics: ["Ayurvedic Pharmacopoeia of India (API)", "Schedule T GMP", "Heavy Metal Limits", "Pesticide Residue Analysis"],
+          credits: 3
+        },
+        {
+          title: "Unit 6: Clinical Pharmacology & Therapeutics",
+          topics: ["Dosage Forms (Kwatha, Churna, Avaleha)", "Posology & Anupana", "Drug Interactions", "Pharmacovigilance Basics"],
+          credits: 4
+        }
+      ],
+      status: "Published",
+      created_at: "2025-06-15T00:00:00.000Z"
+    },
+    {
+      id: "curr-002",
+      institution: "All India Institute of Ayurveda",
+      department: "Rasashastra & Bhaishajya Kalpana (Pharmaceutics)",
+      degree: "BAMS / MD (Ayurveda)",
+      academic_year: "2025-26",
+      units: [
+        {
+          title: "Unit 1: Fundamentals of Rasashastra",
+          topics: ["Shodhana & Marana", "Yantra & Musha", "Rasa Dravyas Classification", "Safety in Rasa Preparations"],
+          credits: 4
+        },
+        {
+          title: "Unit 2: Bhaishajya Kalpana - Classical Dosage Forms",
+          topics: ["Swarasa, Kalka, Kwatha", "Churna, Vati, Guggulu", "Sneha Kalpana", "Sandhana Kalpana (Asava/Arishta)"],
+          credits: 5
+        },
+        {
+          title: "Unit 3: Modern Pharmaceutics & Drug Delivery",
+          topics: ["Tablet Compression & Coating", "Capsule Filling", "Stability Studies", "Packaging Technology"],
+          credits: 3
+        },
+        {
+          title: "Unit 4: Nanotechnology in Herbal Drug Delivery",
+          topics: ["Bhasma as Nanoparticles", "Liposomes & Phytosomes", "Nano-emulsions", "Characterization (TEM, XRD, DLS)"],
+          credits: 3
+        },
+        {
+          title: "Unit 5: Quality Assurance & GMP",
+          topics: ["In-Process Quality Checks", "Finished Product Testing", "Documentation & Batch Records", "Deviation & CAPA"],
+          credits: 3
+        }
+      ],
+      status: "Published",
+      created_at: "2025-06-15T00:00:00.000Z"
+    },
+    {
+      id: "curr-003",
+      institution: "All India Institute of Ayurveda",
+      department: "Ayush Health Informatics & Data Science",
+      degree: "M.Sc / PG Diploma",
+      academic_year: "2025-26",
+      units: [
+        {
+          title: "Unit 1: Foundations of Health Informatics",
+          topics: ["EHR/EMR Systems", "Clinical Data Standards (HL7, FHIR)", "Health Data Privacy", "Ayush Grid Architecture"],
+          credits: 4
+        },
+        {
+          title: "Unit 2: Python for Ayush Data Science",
+          topics: ["Pandas/Polars for Clinical Data", "Statistical Analysis", "Visualization (Matplotlib/Seaborn)", "Jupyter Notebooks"],
+          credits: 4
+        },
+        {
+          title: "Unit 3: NLP for Classical Ayush Texts",
+          topics: ["Sanskrit Text Preprocessing", "Named Entity Recognition (Dravya, Roga)", "Knowledge Graph Construction", "Samhita Semantic Search"],
+          credits: 3
+        },
+        {
+          title: "Unit 4: Computational Phytopharmacology",
+          topics: ["Molecular Docking (AutoDock Vina)", "Network Pharmacology", "ADMET Prediction", "Reverse Pharmacology Pipelines"],
+          credits: 4
+        },
+        {
+          title: "Unit 5: AI/ML in Ayush Research",
+          topics: ["Prakriti Classification Models", "Herb-Drug Interaction Prediction", "Formulation Optimization", "Model Deployment & Monitoring"],
+          credits: 3
+        }
+      ],
+      status: "Published",
+      created_at: "2025-06-15T00:00:00.000Z"
+    },
+    {
+      id: "curr-004",
+      institution: "National Institute of Ayurveda, Jaipur",
+      department: "Dravyaguna & Pharmacognosy",
+      degree: "BAMS / MD (Ayurveda)",
+      academic_year: "2025-26",
+      units: [
+        {
+          title: "Unit 1: Botanical Identification & Nomenclature",
+          topics: ["Taxonomy of Medicinal Plants", "Herbarium Techniques", "DNA Barcoding Basics", "Conservation Status (IUCN)"],
+          credits: 4
+        },
+        {
+          title: "Unit 2: Pharmacognostical Evaluation",
+          topics: ["Macroscopic & Microscopic Features", "Physicochemical Parameters", "Chromatographic Fingerprinting", "Foreign Matter Detection"],
+          credits: 4
+        },
+        {
+          title: "Unit 3: Phytochemical Analysis",
+          topics: ["Extraction Techniques", "Qualitative Phytochemical Screening", "Quantitative Estimation (HPLC/HPTLC)", "Spectroscopic Methods"],
+          credits: 4
+        },
+        {
+          title: "Unit 4: Standardization & Quality Control",
+          topics: ["API Monographs", "WHO Guidelines", "Stability Testing", "Shelf Life Determination"],
+          credits: 3
+        }
+      ],
+      status: "Published",
+      created_at: "2025-06-20T00:00:00.000Z"
+    }
+  ],
+
+  syllabus_reviews: [
+    {
+      id: "sylrev-001",
+      curriculum_id: "curr-001",
+      company_name: "Dabur India Ltd.",
+      reviewer_name: "Dr. Vikram Malhotra",
+      relevance_rating: 3.5,
+      strengths: ["Strong classical foundation in Rasa Panchaka", "Comprehensive coverage of API monographs", "Good emphasis on pharmacovigilance basics"],
+      identified_gaps: ["No HPTLC/Hands-on chromatographic training", "Missing molecular docking & in-silico methods", "No GLP/GCP compliance modules", "Limited exposure to 21 CFR Part 11 ELN/LIMS"],
+      recommended_technologies: ["CAMAG HPTLC Automatic TLC Sampler 4", "AutoDock Vina for molecular docking", "Electronic Lab Notebooks (ELN)", "Python for phytochemical data analysis"],
+      feedback_notes: "The syllabus provides excellent classical grounding but lacks modern analytical instrumentation training required by industry. Graduates need hands-on HPTLC experience and computational skills for formulation R&D roles.",
+      created_at: "2026-09-10T10:30:00.000Z"
+    },
+    {
+      id: "sylrev-002",
+      curriculum_id: "curr-001",
+      company_name: "Himalaya Wellness Company",
+      reviewer_name: "Siddharth Sen",
+      relevance_rating: 3.8,
+      strengths: ["Thorough classical pharmacognosy", "Good regulatory awareness (API, Schedule T)", "Clinical therapeutics well covered"],
+      identified_gaps: ["No automated chromatography training", "Missing metabolomics & LC-MS/MS exposure", "No digital health informatics integration", "Limited nano-formulation content"],
+      recommended_technologies: ["LC-MS/MS for multi-residue analysis", "Phytosome/liposomal delivery systems", "Clinical trial data analytics", "AI-powered Prakriti assessment tools"],
+      feedback_notes: "Strong traditional base but needs modernization in analytical techniques and digital health. Recommend adding computational phytopharmacology elective.",
+      created_at: "2026-09-12T14:15:00.000Z"
+    },
+    {
+      id: "sylrev-003",
+      curriculum_id: "curr-002",
+      company_name: "Patanjali Research Foundation",
+      reviewer_name: "Dr. Anurag Varshney",
+      relevance_rating: 4.2,
+      strengths: ["Excellent Rasashastra classical coverage", "Good inclusion of nanotechnology concepts", "Bhaishajya Kalpana comprehensive"],
+      identified_gaps: ["Bhasma characterization needs TEM/XRD/DLS hands-on", "Missing stability study protocols for nano-formulations", "No GMP audit trail (21 CFR Part 11) training"],
+      recommended_technologies: ["TEM/XRD/DLS for nanoparticle characterization", "Accelerated stability chambers", "Electronic batch records (EBR)", "Process analytical technology (PAT) tools"],
+      feedback_notes: "One of the better syllabi for pharmaceutics. The nanotechnology unit is forward-thinking but needs practical instrumentation exposure.",
+      created_at: "2026-09-08T09:45:00.000Z"
+    },
+    {
+      id: "sylrev-004",
+      curriculum_id: "curr-003",
+      company_name: "Dabur India Ltd.",
+      reviewer_name: "Dr. Vikram Malhotra",
+      relevance_rating: 4.5,
+      strengths: ["Cutting-edge computational syllabus", "Strong Python & NLP for classical texts", "Molecular docking well integrated", "AI/ML applications relevant to industry"],
+      identified_gaps: ["Could expand clinical trial data analytics", "Need more industry-standard ELN/LIMS exposure", "Missing regulatory dossier compilation (eCTD)"],
+      recommended_technologies: ["Clinical trial databases (CDISC/SDTM)", "eCTD dossier assembly tools", "Enterprise LIMS platforms", "Cloud GPU for docking simulations"],
+      feedback_notes: "Excellent modern curriculum. Graduates from this program would be industry-ready for computational R&D roles. Minor additions would make it world-class.",
+      created_at: "2026-09-11T11:20:00.000Z"
+    },
+    {
+      id: "sylrev-005",
+      curriculum_id: "curr-004",
+      company_name: "Himalaya Wellness Company",
+      reviewer_name: "Siddharth Sen",
+      relevance_rating: 3.2,
+      strengths: ["Strong botanical taxonomy foundation", "Good pharmacognostical evaluation methods", "Phytochemical analysis basics covered"],
+      identified_gaps: ["No automated HPTLC/HPLC hands-on", "Missing molecular docking & network pharmacology", "No Python/data science for phytochemistry", "Limited regulatory affairs (global)"],
+      recommended_technologies: ["CAMAG HPTLC with densitometry", "AutoDock Vina & network pharmacology", "Python (Polars, BioPython) for data analysis", "WHO GACP & global regulatory frameworks"],
+      feedback_notes: "Good classical base but significantly behind on modern analytical and computational methods. Urgent need for instrumentation labs and data science integration.",
+      created_at: "2026-09-13T16:00:00.000Z"
+    }
+  ],
+
+  mou_partnerships: [
+    {
+      id: "mou-01",
+      partner: "Dabur Research Laboratories",
+      institution: "All India Institute of Ayurveda",
+      status: "Active",
+      signedDate: "2025-06-12",
+      validUntil: "2028-06-12",
+      focusAreas: ["Nanomedicine in Ayurveda", "Student Internships", "Joint Patents"],
+      internshipsProvided: 18,
+      curriculumSponsors: "Standardization of Kwatha Formulations"
+    },
+    {
+      id: "mou-02",
+      partner: "Himalaya Drug Company",
+      institution: "All India Institute of Ayurveda",
+      status: "Active",
+      signedDate: "2025-09-20",
+      validUntil: "2027-09-20",
+      focusAreas: ["Pharmacovigilance", "Clinical Trial Protocols", "Faculty Industrial Training"],
+      internshipsProvided: 12,
+      curriculumSponsors: "Computational Herbal Discovery"
+    },
+    {
+      id: "mou-03",
+      partner: "Aimil Pharmaceuticals",
+      institution: "All India Institute of Ayurveda",
+      status: "Reviewing Renewal",
+      signedDate: "2024-02-15",
+      validUntil: "2026-12-31",
+      focusAreas: ["Metabolic Disorders Formulations", "Sponsored PG Dissertations"],
+      internshipsProvided: 9,
+      curriculumSponsors: "Herbal Quality Control & HPTLC"
+    }
+  ],
+
+  // Feature 11: 1-on-1 Guidance & Mentorship System
+  mentorship_profiles: [
+    {
+      id: "mentor-acad-01",
+      user_id: "usr-academy-01",
+      name: "Prof. R.K. Sharma",
+      role: "academy",
+      institution_or_company: "All India Institute of Ayurveda",
+      designation: "Dean of Academic Affairs & HoD",
+      department: "Dravyaguna & Pharmaceutical Sciences",
+      domains: ["Curriculum Development", "Research Methodology", "Ayurvedic Pharmacology", "HPTLC Fingerprinting", "GLP Compliance"],
+      bio: "Professor with 20+ years experience in Ayurvedic education and research. Specializes in curriculum design, research methodology, and pharmacological sciences. Published 50+ peer-reviewed papers on phytochemical standardization.",
+      max_mentees: 5,
+      current_mentee_count: 2,
+      accepting_new_mentees: true,
+      available_slots: ["Tuesday 16:00 IST", "Thursday 15:00 IST", "Saturday 11:00 IST"],
+      total_sessions_completed: 45,
+      rating: 4.9,
+      total_ratings: 12,
+      is_verified: true,
+      created_at: "2026-01-15T10:00:00.000Z"
+    },
+    {
+      id: "mentor-ind-01",
+      user_id: "usr-industry-01",
+      name: "Corporate Talent Lead",
+      role: "industry",
+      institution_or_company: "Dabur India Ltd.",
+      designation: "Senior Lead Talent Acquisition & R&D Partnerships",
+      department: "R&D Partnerships & Talent Acquisition",
+      domains: ["Career Development", "Industry Trends", "Skill Gap Analysis", "Formulation Recruiting", "GLP/GMP Auditing"],
+      bio: "Industry expert with 15+ years in talent acquisition and corporate mentoring. Specializes in career readiness, industry trends, and professional skill development. Led 100+ campus hiring drives.",
+      max_mentees: 8,
+      current_mentee_count: 3,
+      accepting_new_mentees: true,
+      available_slots: ["Monday 17:00 IST", "Wednesday 16:00 IST", "Friday 15:00 IST"],
+      total_sessions_completed: 32,
+      rating: 4.8,
+      total_ratings: 8,
+      is_verified: true,
+      created_at: "2026-02-01T10:00:00.000Z"
+    }
+  ],
+
+  mentorship_applications: [],
+
+  mentorship_relationships: [],
+
+  mentorship_sessions: []
 };
 
 module.exports = DB;

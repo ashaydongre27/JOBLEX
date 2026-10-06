@@ -611,4 +611,331 @@ window.handleSyndicateChanges = handleSyndicateChanges;
 window.handleAdoptSyllabus = handleAdoptSyllabus;
 window.downloadPeerMatrix = downloadPeerMatrix;
 window.viewAuditLog = viewAuditLog;
+window.switchMouTab = switchMouTab;
+window.renderSyllabusReviews = renderSyllabusReviews;
+window.renderInboundMous = renderInboundMous;
+window.handleRespondToMou = handleRespondToMou;
+window.handleBosAdoptFeedback = handleBosAdoptFeedback;
+
+// ─────────────────────────────────────────────────────────────
+// PLAN 02: SYLLABUS REVIEW & MOU MODULE - ACADEMY PORTAL
+// ─────────────────────────────────────────────────────────────
+
+let activeMouTab = 'published';
+
+function switchMouTab(tabId) {
+  activeMouTab = tabId;
+
+  document.querySelectorAll('.mou-tab-content').forEach(el => el.classList.add('hidden'));
+  document.querySelectorAll('.mou-tab-btn').forEach(btn => {
+    if (btn.getAttribute('data-mou-tab') === tabId) {
+      btn.className = 'mou-tab-btn px-4 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap bg-sage-50 dark:bg-sage-500/20 text-sage-700 dark:text-sage-300 border border-sage-200 dark:border-sage-500/40 shadow-sm';
+      btn.setAttribute('aria-selected', 'true');
+    } else {
+      btn.className = 'mou-tab-btn px-4 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-white/5 dark:hover:bg-white/10 border border-transparent';
+      btn.setAttribute('aria-selected', 'false');
+    }
+  });
+
+  const target = document.getElementById(`mou-tab-${tabId}`);
+  if (target) target.classList.remove('hidden');
+
+  if (tabId === 'inbound') {
+    renderInboundMous();
+  } else if (tabId === 'published') {
+    renderMouPartnerships();
+  }
+}
+
+async function renderSyllabusReviews() {
+  const container = document.getElementById('industry-feedback-signals-container') || document.getElementById('syllabus-reviews-container');
+  if (!container) return;
+
+  const user = JoblexApiClient.getCurrentUser();
+  const institution = user?.institution || '';
+  const res = await JoblexApiClient.getSyllabusReviews(institution);
+  const reviews = res.reviews || [];
+
+  if (reviews.length === 0) {
+    container.innerHTML = `
+      <div class="py-8 text-center text-xs text-[#6E6962] dark:text-gray-400">
+        <span class="material-symbols-outlined text-4xl block mb-2 opacity-50">rate_review</span>
+        No corporate syllabus reviews have been received yet.
+        <p class="mt-2">Invite industry partners to review your curricula via the Syllabus Review Portal.</p>
+      </div>
+    `;
+    return;
+  }
+
+  // Group reviews by curriculum
+  const reviewsByCurriculum = {};
+  reviews.forEach(review => {
+    const key = review.curriculum_id;
+    if (!reviewsByCurriculum[key]) {
+      reviewsByCurriculum[key] = {
+        curriculum: review.curriculum,
+        institution: review.institution,
+        department: review.department,
+        reviews: []
+      };
+    }
+    reviewsByCurriculum[key].reviews.push(review);
+  });
+
+  container.innerHTML = Object.values(reviewsByCurriculum).map(group => {
+    const avgRating = group.reviews.reduce((sum, r) => sum + r.relevance_rating, 0) / group.reviews.length;
+    const allGaps = [...new Set(group.reviews.flatMap(r => r.identified_gaps || []))];
+    const allTechs = [...new Set(group.reviews.flatMap(r => r.recommended_technologies || []))];
+    const allStrengths = [...new Set(group.reviews.flatMap(r => r.strengths || []))];
+
+    return `
+      <article class="p-5 rounded-2xl bg-white dark:bg-gray-900/70 border border-[#E7E4DC] dark:border-gray-800 hover:border-emerald-400 dark:hover:border-emerald-500/50 transition shadow-sm space-y-4">
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap mb-1">
+              <span class="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-400 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30">
+                ${group.department || 'Department'}
+              </span>
+              <span class="text-[11px] font-semibold text-purple-700 dark:text-purple-300 font-mono">${group.institution || 'Institution'}</span>
+            </div>
+            <h4 class="font-bold text-sm text-[#1C1917] dark:text-white">${group.curriculum || 'Curriculum'}</h4>
+            <p class="text-xs text-[#6E6962] dark:text-gray-400 mt-0.5">${group.reviews.length} Corporate Review${group.reviews.length > 1 ? 's' : ''} · Avg Rating: ${avgRating.toFixed(1)}/5.0</p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <span class="px-2 py-1 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/40">
+              <span class="material-symbols-outlined text-[10px] align-middle mr-1">star</span>
+              ${avgRating.toFixed(1)}
+            </span>
+          </div>
+        </div>
+
+        ${allStrengths.length > 0 ? `
+          <div class="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 space-y-1">
+            <p class="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-sm">thumb_up</span>
+              Industry-Acknowledged Strengths:
+            </p>
+            <div class="flex flex-wrap gap-1">
+              ${allStrengths.map(s => `<span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-[10px] border border-emerald-500/30">${s}</span>`).join('')}
+            </div>
+          </div>
+        ` : ''}
+
+        ${allGaps.length > 0 ? `
+          <div class="p-3 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 space-y-1">
+            <p class="text-[10px] font-semibold text-rose-700 dark:text-rose-300 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-sm">warning</span>
+              Critical Gaps Identified by Industry:
+            </p>
+            <div class="flex flex-wrap gap-1">
+              ${allGaps.map(g => `<span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-700 dark:text-rose-300 text-[10px] border border-rose-500/30">${g}</span>`).join('')}
+            </div>
+          </div>
+        ` : ''}
+
+        ${allTechs.length > 0 ? `
+          <div class="p-3 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 space-y-1">
+            <p class="text-[10px] font-semibold text-blue-700 dark:text-blue-300 flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-sm">construction</span>
+              Recommended Technologies / Modernizations:
+            </p>
+            <div class="flex flex-wrap gap-1">
+              ${allTechs.map(t => `<span class="px-2 py-0.5 rounded bg-blue-500/20 text-blue-700 dark:text-blue-300 text-[10px] border border-blue-500/30">${t}</span>`).join('')}
+            </div>
+          </div>
+        ` : ''}
+
+        <!-- Individual Reviews Expandable -->
+        <details class="group border-t border-slate-200 dark:border-gray-800 pt-3">
+          <summary class="flex items-center justify-between cursor-pointer text-xs font-medium text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white">
+            <span>View ${group.reviews.length} Individual Review${group.reviews.length > 1 ? 's' : ''}</span>
+            <span class="material-symbols-outlined text-sm transition-transform group-open:rotate-180">expand_more</span>
+          </summary>
+          <div class="mt-3 space-y-3">
+            ${group.reviews.map(review => `
+              <div class="p-3 rounded-xl bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-gray-800 space-y-2">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-2">
+                    <span class="font-semibold text-sm text-[#1C1917] dark:text-white">${review.company_name}</span>
+                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-700 dark:text-blue-300 font-bold border border-blue-500/30">${review.reviewer_name}</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-lg font-bold text-amber-500">${review.relevance_rating}/5.0</span>
+                    <span class="text-[10px] text-gray-500">${new Date(review.created_at).toLocaleDateString()}</span>
+                  </div>
+                </div>
+                ${review.feedback_notes ? `
+                  <p class="text-xs text-[#6E6962] dark:text-gray-400 italic border-l-2 border-amber-500/60 pl-2 py-1">"${review.feedback_notes}"</p>
+                ` : ''}
+              </div>
+            `).join('')}
+          </div>
+        </details>
+
+        <!-- BoS Action Section -->
+        <div class="pt-3 border-t border-slate-200 dark:border-gray-800 flex items-center justify-between gap-2">
+          <div class="flex-1 min-w-0">
+            <p class="text-xs text-[#6E6962] dark:text-gray-400">Board of Studies Action:</p>
+            <p class="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Incorporated into 2026-27 Electives</p>
+          </div>
+          <button onclick="handleBosAdoptFeedback('${group.curriculum || ''}')" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition shadow-sm flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">check_circle</span>
+            Mark as Adopted by BoS
+          </button>
+        </div>
+      </article>
+    `;
+  }).join('');
+}
+
+async function renderInboundMous() {
+  const container = document.getElementById('inbound-mous-container');
+  if (!container) return;
+
+  const user = JoblexApiClient.getCurrentUser();
+  const institution = user?.institution || '';
+  const res = await JoblexApiClient.getInboundMous(institution);
+  const mous = res.mouPartnerships || [];
+
+  if (mous.length === 0) {
+    container.innerHTML = `
+      <div class="py-8 text-center text-xs text-[#6E6962] dark:text-gray-400">
+        <span class="material-symbols-outlined text-4xl block mb-2 opacity-50">mark_email_unread</span>
+        No inbound MoU proposals from industry partners.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = mous.map(mou => {
+    let statusClass = 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/40';
+    let statusIcon = 'hourglass_top';
+    let actionButtons = '';
+
+    if (mou.status === 'Under BoS Review') {
+      statusClass = 'bg-blue-500/20 text-blue-700 dark:text-blue-300 border-blue-500/40';
+      statusIcon = 'gavel';
+      actionButtons = `
+        <button onclick="handleRespondToMou('${mou.id}', 'Ratified', 'Dean, Academic Council')" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition shadow-sm flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm">verified</span>
+          Ratify
+        </button>
+        <button onclick="handleRespondToMou('${mou.id}', 'Negotiating', 'Dean, Academic Council')" class="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs transition flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm">handshake</span>
+          Negotiate
+        </button>
+        <button onclick="handleRespondToMou('${mou.id}', 'Rejected', 'Dean, Academic Council')" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm">cancel</span>
+          Reject
+        </button>
+      `;
+    } else if (mou.status === 'Negotiating') {
+      statusClass = 'bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-500/40';
+      statusIcon = 'handshake';
+      actionButtons = `
+        <button onclick="handleRespondToMou('${mou.id}', 'Ratified', 'Dean, Academic Council')" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition shadow-sm flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm">verified</span>
+          Ratify
+        </button>
+        <button onclick="handleRespondToMou('${mou.id}', 'Rejected', 'Dean, Academic Council')" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm">cancel</span>
+          Reject
+        </button>
+      `;
+    } else if (mou.status === 'Ratified') {
+      statusClass = 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/40';
+      statusIcon = 'verified';
+      actionButtons = `
+        <span class="px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-bold text-xs border border-emerald-500/40 flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-sm">verified</span>
+          Ratified
+        </span>
+      `;
+    } else if (mou.status === 'Rejected') {
+      statusClass = 'bg-rose-500/20 text-rose-700 dark:text-rose-300 border-rose-500/40';
+      statusIcon = 'cancel';
+      actionButtons = `
+        <span class="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-700 dark:text-rose-300 font-bold text-xs border border-rose-500/40">Declined</span>
+      `;
+    } else if (mou.status === 'Draft') {
+      statusClass = 'bg-slate-500/20 text-slate-700 dark:text-slate-300 border-slate-500/40';
+      statusIcon = 'drafts';
+    }
+
+    return `
+      <article class="p-5 rounded-2xl bg-white dark:bg-gray-900/70 border border-[#E7E4DC] dark:border-gray-800 hover:border-emerald-400 dark:hover:border-emerald-500/50 transition shadow-sm space-y-4">
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap mb-1">
+              <span class="text-[10px] uppercase font-bold px-2.5 py-0.5 rounded-full border ${statusClass} flex items-center gap-1">
+                <span class="material-symbols-outlined text-[10px]">${statusIcon}</span>
+                ${mou.status}
+              </span>
+              <span class="text-[11px] font-semibold text-purple-700 dark:text-purple-300 font-mono">${mou.institution}</span>
+            </div>
+            <h4 class="font-bold text-sm text-[#1C1917] dark:text-white">${mou.company}</h4>
+            <p class="text-xs text-[#6E6962] dark:text-gray-400 mt-0.5">${mou.department} · ${mou.tenure_years} Year${mou.tenure_years > 1 ? 's' : ''} · ${mou.scope_tracks?.join(', ') || 'Scope not specified'}</p>
+          </div>
+        </div>
+
+        ${mou.deliverables?.length ? `
+          <div class="p-3 rounded-xl bg-slate-50 dark:bg-black/40 border border-slate-200 dark:border-gray-800 space-y-1">
+            <p class="text-[10px] font-semibold text-[#6E6962] dark:text-gray-400">Key Deliverables:</p>
+            <ul class="text-xs text-[#1C1917] dark:text-gray-200 space-y-0.5 pl-4 list-disc">
+              ${mou.deliverables.map(d => `<li>${d}</li>`).join('')}
+            </ul>
+          </div>
+        ` : ''}
+
+        ${mou.notes ? `
+          <div class="p-3 rounded-xl bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20">
+            <p class="text-[10px] font-semibold text-amber-700 dark:text-amber-300 mb-1">Industry Notes:</p>
+            <p class="text-xs text-[#6E6962] dark:text-gray-400 italic">"${mou.notes}"</p>
+          </div>
+        ` : ''}
+
+        <div class="pt-3 border-t border-slate-200 dark:border-gray-800 flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 text-xs text-[#6E6962] dark:text-gray-400">
+            <span class="material-symbols-outlined text-sm">business</span>
+            <span>Industry Signatory: ${mou.signatory_industry || 'Pending'}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            ${actionButtons}
+          </div>
+        </div>
+      </article>
+    `;
+  }).join('');
+}
+
+async function handleRespondToMou(mouId, status, signatoryAcademy) {
+  const notes = prompt(`Add notes for ${status} action (optional):`);
+  if (notes === null) return; // User cancelled
+
+  try {
+    const res = await JoblexApiClient.respondToMou(mouId, status, signatoryAcademy, notes || '');
+    if (res && res.success) {
+      showToast(`MoU proposal has been ${status.toLowerCase()}! The industry partner has been notified.`, `MoU ${status}`, 'success');
+      renderInboundMous();
+      // Also refresh the published MoUs tab
+      if (typeof renderMouPartnerships === 'function') {
+        renderMouPartnerships();
+      }
+    } else {
+      showToast(res?.error || 'Failed to respond to MoU proposal.', 'Action Failed', 'error');
+    }
+  } catch (err) {
+    console.error('[Respond to MoU Error]:', err);
+    showToast(err.message || 'Failed to respond due to network error.', 'Action Error', 'error');
+  }
+}
+
+function handleBosAdoptFeedback(curriculum) {
+  showToast(`Feedback for "${curriculum}" marked as adopted by Board of Studies. Changes will be reflected in the 2026-27 curriculum update.`, 'BoS Adoption Confirmed', 'success');
+}
+
+window.renderSyllabusReviews = renderSyllabusReviews;
+window.renderInboundMous = renderInboundMous;
+window.handleRespondToMou = handleRespondToMou;
+window.handleBosAdoptFeedback = handleBosAdoptFeedback;
 

@@ -26,6 +26,8 @@ DROP TABLE IF EXISTS public.skill_roi_logs CASCADE;
 DROP TABLE IF EXISTS public.sponsored_bootcamps CASCADE;
 DROP TABLE IF EXISTS public.fdp_programs CASCADE;
 DROP TABLE IF EXISTS public.consultancy_grants CASCADE;
+DROP TABLE IF EXISTS public.syllabus_reviews CASCADE;
+DROP TABLE IF EXISTS public.curriculums CASCADE;
 DROP TABLE IF EXISTS public.syllabus_suggestions CASCADE;
 DROP TABLE IF EXISTS public.mou_partnerships CASCADE;
 DROP TABLE IF EXISTS public.zulu_chat_messages CASCADE;
@@ -207,7 +209,41 @@ CREATE TABLE public.mou_partnerships (
     "curriculumSponsors" TEXT GENERATED ALWAYS AS (curriculum_sponsors) STORED
 );
 
--- Table 8: NEP-2020 Curriculum Modernization & Syllabus Suggestions
+-- Table 8: University Department Syllabi (Curriculums)
+CREATE TABLE public.curriculums (
+    id TEXT PRIMARY KEY DEFAULT ('curr-' || substr(md5(random()::text), 1, 8)),
+    institution TEXT NOT NULL,
+    department TEXT NOT NULL,
+    degree TEXT NOT NULL,
+    academic_year TEXT NOT NULL,
+    units JSONB NOT NULL,
+    status TEXT DEFAULT 'Published' NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    "academicYear" TEXT GENERATED ALWAYS AS (academic_year) STORED
+);
+
+-- Table 9: Corporate Syllabus Reviews
+CREATE TABLE public.syllabus_reviews (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    curriculum_id TEXT NOT NULL REFERENCES public.curriculums(id) ON DELETE CASCADE,
+    company_name TEXT NOT NULL,
+    reviewer_name TEXT NOT NULL,
+    relevance_rating NUMERIC(2,1) NOT NULL CHECK (relevance_rating >= 1.0 AND relevance_rating <= 5.0),
+    strengths TEXT[] DEFAULT '{}'::TEXT[] NOT NULL,
+    identified_gaps TEXT[] DEFAULT '{}'::TEXT[] NOT NULL,
+    recommended_technologies TEXT[] DEFAULT '{}'::TEXT[] NOT NULL,
+    feedback_notes TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    "curriculumId" TEXT GENERATED ALWAYS AS (curriculum_id) STORED,
+    "companyName" TEXT GENERATED ALWAYS AS (company_name) STORED,
+    "reviewerName" TEXT GENERATED ALWAYS AS (reviewer_name) STORED,
+    "relevanceRating" NUMERIC(2,1) GENERATED ALWAYS AS (relevance_rating) STORED,
+    "identifiedGaps" TEXT[] GENERATED ALWAYS AS (identified_gaps) STORED,
+    "recommendedTechnologies" TEXT[] GENERATED ALWAYS AS (recommended_technologies) STORED,
+    "feedbackNotes" TEXT GENERATED ALWAYS AS (feedback_notes) STORED
+);
+
+-- Table 10: NEP-2020 Curriculum Modernization & Syllabus Suggestions
 CREATE TABLE public.syllabus_suggestions (
     id TEXT PRIMARY KEY DEFAULT ('syl-' || substr(md5(random()::text), 1, 8)),
     current_topic TEXT NOT NULL,
@@ -342,6 +378,10 @@ CREATE INDEX IF NOT EXISTS idx_zulu_sessions_user_id ON public.zulu_chat_session
 CREATE INDEX IF NOT EXISTS idx_zulu_messages_session_id ON public.zulu_chat_messages(session_id);
 CREATE INDEX IF NOT EXISTS idx_mou_status ON public.mou_partnerships(status);
 CREATE INDEX IF NOT EXISTS idx_syllabus_status ON public.syllabus_suggestions(status);
+CREATE INDEX IF NOT EXISTS idx_curriculums_institution ON public.curriculums(institution);
+CREATE INDEX IF NOT EXISTS idx_curriculums_department ON public.curriculums(department);
+CREATE INDEX IF NOT EXISTS idx_syllabus_reviews_curriculum ON public.syllabus_reviews(curriculum_id);
+CREATE INDEX IF NOT EXISTS idx_syllabus_reviews_company ON public.syllabus_reviews(company_name);
 
 -- ============================================================================
 -- 4. ROW LEVEL SECURITY (RLS) POLICIES
@@ -354,6 +394,8 @@ ALTER TABLE public.zulu_chat_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.zulu_chat_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.mou_partnerships ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.syllabus_suggestions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.curriculums ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.syllabus_reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.consultancy_grants ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.fdp_programs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sponsored_bootcamps ENABLE ROW LEVEL SECURITY;
@@ -424,6 +466,12 @@ CREATE POLICY "MoUs readable by all" ON public.mou_partnerships FOR SELECT TO au
 
 DROP POLICY IF EXISTS "Syllabus suggestions readable by all" ON public.syllabus_suggestions;
 CREATE POLICY "Syllabus suggestions readable by all" ON public.syllabus_suggestions FOR SELECT TO authenticated, anon USING (true);
+
+DROP POLICY IF EXISTS "Curriculums readable by all" ON public.curriculums;
+CREATE POLICY "Curriculums readable by all" ON public.curriculums FOR SELECT TO authenticated, anon USING (true);
+
+DROP POLICY IF EXISTS "Syllabus reviews readable by all" ON public.syllabus_reviews;
+CREATE POLICY "Syllabus reviews readable by all" ON public.syllabus_reviews FOR SELECT TO authenticated, anon USING (true);
 
 DROP POLICY IF EXISTS "Grants readable by all" ON public.consultancy_grants;
 CREATE POLICY "Grants readable by all" ON public.consultancy_grants FOR SELECT TO authenticated, anon USING (true);
@@ -640,6 +688,6 @@ GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO authenticated;
 
-GRANT SELECT ON public.opportunities, public.mou_partnerships, public.syllabus_suggestions, public.consultancy_grants, public.fdp_programs, public.sponsored_bootcamps, public.cross_college_benchmarks, public.candidates, public.peer_benchmarking, public.company_tech_stacks, public.virtual_workshops, public.company_quizzes TO anon;
+GRANT SELECT ON public.opportunities, public.mou_partnerships, public.syllabus_suggestions, public.consultancy_grants, public.fdp_programs, public.sponsored_bootcamps, public.cross_college_benchmarks, public.candidates, public.peer_benchmarking, public.company_tech_stacks, public.virtual_workshops, public.company_quizzes, public.curriculums, public.syllabus_reviews TO anon;
 
 

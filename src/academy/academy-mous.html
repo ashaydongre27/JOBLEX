@@ -192,31 +192,74 @@
       </div>
 
       <!-- Module Content -->
-      
-      <section class="border border-[#E7E4DC] dark:border-white/10 rounded-lg bg-white dark:bg-white/[0.03] shadow-sm p-6 space-y-6">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#E7E4DC] dark:border-white/10">
-          <div>
-            <h2 class="text-xl font-bold text-[#1C1917] dark:text-white">Bilateral Corporate MoUs</h2>
-            <p class="text-xs text-[#6E6962] dark:text-gray-400">Active industry agreements with Dabur, Himalaya, Patanjali, and Ayush Council</p>
-          </div>
-          <span class="inline-flex items-center px-3 py-1 rounded-full bg-slate-50 dark:bg-white/[0.02] text-[#6E6962] dark:text-gray-400 font-mono text-xs font-bold border border-[#E7E4DC] dark:border-white/10">
-            <span class="material-symbols-outlined text-xs align-middle mr-1">database</span> Published database records
-          </span>
+
+      <!-- MoU Tabs -->
+      <div class="border border-[#E7E4DC] dark:border-white/10 rounded-lg bg-white dark:bg-white/[0.03] shadow-sm overflow-hidden">
+        <div class="flex border-b border-[#E7E4DC] dark:border-white/10 overflow-x-auto">
+          <button data-mou-tab="published" onclick="switchMouTab('published')" class="mou-tab-btn px-4 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap bg-sage-50 dark:bg-sage-500/20 text-sage-700 dark:text-sage-300 border border-sage-200 dark:border-sage-500/40 shadow-sm" aria-selected="true">
+            <span class="material-symbols-outlined text-sm mr-1.5">database</span>
+            Published MoUs
+          </button>
+          <button data-mou-tab="inbound" onclick="switchMouTab('inbound')" class="mou-tab-btn px-4 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-white/5 dark:hover:bg-white/10 border border-transparent" aria-selected="false">
+            <span class="material-symbols-outlined text-sm mr-1.5">mark_email_unread</span>
+            Inbound Proposals
+          </button>
         </div>
 
-        <div id="mou-partnerships-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="py-8 text-center text-xs text-[#6E6962] dark:text-gray-400">Loading published MoU records...</div>
+        <div id="mou-tab-published" class="mou-tab-content p-6 space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#E7E4DC] dark:border-white/10">
+            <div>
+              <h2 class="text-xl font-bold text-[#1C1917] dark:text-white">Bilateral Corporate MoUs</h2>
+              <p class="text-xs text-[#6E6962] dark:text-gray-400">Active industry agreements with Dabur, Himalaya, Patanjali, and Ayush Council</p>
+            </div>
+            <span class="inline-flex items-center px-3 py-1 rounded-full bg-slate-50 dark:bg-white/[0.02] text-[#6E6962] dark:text-gray-400 font-mono text-xs font-bold border border-[#E7E4DC] dark:border-white/10">
+              <span class="material-symbols-outlined text-xs align-middle mr-1">database</span> Published database records
+            </span>
+          </div>
+
+          <div id="mou-partnerships-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="py-8 text-center text-xs text-[#6E6962] dark:text-gray-400">Loading published MoU records...</div>
+          </div>
         </div>
-      </section>
-    
+
+        <div id="mou-tab-inbound" class="mou-tab-content p-6 space-y-6 hidden">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#E7E4DC] dark:border-white/10">
+            <div>
+              <h2 class="text-xl font-bold text-[#1C1917] dark:text-white">Inbound Corporate Proposals</h2>
+              <p class="text-xs text-[#6E6962] dark:text-gray-400">MoU proposals awaiting Board of Studies review and ratification</p>
+            </div>
+            <span class="inline-flex items-center px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-mono text-xs font-bold border border-amber-200 dark:border-amber-800/60">
+              <span class="material-symbols-outlined text-xs align-middle mr-1">hourglass_top</span> Awaiting Review
+            </span>
+          </div>
+
+          <div id="inbound-mous-container" class="space-y-4">
+            <div class="py-8 text-center text-xs text-[#6E6962] dark:text-gray-400">Loading inbound MoU proposals...</div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </main>
 </div>
 
 
 <script src="/js/frontend/api-client.js"></script>
-<script src="/js/frontend/notifications.js"></script>
-<script src="/js/frontend/academy-ui.js"></script>
+  <script src="/js/frontend/notifications.js"></script>
+  <script src="/js/frontend/academy-ui.js"></script>
+  <script>
+    // Initialize MoU tabs and render published MoUs on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof renderMouPartnerships === 'function') {
+        renderMouPartnerships();
+      }
+      // Initialize tab state
+      if (typeof switchMouTab === 'function') {
+        // Default to published tab
+        switchMouTab('published');
+      }
+    });
+  </script>
 <script src="../../js/frontend/animations.js"></script>
 </body>
 </html>

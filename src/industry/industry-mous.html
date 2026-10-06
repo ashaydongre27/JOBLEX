@@ -13,7 +13,7 @@
   <!-- Google Material Symbols Outlined -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' fill='%236366f1'>✦</text></svg>">
-  
+
   <script src="/js/frontend/theme.js"></script>
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -41,7 +41,6 @@
   </script>
   <link rel="stylesheet" href="/css/styles.css">
 
-  
 </head>
 <body class="bg-[#FAF8F5] dark:bg-[#070709] text-[#1C1917] dark:text-[#F4F4F6] font-sans h-screen flex flex-col overflow-hidden portal-body antialiased transition-colors duration-200">
 
@@ -56,7 +55,7 @@
           <div class="w-1.5 h-7 bg-[#944C23] dark:bg-[#E07A48] rounded-full"></div>
           <div>
             <span class="text-xl font-extrabold tracking-widest text-[#1C1917] dark:text-white uppercase block leading-tight">JOBLEX</span>
-            
+
           </div>
         </a>
       </div>
@@ -166,39 +165,229 @@
           <div class="flex items-center space-x-1 text-[11px] font-semibold uppercase tracking-wider text-[#6E6962] dark:text-gray-400">
             <a href="../../industry.html" class="hover:text-blue-500 transition">Corporate Gateway</a>
             <span class="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span class="text-[#1C1917] dark:text-white font-semibold">Bilateral Corporate &amp; Academic MoUs</span>
+            <span class="text-[#1C1917] dark:text-white font-semibold">Bilateral Corporate & Academic MoUs</span>
           </div>
           <span class="inline-flex items-center px-2 py-0.5 rounded border border-[#E7E4DC] dark:border-white/10 bg-slate-50 dark:bg-white/[0.02] font-mono text-xs text-[#1C1917] dark:text-white">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span> NATIONAL LEDGER SYNC
           </span>
         </nav>
 
-        <!-- Main Module Workspace -->
-        <section id="mou-partnerships-section" class="bg-white dark:bg-white/[0.03] shadow-sm border border-[#E7E4DC] dark:border-white/10 rounded-xl p-6">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-[#E7E4DC] dark:border-white/10">
-            <div>
-              <h1 class="text-xl font-bold text-[#1C1917] dark:text-white">Bilateral Corporate &amp; Academic MoUs</h1>
-              <p class="text-xs text-[#6E6962] dark:text-gray-400 mt-0.5">Official partnerships, research sharing pacts, and co-branded talent pipelines</p>
-            </div>
-            <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-mono text-xs font-bold border border-blue-200 dark:border-blue-800/60">
-              <span class="material-symbols-outlined text-sm align-middle mr-1">sync</span> Live Ledger Sync
-            </span>
+        <!-- Main Module Workspace - Tabbed Interface -->
+        <div class="bg-white dark:bg-white/[0.03] shadow-sm border border-[#E7E4DC] dark:border-white/10 rounded-xl overflow-hidden">
+          <!-- Tab Navigation -->
+          <div class="border-b border-[#E7E4DC] dark:border-white/10">
+            <nav class="flex flex-wrap gap-1 p-1" role="tablist" aria-label="MoU Module Tabs">
+              <button id="tab-syllabi" data-tab="syllabi" onclick="switchMouTab('syllabi')" class="mou-tab-btn px-4 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap bg-sage-50 dark:bg-sage-500/20 text-sage-700 dark:text-sage-300 border border-sage-200 dark:border-sage-500/40 shadow-sm" role="tab" aria-selected="true">
+                <span class="material-symbols-outlined text-sm align-middle mr-1.5">menu_book</span> Review University Syllabi
+              </button>
+              <button id="tab-mous" data-tab="mous" onclick="switchMouTab('mous')" class="mou-tab-btn px-4 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-white/5 dark:hover:bg-white/10 border border-transparent" role="tab" aria-selected="false">
+                <span class="material-symbols-outlined text-sm align-middle mr-1.5">handshake</span> Bilateral MoUs
+              </button>
+              <button id="tab-initiate" data-tab="initiate" onclick="switchMouTab('initiate')" class="mou-tab-btn px-4 py-2.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-white/5 dark:hover:bg-white/10 border border-transparent" role="tab" aria-selected="false">
+                <span class="material-symbols-outlined text-sm align-middle mr-1.5">add_circle_outline</span> Initiate MoU
+              </button>
+            </nav>
           </div>
-          <div id="mous-container" class="space-y-4 mt-6">
-            <!-- Populated dynamically by industry-ui.js loadLiveMous -->
-          </div>
-        </section>
 
+          <!-- Tab Content: Syllabi Review -->
+          <div id="mou-tab-syllabi" class="mou-tab-content p-6" role="tabpanel">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#E7E4DC] dark:border-white/10 mb-6">
+              <div>
+                <h2 class="text-xl font-bold text-[#1C1917] dark:text-white">University Syllabi Review</h2>
+                <p class="text-xs text-[#6E6962] dark:text-gray-400">Browse accredited department curriculums and submit corporate evaluations</p>
+              </div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <select id="syllabi-institution-filter" class="px-3 py-1.5 rounded-lg bg-white dark:bg-white/5 border border-[#E7E4DC] dark:border-white/10 text-sm text-[#1C1917] dark:text-white focus:outline-none focus:ring-2 focus:ring-sage-500/50 w-48">
+                  <option value="">All Institutions</option>
+                  <option value="All India Institute of Ayurveda (AIIA), New Delhi">AIIA, New Delhi</option>
+                  <option value="National Institute of Ayurveda (NIA), Jaipur">NIA, Jaipur</option>
+                  <option value="Faculty of Ayurveda, BHU Varanasi">BHU, Varanasi</option>
+                  <option value="Gujarat Ayurved University, Jamnagar">Gujarat Ayurved Univ., Jamnagar</option>
+                </select>
+                <select id="syllabi-department-filter" class="px-3 py-1.5 rounded-lg bg-white dark:bg-white/5 border border-[#E7E4DC] dark:border-white/10 text-sm text-[#1C1917] dark:text-white focus:outline-none focus:ring-2 focus:ring-sage-500/50 w-48">
+                  <option value="">All Departments</option>
+                  <option value="Dravyaguna & Ayurvedic Pharmacology">Dravyaguna & Ayurvedic Pharmacology</option>
+                  <option value="Rasashastra & Pharmaceutics">Rasashastra & Pharmaceutics</option>
+                  <option value="Ayush Health Informatics & AI">Ayush Health Informatics & AI</option>
+                  <option value="Kaya Chikitsa (Clinical)">Kaya Chikitsa (Clinical)</option>
+                  <option value="Swasthavritta & Yoga">Swasthavritta & Yoga</option>
+                </select>
+                <button onclick="filterSyllabi()" class="px-3 py-1.5 rounded-lg bg-sage-600 hover:bg-sage-500 text-white font-bold text-xs transition flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-sm">filter_list</span>
+                  Filter
+                </button>
+                <button onclick="clearSyllabiFilters()" class="px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 font-semibold text-xs hover:bg-gray-200 dark:hover:bg-white/20 transition flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-sm">clear</span>
+                  Clear
+                </button>
+              </div>
+            </div>
+
+            <div id="syllabi-grid" class="space-y-4">
+              <!-- Populated by renderSyllabi() -->
+              <div class="py-8 text-center text-xs text-[#6E6962] dark:text-gray-400">Loading university syllabi...</div>
+            </div>
+          </div>
+
+          <!-- Tab Content: Syllabus Detail (Modal-style inline) -->
+          <div id="mou-tab-syllabus-detail" class="mou-tab-content hidden p-6" role="tabpanel">
+            <div id="syllabus-detail-content">
+              <!-- Populated by renderSyllabusDetail() -->
+            </div>
+          </div>
+
+          <!-- Tab Content: Bilateral MoUs -->
+          <div id="mou-tab-mous" class="mou-tab-content hidden p-6" role="tabpanel">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#E7E4DC] dark:border-white/10 mb-6">
+              <div>
+                <h2 class="text-xl font-bold text-[#1C1917] dark:text-white">Bilateral Corporate & Academic MoUs</h2>
+                <p class="text-xs text-[#6E6962] dark:text-gray-400">Official partnerships, research sharing pacts, and co-branded talent pipelines</p>
+              </div>
+              <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-mono text-xs font-bold border border-blue-200 dark:border-blue-800/60">
+                <span class="material-symbols-outlined text-sm align-middle mr-1">sync</span> Live Ledger Sync
+              </span>
+            </div>
+            <div id="mous-container" class="space-y-4">
+              <!-- Populated by renderMoUs() -->
+            </div>
+          </div>
+
+          <!-- Tab Content: Initiate MoU Wizard -->
+          <div id="mou-tab-initiate" class="mou-tab-content hidden p-6" role="tabpanel">
+            <div class="max-w-2xl mx-auto">
+              <div class="mb-6">
+                <h2 class="text-xl font-bold text-[#1C1917] dark:text-white">Initiate Bilateral MoU</h2>
+                <p class="text-xs text-[#6E6962] dark:text-gray-400 mt-1">Propose a formal collaboration agreement with an academic institution</p>
+              </div>
+
+              <!-- Progress Steps -->
+              <div class="mb-8">
+                <div class="flex items-center justify-between relative" role="progressbar" aria-label="MoU Initiation Steps">
+                  <div class="absolute top-1/2 left-0 right-0 -translate-y-1/2 h-0.5 bg-slate-200 dark:bg-white/10 z-0"></div>
+                  <div class="relative z-10 flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full border-2 border-sage-500 bg-sage-500 flex items-center justify-center text-white text-xs font-bold">1</div>
+                    <span class="hidden sm:block w-32 text-center text-[10px] text-sage-600 dark:text-sage-400 font-medium">Institution</span>
+                  </div>
+                  <div class="relative z-10 flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full border-2 border-slate-300 dark:border-white/20 bg-white dark:bg-gray-900 text-slate-400 text-xs font-bold">2</div>
+                    <span class="hidden sm:block w-32 text-center text-[10px] text-gray-400 font-medium">Scope</span>
+                  </div>
+                  <div class="relative z-10 flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full border-2 border-slate-300 dark:border-white/20 bg-white dark:bg-gray-900 text-slate-400 text-xs font-bold">3</div>
+                    <span class="hidden sm:block w-32 text-center text-[10px] text-gray-400 font-medium">Terms</span>
+                  </div>
+                  <div class="relative z-10 flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-full border-2 border-slate-300 dark:border-white/20 bg-white dark:bg-gray-900 text-slate-400 text-xs font-bold">4</div>
+                    <span class="hidden sm:block w-32 text-center text-[10px] text-gray-400 font-medium">Submit</span>
+                  </div>
+                </div>
+              </div>
+
+              <form id="mou-initiate-form" class="space-y-6">
+                <!-- Step 1: Institution Selection -->
+                <div id="mou-step-1" class="mou-step active">
+                  <h3 class="text-sm font-bold text-[#1C1917] dark:text-white mb-4">Step 1: Select Partner Institution</h3>
+                  <div class="space-y-3" id="institution-options">
+                    <!-- Populated dynamically -->
+                  </div>
+                </div>
+
+                <!-- Step 2: Collaboration Scope -->
+                <div id="mou-step-2" class="mou-step hidden">
+                  <h3 class="text-sm font-bold text-[#1C1917] dark:text-white mb-4">Step 2: Define Collaboration Scope</h3>
+                  <div class="space-y-4">
+                    <div>
+                      <label class="block text-xs font-medium text-[#6E6962] dark:text-gray-400 mb-2">Department / Faculty</label>
+                      <select id="mou-department" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-white/5 border border-[#E7E4DC] dark:border-white/10 text-sm text-[#1C1917] dark:text-white focus:outline-none focus:ring-2 focus:ring-sage-500/50" required>
+                        <option value="">Select department...</option>
+                        <option value="Dravyaguna & Ayurvedic Pharmacology">Dravyaguna & Ayurvedic Pharmacology</option>
+                        <option value="Rasashastra & Pharmaceutics">Rasashastra & Pharmaceutics</option>
+                        <option value="Ayush Health Informatics & AI">Ayush Health Informatics & AI</option>
+                        <option value="Kaya Chikitsa (Clinical)">Kaya Chikitsa (Clinical)</option>
+                        <option value="Swasthavritta & Yoga">Swasthavritta & Yoga</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-[#6E6962] dark:text-gray-400 mb-2">Collaboration Tracks <span class="text-rose-500">*</span></label>
+                      <div class="grid grid-cols-2 gap-2" id="scope-tracks-options">
+                        <!-- Populated dynamically -->
+                      </div>
+                      <p class="text-[10px] text-gray-500 mt-1">Select at least one track</p>
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-[#6E6962] dark:text-gray-400 mb-2">Tenure (Years)</label>
+                      <select id="mou-tenure" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-white/5 border border-[#E7E4DC] dark:border-white/10 text-sm text-[#1C1917] dark:text-white focus:outline-none focus:ring-2 focus:ring-sage-500/50">
+                        <option value="3">3 Years</option>
+                        <option value="5">5 Years</option>
+                        <option value="1">1 Year (Pilot)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Step 3: Terms & Deliverables -->
+                <div id="mou-step-3" class="mou-step hidden">
+                  <h3 class="text-sm font-bold text-[#1C1917] dark:text-white mb-4">Step 3: Terms & Deliverables</h3>
+                  <div class="space-y-4">
+                    <div>
+                      <label class="block text-xs font-medium text-[#6E6962] dark:text-gray-400 mb-2">Industry Signatory</label>
+                      <input type="text" id="mou-signatory-industry" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-white/5 border border-[#E7E4DC] dark:border-white/10 text-sm text-[#1C1917] dark:text-white focus:outline-none focus:ring-2 focus:ring-sage-500/50" placeholder="Corporate Talent Lead" required>
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-[#6E6962] dark:text-gray-400 mb-2">Key Deliverables (one per line)</label>
+                      <textarea id="mou-deliverables" rows="4" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-white/5 border border-[#E7E4DC] dark:border-white/10 text-sm text-[#1C1917] dark:text-white focus:outline-none focus:ring-2 focus:ring-sage-500/50 resize-none" placeholder="Student internship placements (min 10/year)
+Joint research publications (min 2/year)
+Guest lecture series (quarterly)
+Curriculum advisory committee participation
+Co-branded certification program"></textarea>
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium text-[#6E6962] dark:text-gray-400 mb-2">Additional Notes</label>
+                      <textarea id="mou-notes" rows="3" class="w-full px-3 py-2 rounded-lg bg-white dark:bg-white/5 border border-[#E7E4DC] dark:border-white/10 text-sm text-[#1C1917] dark:text-white focus:outline-none focus:ring-2 focus:ring-sage-500/50 resize-none" placeholder="Any specific terms, IP arrangements, or special conditions..."></textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Step 4: Review & Submit -->
+                <div id="mou-step-4" class="mou-step hidden">
+                  <h3 class="text-sm font-bold text-[#1C1917] dark:text-white mb-4">Step 4: Review & Submit</h3>
+                  <div class="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5 space-y-3" id="mou-review-summary">
+                    <!-- Summary populated dynamically -->
+                  </div>
+                  <div class="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-white/10">
+                    <button type="button" onclick="prevMouStep()" class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 font-semibold text-xs hover:bg-gray-200 dark:hover:bg-white/20 transition">Back</button>
+                    <button type="submit" class="px-5 py-2.5 rounded-lg bg-sage-600 hover:bg-sage-500 text-white font-bold text-xs transition shadow-sm flex items-center gap-1.5">
+                      <span class="material-symbols-outlined text-sm">send</span>
+                      Submit MoU Proposal
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
 
 
       </div>
     </main>
   </div>
 
-  
   <script src="/js/frontend/api-client.js"></script>
   <script src="/js/frontend/notifications.js"></script>
   <script src="/js/frontend/industry-ui.js"></script>
+  <script>
+    // Initialize MoU tabs and render syllabi on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof renderSyllabi === 'function') {
+        renderSyllabi();
+      }
+      // Initialize tab state
+      if (typeof switchMouTab === 'function') {
+        // Default to syllabi tab
+        switchMouTab('syllabi');
+      }
+    });
+  </script>
 <script src="../../js/frontend/animations.js"></script>
 </body>
 </html>

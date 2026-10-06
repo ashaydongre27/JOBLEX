@@ -3,335 +3,1696 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Onboarding & Personalization | JOBLEX</title>
-  <!-- Google Fonts Preconnect -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <title>Complete Your Profile | JOBLEX Nexus AI</title>
+
+  <!-- Google Fonts with local fallback -->
+  <link rel="stylesheet" href="assets/vendor/google-fonts.css" onerror="this.onerror=null;this.href='https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=JetBrains+Mono:wght@400;500;600&display=swap'">
+
+  <!-- Google Material Symbols Outlined with local fallback -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" onerror="this.onerror=null;this.href='/css/fonts/material-symbols-outlined.woff2'">
+
   <script src="/js/frontend/theme.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: {
-            display: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-            sans: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-            serif: ['Newsreader', 'Georgia', 'serif'],
-            mono: ['JetBrains Mono', 'monospace']
-          },
-          colors: {
-            bone: { 50: '#FAF9F6', 100: '#F4F2EC', 200: '#E8E5DC', 300: '#D7D2C5' },
-            obsidian: { 950: '#070709', 900: '#0C0D10', 800: '#111215', 700: '#16181D', 600: '#22252C' },
-            sage: { 50: '#F2F6F3', 100: '#E3EDE6', 500: '#3D7055', 600: '#2D5542', 700: '#1E3C2E', glow: '#4EBA87' },
-            terracotta: { 50: '#FAF4F0', 100: '#F4E7DF', 500: '#B85E2E', 600: '#944C23', glow: '#E07A48' },
-            ochre: { 50: '#FAF6EF', 100: '#F4EBDA', 500: '#A67332', 600: '#855828', glow: '#D4973B' }
-          }
-        }
-      }
-    };
-  </script>
+  <!-- Tailwind CSS with local fallback -->
+  <script src="assets/vendor/tailwindcss.js" onerror="this.src='https://cdn.tailwindcss.com'"></script>
+  <script src="/js/frontend/tailwind-config.js"></script>
   <link rel="stylesheet" href="/css/styles.css">
   <style>
-    .glass-card { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(16px); border: 1px solid rgba(139, 92, 246, 0.2); }
+    .glass-wizard {
+      background: rgba(12, 13, 18, 0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(139, 92, 246, 0.22);
+    }
+    .step-card {
+      background: rgba(18, 20, 29, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(12px);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(139, 92, 246, 0.4);
+      border-radius: 9999px;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+    .animate-shake {
+      animation: shake 0.4s ease-in-out;
+    }
+    .field-invalid {
+      border-color: #f43f5e !important;
+      box-shadow: 0 0 0 2px rgba(244, 63, 94, 0.4) !important;
+    }
   </style>
+
+  <!-- Immediate Authentication & Onboarding Gating Guard -->
+  <script src="/js/frontend/api-client.js"></script>
+  <script>
+    (function() {
+      try {
+        const user = JoblexApiClient.getCurrentUser();
+        const token = typeof localStorage !== 'undefined' ? localStorage.getItem('joblex_token') : null;
+        if (!user || !token) {
+          window.location.replace('/auth.html?role=student&redirect=/onboarding');
+        } else if (user.role && user.role !== 'student') {
+          window.location.replace('/' + user.role + '.html');
+        } else {
+          const isOnboarded = Boolean(user.isOnboardingCompleted ?? user.onboarding_completed);
+          if (isOnboarded) {
+            window.location.replace('/dashboard');
+          }
+        }
+      } catch(e) {}
+    })();
+  </script>
 </head>
-<body class="min-h-screen flex flex-col justify-between p-4 sm:p-8 relative overflow-x-hidden bg-gradient-to-br from-gray-950 via-[#0a051d] to-gray-950">
+<body class="min-h-screen flex flex-col justify-between p-3 sm:p-6 lg:p-8 relative bg-gradient-to-br from-gray-950 via-[#0a051d] to-gray-950 text-gray-100 font-sans antialiased selection:bg-purple-600 selection:text-white">
 
   <!-- Background Decorative Glowing Orbs -->
-  <div class="fixed top-10 left-10 w-96 h-96 bg-purple-600/15 rounded-full blur-3xl pointer-events-none"></div>
-  <div class="fixed bottom-10 right-10 w-96 h-96 bg-cyan-600/15 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="fixed top-0 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
+  <div class="fixed bottom-0 right-1/4 w-96 h-96 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
 
-  <!-- Header Logo & User Navbar -->
-  <header class="w-full max-w-4xl mx-auto flex items-center justify-between py-4 border-b border-gray-800/80 mb-6 relative z-10">
+  <!-- Header -->
+  <header class="w-full max-w-[720px] mx-auto flex items-center justify-between py-3 mb-4 sm:mb-6 border-b border-gray-800/80 relative z-10">
     <div class="flex items-center gap-3">
-      <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-cyan-500 flex items-center justify-center font-black text-white text-xl shadow-lg">
+      <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-cyan-500 flex items-center justify-center font-black text-white text-base shadow-lg shadow-purple-600/20">
         ⚡
       </div>
       <div>
-        <h1 class="font-extrabold text-lg text-white tracking-wide">JOBLEX <span class="text-xs px-2 py-0.5 rounded-full bg-purple-950 border border-purple-500/40 text-purple-300">Nexus AI</span></h1>
-        <p class="text-[11px] text-gray-400">Student Personalization Wizard</p>
+        <h1 class="font-extrabold text-base sm:text-lg text-white tracking-tight flex items-center gap-2">
+          JOBLEX <span class="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-purple-950/80 border border-purple-500/40 text-purple-300">Nexus Onboarding</span>
+        </h1>
+        <p class="text-[11px] text-gray-400">Complete your profile to unlock personalized AI roadmaps & opportunities</p>
       </div>
     </div>
     <div class="nav-user-account-container"></div>
   </header>
 
-  <!-- Main Wizard Container -->
-  <main class="w-full max-w-2xl mx-auto relative z-10 my-auto">
-    <div class="glass-card rounded-3xl p-6 sm:p-10 shadow-2xl space-y-8">
+  <!-- Main Wizard Interface (Max-width 720px) -->
+  <main class="w-full max-w-[720px] mx-auto relative z-10 flex-1 flex flex-col justify-center">
+    <div class="glass-wizard rounded-3xl p-5 sm:p-8 shadow-2xl space-y-6 sm:space-y-8 relative overflow-hidden">
+      
+      <!-- Stepper & Progress Header -->
+      <div class="space-y-4">
+        <!-- Step Indicators -->
+        <div class="grid grid-cols-3 gap-2 text-center text-xs font-semibold">
+          <button type="button" onclick="goToStep(1)" id="step-tab-1" class="step-tab transition-all duration-300 flex flex-col items-center gap-1.5 text-purple-400 cursor-pointer focus:outline-none">
+            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-purple-500 bg-purple-950 flex items-center justify-center font-mono text-xs font-bold shadow-md shadow-purple-500/30 step-badge">
+              1
+            </div>
+            <span class="text-[11px] sm:text-xs font-medium tracking-wide">Academics</span>
+          </button>
 
-      <!-- Progress Header -->
-      <div class="space-y-3">
-        <div class="flex justify-between items-center text-xs font-semibold">
-          <span class="text-purple-400 font-mono tracking-wider uppercase" id="wizard-step-label">Step 1 of 4: Academic Background</span>
-          <span class="text-gray-400 font-mono" id="wizard-percent-label">25% Completed</span>
+          <button type="button" onclick="goToStep(2)" id="step-tab-2" class="step-tab transition-all duration-300 flex flex-col items-center gap-1.5 text-gray-400 cursor-pointer focus:outline-none">
+            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-gray-700 bg-gray-900 flex items-center justify-center font-mono text-xs font-bold step-badge">
+              2
+            </div>
+            <span class="text-[11px] sm:text-xs font-medium tracking-wide">Skills & Aspirations</span>
+          </button>
+
+          <button type="button" onclick="goToStep(3)" id="step-tab-3" class="step-tab transition-all duration-300 flex flex-col items-center gap-1.5 text-gray-400 cursor-pointer focus:outline-none">
+            <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-gray-700 bg-gray-900 flex items-center justify-center font-mono text-xs font-bold step-badge">
+              3
+            </div>
+            <span class="text-[11px] sm:text-xs font-medium tracking-wide">Availability & History</span>
+          </button>
         </div>
-        <div class="w-full bg-gray-900 rounded-full h-2 overflow-hidden border border-gray-800">
-          <div id="wizard-progress-bar" class="bg-gradient-to-r from-purple-600 via-indigo-500 to-cyan-400 h-full w-1/4 transition-all duration-500"></div>
+
+        <!-- Progress Bar & Percentage -->
+        <div class="space-y-1.5">
+          <div class="flex justify-between items-center text-[11px] font-mono">
+            <span id="step-label" class="text-purple-300 uppercase tracking-wider font-semibold">Step 1 of 3: Academic Profile & Education</span>
+            <span id="progress-percent" class="text-gray-400 font-bold">33% Completed</span>
+          </div>
+          <div class="w-full bg-gray-900/90 rounded-full h-2 overflow-hidden border border-gray-800">
+            <div id="progress-bar" class="h-full bg-gradient-to-r from-purple-600 via-indigo-500 to-cyan-400 transition-all duration-500 rounded-full" style="width: 33.33%;"></div>
+          </div>
         </div>
       </div>
 
-      <!-- Form Steps Container -->
-      <form id="onboarding-form" onsubmit="handleOnboardingSubmit(event)" class="space-y-6">
+      <!-- Validation Error Banner -->
+      <div id="validation-banner" class="hidden p-3.5 rounded-2xl bg-rose-950/70 border border-rose-500/50 text-rose-200 text-xs flex items-start gap-2.5 animate-pulse">
+        <span class="material-symbols-outlined text-rose-400 text-base shrink-0 mt-0.5">error</span>
+        <div id="validation-message" class="leading-relaxed"></div>
+      </div>
 
-        <!-- STEP 1: Academic Profile & Specialization -->
-        <div id="step-1" class="step-panel space-y-5">
+      <!-- FORM WIZARD -->
+      <form id="onboarding-wizard-form" onsubmit="event.preventDefault();" class="space-y-6">
+
+        <!-- =================================================================== -->
+        <!-- STEP 1: Academic Profile & Education Background -->
+        <!-- =================================================================== -->
+        <div id="wizard-step-1" class="wizard-step-panel space-y-5">
           <div>
-            <h2 class="text-xl font-bold text-white flex items-center gap-2">
-              <span>🎓</span> Tell us about your Academic Specialization
+            <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+              <span class="text-purple-400">🎓</span> Academic Profile & Education Background
             </h2>
-            <p class="text-xs text-gray-400 mt-1">This allows JOBLEX to tailor research projects, internships, and skill pathways to your institution.</p>
+            <p class="text-xs text-gray-400 mt-1">Provide your verified institutional details so JOBLEX can benchmark your curriculum and recommend eligible opportunities.</p>
           </div>
 
           <div class="space-y-4">
-            <div>
-              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Higher Education Institution</label>
-              <input type="text" id="ob-institution" required placeholder="e.g. Delhi University / IIT / NIT / BITS / State University" class="w-full px-4 py-3 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-purple-500 focus:outline-none transition">
+            <!-- 1. College Name: Searchable combobox with free-text fallback -->
+            <div class="relative">
+              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                <span>College / University Name <span class="text-purple-400">*</span></span>
+                <span class="text-[10px] text-gray-400 font-normal lowercase">Search or type custom institution</span>
+              </label>
+              <div class="relative">
+                <input 
+                  type="text" 
+                  id="field-college" 
+                  required 
+                  autocomplete="off"
+                  placeholder="e.g. IIT Delhi, BITS Pilani, All India Institute of Ayurveda..." 
+                  class="w-full px-4 py-3 rounded-xl bg-joblex-input border border-gray-700/80 text-white text-sm focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:outline-none transition shadow-inner pr-10"
+                  oninput="handleCollegeInput(this.value)"
+                  onfocus="handleCollegeInput(this.value)"
+                >
+                <div class="absolute right-3 top-3.5 pointer-events-none text-gray-500">
+                  <span class="material-symbols-outlined text-base">search</span>
+                </div>
+              </div>
+
+              <!-- Async Autocomplete Dropdown Menu -->
+              <div id="college-suggestions" class="hidden absolute top-full left-0 right-0 mt-1.5 max-h-56 overflow-y-auto custom-scrollbar rounded-xl bg-slate-900 border border-purple-500/30 shadow-2xl z-50 py-1.5 text-xs text-gray-200">
+                <!-- Dynamically generated suggestions -->
+              </div>
             </div>
 
+            <!-- 2. Location (City & State): Multi-column grid on desktop, single-column on mobile -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Degree / Course</label>
-                <select id="ob-degree" class="w-full px-4 py-3 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-purple-500 focus:outline-none transition">
-                  <option value="BAMS Undergraduate">BAMS (Bachelor of Ayurvedic Med. & Surgery)</option>
-                  <option value="B.Tech / B.E. Computer Science">B.Tech / B.E. Computer Science</option>
-                  <option value="B.Sc / M.Sc Bio-Technology">B.Sc / M.Sc Bio-Technology & Phytochemistry</option>
-                  <option value="M.D. / M.S. Dravyaguna">M.D. / M.S. Dravyaguna & Pharmacology</option>
-                  <option value="B.Pharm / M.Pharm">B.Pharm / M.Pharm</option>
-                  <option value="Other Science & Tech Degree">Other Science & Tech Degree</option>
-                </select>
+                <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1.5">
+                  City <span class="text-purple-400">*</span>
+                </label>
+                <input 
+                  type="text" 
+                  id="field-city" 
+                  required 
+                  placeholder="e.g. New Delhi / Bengaluru / Pune" 
+                  class="w-full px-4 py-3 rounded-xl bg-joblex-input border border-gray-700/80 text-white text-sm focus:border-purple-500 focus:outline-none transition"
+                  oninput="saveDraftToStorage()"
+                >
               </div>
+
               <div>
-                <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Academic Year</label>
-                <select id="ob-year" class="w-full px-4 py-3 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-purple-500 focus:outline-none transition">
-                  <option value="1st Year">1st Year</option>
-                  <option value="2nd Year">2nd Year</option>
-                  <option value="3rd Year" selected>3rd Year</option>
-                  <option value="4th Year / Final Year">4th Year / Final Year</option>
-                  <option value="Postgraduate / PhD Scholar">Postgraduate / PhD Scholar</option>
-                </select>
+                <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1.5">
+                  State / Union Territory <span class="text-purple-400">*</span>
+                </label>
+                <input 
+                  type="text" 
+                  id="field-state" 
+                  required 
+                  placeholder="e.g. Delhi / Karnataka / Maharashtra" 
+                  class="w-full px-4 py-3 rounded-xl bg-joblex-input border border-gray-700/80 text-white text-sm focus:border-purple-500 focus:outline-none transition"
+                  oninput="saveDraftToStorage()"
+                >
               </div>
             </div>
 
-            <div>
-              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Department / Specialization</label>
-              <input type="text" id="ob-department" placeholder="e.g. Phytopharmacology, Health Informatics, AI Systems" class="w-full px-4 py-3 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-purple-500 focus:outline-none transition">
+            <!-- 3. Degree & Specialization: Paired Inputs -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1.5">
+                  Degree <span class="text-purple-400">*</span>
+                </label>
+                <select 
+                  id="field-degree" 
+                  required 
+                  class="w-full px-4 py-3 rounded-xl bg-joblex-input border border-gray-700/80 text-white text-sm focus:border-purple-500 focus:outline-none transition cursor-pointer"
+                  onchange="saveDraftToStorage()"
+                >
+                  <option value="B.Tech">B.Tech (Bachelor of Technology)</option>
+                  <option value="BCA">BCA (Bachelor of Computer Applications)</option>
+                  <option value="MCA">MCA (Master of Computer Applications)</option>
+                  <option value="B.Sc">B.Sc (Bachelor of Science)</option>
+                  <option value="M.Tech">M.Tech (Master of Technology)</option>
+                  <option value="BAMS">BAMS (Ayurvedic Medicine & Surgery)</option>
+                  <option value="Other">Other Degree</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1.5">
+                  Specialization / Branch <span class="text-purple-400">*</span>
+                </label>
+                <input 
+                  type="text" 
+                  id="field-specialization" 
+                  required 
+                  list="specialization-datalist"
+                  placeholder="e.g. Computer Science, Data Science, AI..." 
+                  class="w-full px-4 py-3 rounded-xl bg-joblex-input border border-gray-700/80 text-white text-sm focus:border-purple-500 focus:outline-none transition"
+                  oninput="saveDraftToStorage()"
+                >
+                <datalist id="specialization-datalist">
+                  <option value="Computer Science & Engineering"></option>
+                  <option value="Artificial Intelligence & Machine Learning"></option>
+                  <option value="Data Science & Analytics"></option>
+                  <option value="Information Technology"></option>
+                  <option value="Electronics & Communication"></option>
+                  <option value="Ayush Health Informatics & Phytopharmacology"></option>
+                  <option value="Bio-Technology & Phytochemistry"></option>
+                  <option value="Mechanical Engineering"></option>
+                </datalist>
+              </div>
+            </div>
+
+            <!-- 4. Current Semester & Degree Completion -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1.5">
+                  Current Semester <span class="text-purple-400">*</span>
+                </label>
+                <select 
+                  id="field-semester" 
+                  required 
+                  class="w-full px-4 py-3 rounded-xl bg-joblex-input border border-gray-700/80 text-white text-sm focus:border-purple-500 focus:outline-none transition cursor-pointer"
+                  onchange="saveDraftToStorage()"
+                >
+                  <option value="Sem 1">Sem 1</option>
+                  <option value="Sem 2">Sem 2</option>
+                  <option value="Sem 3">Sem 3</option>
+                  <option value="Sem 4" selected>Sem 4</option>
+                  <option value="Sem 5">Sem 5</option>
+                  <option value="Sem 6">Sem 6</option>
+                  <option value="Sem 7">Sem 7</option>
+                  <option value="Sem 8">Sem 8</option>
+                  <option value="Final Year">Final Year</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1.5">
+                  Time Remaining to Complete <span class="text-purple-400">*</span>
+                </label>
+                <select 
+                  id="field-duration-left" 
+                  required 
+                  class="w-full px-4 py-3 rounded-xl bg-joblex-input border border-gray-700/80 text-white text-sm focus:border-purple-500 focus:outline-none transition cursor-pointer"
+                  onchange="saveDraftToStorage()"
+                >
+                  <option value="Less than 6 months">Less than 6 months</option>
+                  <option value="1 year" selected>1 year</option>
+                  <option value="2 years">2 years</option>
+                  <option value="3+ years">3+ years</option>
+                </select>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- STEP 2: Social & Developer Profile Links -->
-        <div id="step-2" class="step-panel hidden space-y-5">
+        <!-- =================================================================== -->
+        <!-- STEP 2: Technical Skills & Career Aspirations -->
+        <!-- =================================================================== -->
+        <div id="wizard-step-2" class="wizard-step-panel hidden space-y-6">
           <div>
-            <h2 class="text-xl font-bold text-white flex items-center gap-2">
-              <span>🔗</span> Link your Professional & Coding Profiles
+            <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+              <span class="text-cyan-400">⚡</span> Technical Skills & Career Aspirations
             </h2>
-            <p class="text-xs text-gray-400 mt-1">Recruiters and corporate R&D leads inspect verified portfolios and competitive coding profiles.</p>
+            <p class="text-xs text-gray-400 mt-1">Select your competencies and target roles to power Zulu AI matching and automated skill gap analyses.</p>
           </div>
 
+          <!-- 1. Interactive Skills Selector -->
           <div class="space-y-3.5">
-            <div>
-              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                <span class="text-blue-400">🌐</span> LinkedIn Profile URL
+            <div class="flex items-center justify-between">
+              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider">
+                Technical Skills <span class="text-cyan-400">*</span>
               </label>
-              <input type="url" id="link-linkedin" placeholder="https://linkedin.com/in/yourname" class="w-full px-4 py-2.5 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-blue-500 focus:outline-none transition">
+              <span class="text-[11px] text-gray-400 font-normal">Search 200+ skills or type custom &amp; press Enter</span>
+            </div>
+            
+            <!-- Skill Input with Search & Autocomplete -->
+            <div class="relative">
+              <div class="relative">
+                <input 
+                  type="text" 
+                  id="field-skill-input" 
+                  autocomplete="off"
+                  placeholder="Search 200+ skills (e.g. Next.js, PyTorch, Docker, Kubernetes) or type custom..." 
+                  class="w-full px-4 py-3 rounded-xl bg-joblex-input border border-gray-700/80 text-white text-sm focus:border-cyan-500 focus:outline-none transition pr-10"
+                >
+                <div class="absolute right-3 top-3.5 pointer-events-none text-gray-500">
+                  <span class="material-symbols-outlined text-base">search</span>
+                </div>
+              </div>
+              <div id="skill-suggestions" class="hidden absolute top-full left-0 right-0 mt-1 max-h-56 overflow-y-auto custom-scrollbar rounded-xl bg-slate-900 border border-cyan-500/40 shadow-2xl z-50 py-1.5 text-xs text-gray-200">
+                <!-- Dynamically populated suggestions -->
+              </div>
             </div>
 
-            <div>
-              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                <span class="text-purple-400">💻</span> GitHub Profile URL
-              </label>
-              <input type="url" id="link-github" placeholder="https://github.com/yourusername" class="w-full px-4 py-2.5 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-purple-500 focus:outline-none transition">
+            <!-- Top 10 Instant-Add Badges prominently below input bar -->
+            <div class="space-y-1.5 pt-1">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Top 10 Instant-Add Badges:</span>
+                <span class="text-[10px] text-gray-500 font-mono">Click to toggle</span>
+              </div>
+              <div class="flex flex-wrap gap-1.5" id="quick-add-badges-container">
+                <!-- Badges dynamically rendered -->
+              </div>
             </div>
 
+            <!-- Active Selected Skill Chips -->
+            <div class="space-y-1.5 pt-1">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Selected Skills:</span>
+                <span id="selected-skills-count" class="text-[11px] font-mono text-cyan-400 font-bold">0 Selected</span>
+              </div>
+              <div id="selected-skills-container" class="flex flex-wrap gap-2 min-h-[44px] p-2.5 rounded-xl bg-black/40 border border-gray-800">
+                <!-- Dynamically populated active tags -->
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Self-Assessed Skill Level (Segmented Control) -->
+          <div class="space-y-2">
+            <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider">
+              Self-Assessed Skill Level <span class="text-cyan-400">*</span>
+            </label>
+            <div class="grid grid-cols-3 gap-2 p-1 bg-black/50 border border-gray-800 rounded-xl" id="skill-level-control">
+              <button 
+                type="button" 
+                onclick="setSkillLevel('Beginner')" 
+                id="btn-level-beginner"
+                class="skill-level-btn py-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-gray-400 hover:text-white"
+              >
+                🌱 Beginner
+              </button>
+              <button 
+                type="button" 
+                onclick="setSkillLevel('Intermediate')" 
+                id="btn-level-intermediate"
+                class="skill-level-btn py-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md"
+              >
+                ⚡ Intermediate
+              </button>
+              <button 
+                type="button" 
+                onclick="setSkillLevel('Advanced')" 
+                id="btn-level-advanced"
+                class="skill-level-btn py-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-gray-400 hover:text-white"
+              >
+                🚀 Advanced
+              </button>
+            </div>
+            <input type="hidden" id="field-skill-level" value="Intermediate">
+          </div>
+
+          <!-- 3. Target Career Profile -->
+          <div class="space-y-4 pt-2 border-t border-gray-800/80">
+            <!-- Dream Job / Target Roles (Tag input) -->
             <div>
-              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                <span class="text-amber-400">🧩</span> LeetCode Profile URL
+              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1.5">
+                Dream Job / Target Roles <span class="text-[10px] text-gray-400 font-normal lowercase">(Type and press Enter)</span>
               </label>
-              <input type="url" id="link-leetcode" placeholder="https://leetcode.com/u/yourusername" class="w-full px-4 py-2.5 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-amber-500 focus:outline-none transition">
+              <div class="relative">
+                <input 
+                  type="text" 
+                  id="field-target-role-input" 
+                  placeholder="e.g. SDE 1, Data Analyst, Cloud Engineer, AI Research Fellow..." 
+                  class="w-full px-4 py-2.5 rounded-xl bg-joblex-input border border-gray-700/80 text-white text-sm focus:border-cyan-500 focus:outline-none transition"
+                  onkeydown="handleTargetRoleKeyDown(event)"
+                >
+              </div>
+              <div id="target-roles-container" class="flex flex-wrap gap-2 mt-2"></div>
             </div>
 
+            <!-- Preferred Company Types (Multi-select pill selector) -->
             <div>
-              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                <span class="text-emerald-400">🏆</span> HackerRank Profile URL
+              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">
+                Preferred Company Types
               </label>
-              <input type="url" id="link-hackerrank" placeholder="https://hackerrank.com/profile/yourusername" class="w-full px-4 py-2.5 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-emerald-500 focus:outline-none transition">
+              <div class="flex flex-wrap gap-2" id="company-types-container">
+                <button type="button" onclick="toggleCompanyType(this, 'Product Startups')" class="company-type-pill px-3 py-1.5 rounded-xl text-xs font-medium border border-gray-800 bg-black/40 text-gray-300 hover:border-gray-600 transition">
+                  Product Startups
+                </button>
+                <button type="button" onclick="toggleCompanyType(this, 'FAANG / Tier-1 MNCs')" class="company-type-pill px-3 py-1.5 rounded-xl text-xs font-medium border border-gray-800 bg-black/40 text-gray-300 hover:border-gray-600 transition">
+                  FAANG / Tier-1 MNCs
+                </button>
+                <button type="button" onclick="toggleCompanyType(this, 'Mid-sized Product Firms')" class="company-type-pill px-3 py-1.5 rounded-xl text-xs font-medium border border-gray-800 bg-black/40 text-gray-300 hover:border-gray-600 transition">
+                  Mid-sized Product Firms
+                </button>
+                <button type="button" onclick="toggleCompanyType(this, 'Service / IT Consultancies')" class="company-type-pill px-3 py-1.5 rounded-xl text-xs font-medium border border-gray-800 bg-black/40 text-gray-300 hover:border-gray-600 transition">
+                  Service / IT Consultancies
+                </button>
+                <button type="button" onclick="toggleCompanyType(this, 'Early-Stage Tech')" class="company-type-pill px-3 py-1.5 rounded-xl text-xs font-medium border border-gray-800 bg-black/40 text-gray-300 hover:border-gray-600 transition">
+                  Early-Stage Tech
+                </button>
+              </div>
             </div>
 
+            <!-- Company Wishlist (Free-text tags) -->
             <div>
-              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                <span class="text-cyan-400">🚀</span> Personal Portfolio Website
+              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1.5">
+                Company Wishlist <span class="text-[10px] text-gray-400 font-normal lowercase">(Type companies & press Enter or comma)</span>
               </label>
-              <input type="url" id="link-portfolio" placeholder="https://yourname.dev" class="w-full px-4 py-2.5 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-cyan-500 focus:outline-none transition">
+              <input 
+                type="text" 
+                id="field-target-companies-input" 
+                placeholder="e.g. Google, Atlassian, Stripe, Dabur, Microsoft..." 
+                class="w-full px-4 py-2.5 rounded-xl bg-joblex-input border border-gray-700/80 text-white text-sm focus:border-cyan-500 focus:outline-none transition"
+                onkeydown="handleCompanyWishlistKeyDown(event)"
+              >
+              <div id="company-wishlist-container" class="flex flex-wrap gap-2 mt-2"></div>
             </div>
           </div>
         </div>
 
-        <!-- STEP 3: Skill Verification & Technical Interests -->
-        <div id="step-3" class="step-panel hidden space-y-5">
+        <!-- =================================================================== -->
+        <!-- STEP 3: Work Preferences, Availability & Academic History -->
+        <!-- =================================================================== -->
+        <div id="wizard-step-3" class="wizard-step-panel hidden space-y-5">
           <div>
-            <h2 class="text-xl font-bold text-white flex items-center gap-2">
-              <span>🔬</span> Select your Verified Competencies & Tech Stack
+            <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+              <span class="text-emerald-400">📋</span> Work Preferences, Availability & History
             </h2>
-            <p class="text-xs text-gray-400 mt-1">Select the core technologies, laboratory methods, and tools you have experience with.</p>
+            <p class="text-xs text-gray-400 mt-1">Configure your relocation preferences, schedule timeline, and verify academic standing.</p>
           </div>
 
+          <!-- Structured Cards -->
           <div class="space-y-4">
-            <div>
-              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-2">Technical & Laboratory Skills (Click to Select)</label>
-              <div class="flex flex-wrap gap-2" id="skills-pills-container">
-                <!-- Dynamically generated pills -->
+            
+            <!-- Card 1: Job / Internship Preferences -->
+            <div class="step-card rounded-2xl p-4 sm:p-5 space-y-4">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-300 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">explore</span> Job & Internship Preferences
+              </h3>
+
+              <div class="space-y-3.5">
+                <!-- Location-based toggle -->
+                <div class="flex items-center justify-between gap-3">
+                  <div>
+                    <span class="text-xs font-semibold text-white block">Location-Based Opportunities</span>
+                    <span class="text-[11px] text-gray-400">Filter postings to specific cities / regions</span>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                    <input type="checkbox" id="toggle-location-pref" class="sr-only peer" onchange="toggleLocationPreferences(this.checked)">
+                    <div class="w-11 h-6 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                  </label>
+                </div>
+
+                <!-- Conditional reveal for cities -->
+                <div id="preferred-cities-section" class="hidden pl-2 border-l-2 border-emerald-500/40 space-y-1.5">
+                  <label class="block text-[11px] font-bold text-gray-300 uppercase tracking-wider">Preferred Cities</label>
+                  <input 
+                    type="text" 
+                    id="field-preferred-cities" 
+                    placeholder="e.g. Remote, Bangalore, Hyderabad, Pune, Delhi-NCR" 
+                    class="w-full px-3.5 py-2.5 rounded-xl bg-joblex-input border border-gray-700/80 text-white text-xs focus:border-emerald-500 focus:outline-none transition"
+                    oninput="saveDraftToStorage()"
+                  >
+                </div>
+
+                <!-- Willingness to relocate toggle -->
+                <div class="flex items-center justify-between gap-3 pt-2 border-t border-gray-800/80">
+                  <div>
+                    <span class="text-xs font-semibold text-white block">Willingness to Relocate</span>
+                    <span class="text-[11px] text-gray-400">Are you ready to migrate / relocate for on-site roles?</span>
+                  </div>
+                  <div class="flex items-center gap-1.5 p-1 bg-black/40 border border-gray-800 rounded-xl" id="relocate-control">
+                    <button type="button" onclick="setRelocate(false)" id="btn-relocate-no" class="px-3 py-1 rounded-lg text-xs font-bold bg-gray-800 text-white transition">No</button>
+                    <button type="button" onclick="setRelocate(true)" id="btn-relocate-yes" class="px-3 py-1 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition">Yes</button>
+                    <input type="hidden" id="field-willing-relocate" value="false">
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div>
-              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Add Custom Skill (Comma Separated)</label>
-              <input type="text" id="ob-custom-skills" placeholder="e.g. PyTorch, AutoDock Vina, Schedule T Compliance" class="w-full px-4 py-2.5 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-purple-500 focus:outline-none transition">
+            <!-- Card 2: Availability Timeline -->
+            <div class="step-card rounded-2xl p-4 sm:p-5 space-y-4">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-cyan-300 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">schedule</span> Availability Timeline
+              </h3>
+
+              <div class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <!-- Available From Date -->
+                  <div>
+                    <label class="block text-[11px] font-bold text-gray-300 uppercase tracking-wider mb-1">Available From Date</label>
+                    <input 
+                      type="date" 
+                      id="field-available-from" 
+                      class="w-full px-3.5 py-2.5 rounded-xl bg-joblex-input border border-gray-700/80 text-white text-xs focus:border-cyan-500 focus:outline-none transition"
+                      onchange="saveDraftToStorage()"
+                    >
+                  </div>
+
+                  <!-- Internship Duration (Segmented pills) -->
+                  <div>
+                    <label class="block text-[11px] font-bold text-gray-300 uppercase tracking-wider mb-1">Internship Duration</label>
+                    <div class="grid grid-cols-3 gap-1.5 p-1 bg-black/40 border border-gray-800 rounded-xl">
+                      <button type="button" onclick="setInternshipDuration('1 Month')" id="btn-dur-1" class="dur-btn py-1.5 rounded-lg text-[11px] font-bold text-gray-400 hover:text-white transition">1 Month</button>
+                      <button type="button" onclick="setInternshipDuration('3 Months')" id="btn-dur-3" class="dur-btn py-1.5 rounded-lg text-[11px] font-bold bg-gradient-to-r from-cyan-600 to-teal-600 text-white shadow-sm transition">3 Months</button>
+                      <button type="button" onclick="setInternshipDuration('6 Months')" id="btn-dur-6" class="dur-btn py-1.5 rounded-lg text-[11px] font-bold text-gray-400 hover:text-white transition">6 Months</button>
+                    </div>
+                    <input type="hidden" id="field-internship-duration" value="3 Months">
+                  </div>
+                </div>
+
+                <!-- Job Availability Type (Radio buttons) -->
+                <div>
+                  <label class="block text-[11px] font-bold text-gray-300 uppercase tracking-wider mb-2">Job Availability</label>
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <label class="flex items-center gap-2 p-2.5 rounded-xl border border-gray-800 bg-black/40 cursor-pointer hover:border-gray-700 transition text-xs">
+                      <input type="radio" name="job-avail-type" value="Immediate" checked onchange="handleJobAvailChange('Immediate')" class="text-cyan-500 focus:ring-cyan-500">
+                      <span class="text-gray-200 font-medium">Immediate</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-2.5 rounded-xl border border-gray-800 bg-black/40 cursor-pointer hover:border-gray-700 transition text-xs">
+                      <input type="radio" name="job-avail-type" value="After Graduation" onchange="handleJobAvailChange('After Graduation')" class="text-cyan-500 focus:ring-cyan-500">
+                      <span class="text-gray-200 font-medium">After Graduation</span>
+                    </label>
+                    <label class="flex items-center gap-2 p-2.5 rounded-xl border border-gray-800 bg-black/40 cursor-pointer hover:border-gray-700 transition text-xs">
+                      <input type="radio" name="job-avail-type" value="Custom Date" onchange="handleJobAvailChange('Custom Date')" class="text-cyan-500 focus:ring-cyan-500">
+                      <span class="text-gray-200 font-medium">Custom Date</span>
+                    </label>
+                  </div>
+
+                  <!-- Custom Date Input Reveal -->
+                  <div id="custom-avail-date-container" class="hidden mt-2">
+                    <input 
+                      type="date" 
+                      id="field-custom-avail-date" 
+                      class="w-full px-3.5 py-2.5 rounded-xl bg-joblex-input border border-cyan-500/60 text-white text-xs focus:outline-none transition"
+                      onchange="saveDraftToStorage()"
+                    >
+                  </div>
+                </div>
+              </div>
             </div>
+
+            <!-- Card 3: Experience & Track Record (Optional conditional reveals) -->
+            <div class="step-card rounded-2xl p-4 sm:p-5 space-y-4">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-purple-300 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">workspace_premium</span> Experience & Track Record
+              </h3>
+
+              <div class="space-y-4">
+                <!-- Prior Internship / Work Experience Toggle -->
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between gap-3">
+                    <div>
+                      <span class="text-xs font-semibold text-white block">Prior Internship / Work Experience</span>
+                      <span class="text-[11px] text-gray-400">Have you completed corporate or research internships?</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                      <input type="checkbox" id="toggle-experience" class="sr-only peer" onchange="toggleExperienceFields(this.checked)">
+                      <div class="w-11 h-6 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                    </label>
+                  </div>
+
+                  <div id="experience-fields" class="hidden p-3 rounded-xl bg-black/40 border border-purple-500/20 grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    <div>
+                      <label class="block text-[10px] font-bold text-gray-400 uppercase">Company / Lab</label>
+                      <input type="text" id="exp-company" placeholder="e.g. Dabur R&D / Apex Labs" class="w-full mt-1 px-3 py-2 rounded-lg bg-joblex-input border border-gray-700 text-white text-xs">
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-gray-400 uppercase">Role</label>
+                      <input type="text" id="exp-role" placeholder="e.g. SDE Intern" class="w-full mt-1 px-3 py-2 rounded-lg bg-joblex-input border border-gray-700 text-white text-xs">
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-gray-400 uppercase">Duration (Months)</label>
+                      <input type="number" id="exp-duration" min="1" max="60" placeholder="e.g. 6" class="w-full mt-1 px-3 py-2 rounded-lg bg-joblex-input border border-gray-700 text-white text-xs">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Research Papers / Publications Toggle -->
+                <div class="space-y-2 pt-2 border-t border-gray-800/80">
+                  <div class="flex items-center justify-between gap-3">
+                    <div>
+                      <span class="text-xs font-semibold text-white block">Research Papers / Publications</span>
+                      <span class="text-[11px] text-gray-400">Published in IEEE, Springer, CTRI, or PubMed?</span>
+                    </div>
+                    <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                      <input type="checkbox" id="toggle-publications" class="sr-only peer" onchange="togglePublicationFields(this.checked)">
+                      <div class="w-11 h-6 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                    </label>
+                  </div>
+
+                  <div id="publication-fields" class="hidden p-3 rounded-xl bg-black/40 border border-purple-500/20 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div>
+                      <label class="block text-[10px] font-bold text-gray-400 uppercase">Publication Title</label>
+                      <input type="text" id="pub-title" placeholder="e.g. In-silico HPTLC standardization of Withania somnifera" class="w-full mt-1 px-3 py-2 rounded-lg bg-joblex-input border border-gray-700 text-white text-xs">
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-gray-400 uppercase">DOI / Link (Optional)</label>
+                      <input type="url" id="pub-link" placeholder="https://doi.org/10.1016/..." class="w-full mt-1 px-3 py-2 rounded-lg bg-joblex-input border border-gray-700 text-white text-xs">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Academic Backlogs Toggle & Stepper -->
+                <div class="pt-2 border-t border-gray-800/80 space-y-2">
+                  <div class="flex items-center justify-between gap-3">
+                    <div>
+                      <span class="text-xs font-semibold text-white block">Academic Backlogs</span>
+                      <span class="text-[11px] text-gray-400">Do you have any currently active, un-cleared backlogs?</span>
+                    </div>
+                    <div class="flex items-center gap-1.5 p-1 bg-black/40 border border-gray-800 rounded-xl" id="backlog-toggle-control">
+                      <button type="button" onclick="setBacklogToggle(false)" id="btn-backlog-no" class="px-3 py-1 rounded-lg text-xs font-bold bg-gray-800 text-white transition">No</button>
+                      <button type="button" onclick="setBacklogToggle(true)" id="btn-backlog-yes" class="px-3 py-1 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition">Yes</button>
+                      <input type="hidden" id="field-has-backlogs" value="false">
+                    </div>
+                  </div>
+
+                  <!-- Number Stepper Reveal -->
+                  <div id="backlog-count-container" class="hidden p-3 rounded-xl bg-rose-950/20 border border-rose-500/30 flex items-center justify-between">
+                    <span class="text-xs font-bold text-rose-300">Active Unresolved Backlogs:</span>
+                    <div class="flex items-center gap-2">
+                      <button type="button" onclick="adjustBacklogCount(-1)" class="w-7 h-7 rounded-lg bg-gray-800 hover:bg-gray-700 text-white font-bold flex items-center justify-center">-</button>
+                      <span id="backlog-count-display" class="font-mono text-sm font-bold text-white px-2">1</span>
+                      <button type="button" onclick="adjustBacklogCount(1)" class="w-7 h-7 rounded-lg bg-gray-800 hover:bg-gray-700 text-white font-bold flex items-center justify-center">+</button>
+                      <input type="hidden" id="field-backlog-count" value="1">
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
           </div>
         </div>
 
-        <!-- STEP 4: Career Goals & Work Preferences -->
-        <div id="step-4" class="step-panel hidden space-y-5">
-          <div>
-            <h2 class="text-xl font-bold text-white flex items-center gap-2">
-              <span>🎯</span> Career Target & Work Preferences
-            </h2>
-            <p class="text-xs text-gray-400 mt-1">Help Zulu AI recommend matching internships, micro-gigs, and corporate job openings.</p>
+        <!-- Sticky Footer Container with Buttons -->
+        <div class="pt-4 border-t border-gray-800/80 flex flex-col sm:flex-row items-center justify-between gap-3 sticky bottom-0 bg-[#0c0d12]/95 backdrop-blur-md pb-2 z-20">
+          <div class="flex items-center gap-2 order-2 sm:order-1 w-full sm:w-auto">
+            <button 
+              type="button" 
+              id="wizard-prev-btn" 
+              onclick="navigateWizard(-1)" 
+              class="hidden w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-700 text-gray-300 font-bold text-xs transition flex items-center justify-center gap-1.5"
+            >
+              <span class="material-symbols-outlined text-sm">arrow_back</span> Back
+            </button>
+            <span id="draft-save-indicator" class="text-[11px] text-gray-400 font-mono hidden sm:inline-flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Draft saved
+            </span>
           </div>
 
-          <div class="space-y-4">
-            <div>
-              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Primary Target Job Role</label>
-              <input type="text" id="ob-target-role" placeholder="e.g. Phytochemical Research Intern / Software Engineer" class="w-full px-4 py-3 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-purple-500 focus:outline-none transition">
-            </div>
+          <div class="order-1 sm:order-2 w-full sm:w-auto flex items-center gap-2">
+            <!-- Next Step CTA -->
+            <button 
+              type="button" 
+              id="wizard-next-btn" 
+              class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-500 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-purple-600/25 transition flex items-center justify-center gap-1.5"
+            >
+              <span>Save & Continue</span>
+              <span class="material-symbols-outlined text-sm">arrow_forward</span>
+            </button>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Preferred Opportunity Type</label>
-                <select id="ob-opportunity-type" class="w-full px-4 py-3 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-purple-500 focus:outline-none transition">
-                  <option value="Internship">Corporate Internship</option>
-                  <option value="Job">Full-Time Corporate Job</option>
-                  <option value="Micro-Gig">Micro-Gigs & Research Bounties</option>
-                  <option value="All">Open to All Opportunities</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Work Mode</label>
-                <select id="ob-work-mode" class="w-full px-4 py-3 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-purple-500 focus:outline-none transition">
-                  <option value="Hybrid">Hybrid (On-Site + Remote)</option>
-                  <option value="Remote">100% Remote / Online</option>
-                  <option value="Onsite">On-Site Laboratory / Office</option>
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">Preferred Cities / Locations</label>
-              <input type="text" id="ob-location" placeholder="e.g. Delhi-NCR, Bengaluru, Haridwar, Remote" class="w-full px-4 py-3 rounded-xl bg-black/60 border border-gray-700/80 text-white text-sm focus:border-purple-500 focus:outline-none transition">
-            </div>
+            <!-- Complete Profile Primary CTA -->
+            <button 
+              type="button" 
+              id="wizard-submit-btn" 
+              onclick="handleFinalSubmit()" 
+              class="hidden w-full sm:w-auto px-7 py-3 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-black text-xs uppercase tracking-wider shadow-xl shadow-emerald-500/25 transition flex items-center justify-center gap-2"
+            >
+              <span id="submit-btn-spinner" class="hidden inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              <span id="submit-btn-text">🚀 Complete Profile & Launch</span>
+            </button>
           </div>
-        </div>
-
-        <!-- Navigation Buttons -->
-        <div class="pt-6 border-t border-gray-800/80 flex justify-between items-center">
-          <button type="button" id="wizard-prev-btn" onclick="navigateWizardStep(-1)" class="hidden px-5 py-2.5 rounded-xl bg-gray-900 hover:bg-gray-800 border border-gray-700 text-gray-300 font-bold text-xs transition">
-            ◀ Back
-          </button>
-          <div></div>
-          <button type="button" id="wizard-next-btn" onclick="navigateWizardStep(1)" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg transition">
-            Next Step ➔
-          </button>
-          <button type="submit" id="wizard-submit-btn" class="hidden px-8 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-black text-xs uppercase tracking-wider shadow-lg transition">
-            🚀 Launch Personalized Dashboard
-          </button>
         </div>
 
       </form>
     </div>
   </main>
 
-  <footer class="w-full max-w-4xl mx-auto text-center py-4 text-xs text-gray-500 relative z-10">
-    JOBLEX Academia-Industry Portal &copy; 2026. All rights reserved.
+  <footer class="w-full max-w-[720px] mx-auto text-center py-4 text-xs text-gray-500 relative z-10">
+    JOBLEX Academia-Industry Portal &copy; 2026. Ministry of Ayush / AIIA Problem ID: 26044.
   </footer>
 
   <script src="/js/frontend/api-client.js"></script>
   <script>
+    // State
     let currentStep = 1;
-    const totalSteps = 4;
-    const SELECTED_SKILLS = new Set(["Herbal Formulation", "Pharmacognosy", "HPTLC", "Python"]);
+    const totalSteps = 3;
 
-    const ALL_SKILL_OPTIONS = [
-      "Herbal Formulation", "Pharmacognosy", "HPTLC Densitometry", "HPLC Fingerprinting",
-      "Good Laboratory Practice (GLP)", "In-Silico AutoDock", "Python", "Machine Learning",
-      "Data Analysis", "React", "Node.js", "SQL", "Pandas", "Phytochemistry", "Clinical Trials (GCP)"
+    // Curated Master Technical Skill Dataset (200+ items relevant to Indian engineering/tech hiring)
+    const MASTER_SKILLS = [
+      // Programming Languages
+      "Python", "Java", "C++", "C", "C#", ".NET", "PHP", "Ruby", "Golang", "Rust", "Kotlin", "Swift", "Dart", "Scala", "R", "MATLAB",
+      "Assembly Language", "Shell Scripting", "Bash", "Elixir", "Clojure", "Haskell",
+
+      // Web & Frontend Technologies
+      "JavaScript", "TypeScript", "HTML5", "CSS3", "React", "React.js", "Next.js", "Angular", "Vue.js", "Svelte", "Redux", "Zustand", "Tailwind CSS", "Bootstrap", "Sass", "jQuery",
+      "Vite", "Webpack", "Responsive Web Design", "WebSockets", "WebRTC", "Socket.io",
+
+      // Backend & APIs
+      "Node.js", "Express.js", "Django", "FastAPI", "Flask", "Spring Boot", "Hibernate", "ASP.NET Core", "Laravel", "Ruby on Rails", "NestJS", "GraphQL", "REST APIs", "gRPC", "Fastify", "Apollo GraphQL", "tRPC", "Celery", "RabbitMQ", "Apache Kafka",
+
+      // Databases & Storage
+      "SQL", "MySQL", "PostgreSQL", "MongoDB", "Redis", "SQLite", "Oracle DB", "Microsoft SQL Server", "Cassandra", "DynamoDB", "Elasticsearch", "Neo4j", "Firebase", "Supabase", "Prisma ORM",
+      "MariaDB", "CouchDB", "Vector Databases", "Pinecone", "Milvus", "ChromaDB", "Faiss",
+
+      // Core Computer Science
+      "DSA", "Data Structures & Algorithms (DSA)", "Object-Oriented Programming (OOP)", "Database Management Systems (DBMS)", "Computer Networks (CN)", "Operating Systems (OS)", "System Design", "Microservices", "Design Patterns", "Compiler Design",
+      "Distributed Systems", "Computer Architecture",
+
+      // AI, Machine Learning & Data Science
+      "Machine Learning", "Deep Learning", "Artificial Intelligence", "Natural Language Processing (NLP)", "Computer Vision", "TensorFlow", "PyTorch", "Keras", "Scikit-Learn", "OpenCV", "Hugging Face", "LLMs", "Generative AI", "Pandas", "NumPy", "Matplotlib", "Seaborn", "Power BI", "Tableau", "Apache Spark", "Hadoop", "Data Analytics", "Big Data",
+      "LangChain", "LlamaIndex", "RAG (Retrieval-Augmented Generation)", "Prompt Engineering", "MLOps", "MLflow", "ONNX", "Snowflake", "Databricks", "dbt", "Apache Airflow",
+
+      // Cloud & DevOps
+      "AWS", "Microsoft Azure", "Google Cloud Platform (GCP)", "Docker", "Kubernetes", "Git", "GitHub", "GitLab", "CI/CD Pipelines", "Jenkins", "Terraform", "Ansible", "Linux Shell Scripting", "Prometheus", "Grafana", "Nginx", "Serverless",
+      "AWS Lambda", "AWS S3", "AWS EC2", "AWS ECS", "Cloudflare", "Helm", "DevSecOps", "SRE (Site Reliability)",
+
+      // Mobile App Development
+      "Flutter", "React Native", "Android Development", "iOS Development", "Jetpack Compose", "SwiftUI",
+      "Kotlin Multiplatform (KMP)", "Android Studio", "Xcode", "PWA (Progressive Web Apps)",
+
+      // QA & Testing
+      "Manual Testing", "Automation Testing", "Selenium", "Cypress", "Playwright", "Jest", "Mocha", "Postman", "JMeter", "Unit Testing",
+      "PyTest", "JUnit", "TestNG", "Appium", "K6", "Security Testing",
+
+      // Cybersecurity
+      "Ethical Hacking", "Penetration Testing", "Network Security", "Cryptography", "OWASP Top 10", "SOC Analysis",
+      "Burp Suite", "Wireshark", "Metasploit", "Nmap", "Vulnerability Assessment", "IAM (Identity & Access Management)", "OAuth 2.0 / OpenID Connect",
+
+      // Web3 & Blockchain
+      "Solidity", "Smart Contracts", "Web3.js", "Ethers.js", "Ethereum", "Hyperledger",
+      "Hardhat", "Foundry", "DeFi Protocols",
+
+      // Embedded Systems, Hardware & IoT
+      "Embedded Systems", "IoT", "Arduino", "Raspberry Pi", "Microcontrollers", "Verilog", "VHDL", "VLSI Design", "ROS (Robot Operating System)",
+      "RTOS", "FreeRTOS", "ARM Cortex", "STM32", "ESP32", "PCB Design", "KiCAD", "I2C / SPI / UART", "Circuit Design", "Simulink", "FPGA",
+
+      // Methodologies & Collaboration
+      "Agile / Scrum", "Jira", "Figma", "UI/UX Design Basics", "Problem Solving", "Technical Documentation",
+      "GitHub Actions", "Confluence", "Swagger / OpenAPI", "Code Review"
     ];
 
-    document.addEventListener('DOMContentLoaded', () => {
+    // Top 10 Instant-Add Badges (per specification)
+    const QUICK_ADD_TOP_10 = ["Python", "Java", "React", "SQL", "DSA", "C++", "JavaScript", "Machine Learning", "AWS", "Node.js"];
+
+    // Skills state
+    let selectedSkills = [];
+    const activeTargetRoles = new Set();
+    const activeCompanyTypes = new Set();
+    const activeTargetCompanies = new Set();
+
+    // Backward-compatibility proxy for activeSkills
+    const activeSkills = {
+      get size() { return selectedSkills.length; },
+      has(skill) { return hasSkill(skill); },
+      add(skill) { addSkill(skill); },
+      delete(skill) { removeSkill(skill); },
+      forEach(cb) { selectedSkills.forEach(cb); },
+      [Symbol.iterator]() { return selectedSkills[Symbol.iterator](); }
+    };
+
+    let collegeSearchTimeout = null;
+
+    // Initialize Onboarding
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 1. Session Gate
       const user = JoblexApiClient.getCurrentUser();
-      if (user) {
-        if (user.institution) document.getElementById('ob-institution').value = user.institution;
-        if (user.department) document.getElementById('ob-department').value = user.department;
-        if (user.year) document.getElementById('ob-year').value = user.year;
-        if (user.social_links) {
-          if (user.social_links.linkedin) document.getElementById('link-linkedin').value = user.social_links.linkedin;
-          if (user.social_links.github) document.getElementById('link-github').value = user.social_links.github;
-          if (user.social_links.leetcode) document.getElementById('link-leetcode').value = user.social_links.leetcode;
-          if (user.social_links.hackerrank) document.getElementById('link-hackerrank').value = user.social_links.hackerrank;
-          if (user.social_links.portfolio) document.getElementById('link-portfolio').value = user.social_links.portfolio;
-        }
+      const token = typeof localStorage !== 'undefined' ? localStorage.getItem('joblex_token') : null;
+      if (!user || !token) {
+        window.location.href = '/auth.html?role=student&redirect=/onboarding';
+        return;
       }
-      renderSkillPills();
+
+      // If user is not student, route to their role portal
+      if (user.role && user.role !== 'student') {
+        window.location.href = `/${user.role}.html`;
+        return;
+      }
+
+      // If user already completed onboarding, route to dashboard
+      const isOnboardingDone = Boolean(user.isOnboardingCompleted ?? user.onboarding_completed);
+      if (isOnboardingDone) {
+        window.location.href = '/dashboard';
+        return;
+      }
+
+      // Render User Navigation Header
+      JoblexApiClient.renderUserNavbar();
+
+      // Render Quick Add Badges
+      renderQuickAddBadges();
+
+      // Set default available date to today
+      const today = new Date().toISOString().split('T')[0];
+      const availDateEl = document.getElementById('field-available-from');
+      if (availDateEl && !availDateEl.value) availDateEl.value = today;
+
+      // 2. Draft Restoration
+      restoreDraft(user);
+
+      // Save draft on window unload / visibility change
+      window.addEventListener('beforeunload', saveDraftToStorage);
+
+      // 3. Attach explicit event listener for Save & Continue button action
+      const nextBtn = document.getElementById('wizard-next-btn');
+      if (nextBtn) {
+        nextBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          navigateWizard(1);
+        });
+      }
+
+      // 4. Form submission & Enter key handler on form inputs to navigate steps without reloading
+      const wizardForm = document.getElementById('onboarding-wizard-form');
+      if (wizardForm) {
+        wizardForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        });
+        wizardForm.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            const id = e.target.id;
+            if (id === 'field-skill-input' || id === 'field-target-role-input' || id === 'field-target-companies-input') {
+              return; // handled by tag inputs
+            }
+            e.preventDefault();
+            e.stopPropagation();
+            if (currentStep < totalSteps) {
+              navigateWizard(1);
+            } else {
+              handleFinalSubmit();
+            }
+          }
+        });
+      }
+
+      // 5. Setup skill input event listeners
+      const skillInputEl = document.getElementById('field-skill-input');
+      if (skillInputEl) {
+        skillInputEl.addEventListener('input', (e) => handleSkillSearch(e.target.value));
+        skillInputEl.addEventListener('focus', (e) => handleSkillSearch(e.target.value));
+        skillInputEl.addEventListener('keydown', handleSkillKeyDown);
+      }
+
+      // 6. Selected skills chips removal event delegation
+      const chipsContainer = document.getElementById('selected-skills-container');
+      if (chipsContainer) {
+        chipsContainer.addEventListener('click', (e) => {
+          const btn = e.target.closest('[data-remove-skill]');
+          if (btn) {
+            e.preventDefault();
+            e.stopPropagation();
+            const skillName = decodeURIComponent(btn.getAttribute('data-remove-skill'));
+            removeSkill(skillName);
+          }
+        });
+      }
+
+      // 7. Auto-infer City & State on college input blur if empty
+      const collegeInputEl = document.getElementById('field-college');
+      if (collegeInputEl) {
+        collegeInputEl.addEventListener('blur', () => {
+          const val = collegeInputEl.value.trim();
+          const cityEl = document.getElementById('field-city');
+          const stateEl = document.getElementById('field-state');
+          if (val && (!cityEl.value || !stateEl.value)) {
+            const lower = val.toLowerCase();
+            const matched = COLLEGES_LOOKUP.find(c => 
+              lower.includes(c.name.toLowerCase()) || 
+              c.name.toLowerCase().includes(lower)
+            );
+            if (matched) {
+              if (!cityEl.value) { cityEl.value = matched.city; clearFieldInvalid('field-city'); }
+              if (!stateEl.value) { stateEl.value = matched.state; clearFieldInvalid('field-state'); }
+              saveDraftToStorage();
+            }
+          }
+        });
+      }
     });
 
-    function renderSkillPills() {
-      const container = document.getElementById('skills-pills-container');
+    // =========================================================================
+    // STEP 1: Academic Profile & Colleges Combobox
+    // =========================================================================
+
+    function handleCollegeInput(val) {
+      if (collegeSearchTimeout) clearTimeout(collegeSearchTimeout);
+      saveDraftToStorage();
+
+      collegeSearchTimeout = setTimeout(async () => {
+        const query = (val || '').trim();
+        const suggestionsBox = document.getElementById('college-suggestions');
+        if (!suggestionsBox) return;
+
+        const colleges = await JoblexApiClient.searchColleges(query, 8);
+        if (!colleges || colleges.length === 0) {
+          suggestionsBox.innerHTML = `
+            <div class="px-3.5 py-2 text-gray-400 text-[11px] italic">
+              No matching accredited institute found. You can keep typing custom name above.
+            </div>
+          `;
+          suggestionsBox.classList.remove('hidden');
+          return;
+        }
+
+        suggestionsBox.innerHTML = colleges.map(c => `
+          <button 
+            type="button" 
+            onclick="selectCollege('${c.name.replace(/'/g, "\\'")}', '${c.city.replace(/'/g, "\\'")}', '${c.state.replace(/'/g, "\\'")}')" 
+            class="w-full text-left px-3.5 py-2 hover:bg-purple-950/60 hover:text-purple-200 transition flex items-center justify-between border-b border-gray-800/40 last:border-none"
+          >
+            <div>
+              <div class="font-semibold text-white">${c.name}</div>
+              <div class="text-[10px] text-gray-400">${c.city}, ${c.state}</div>
+            </div>
+            <span class="text-[10px] font-mono text-purple-400 bg-purple-950/80 px-2 py-0.5 rounded-full border border-purple-500/30">Select</span>
+          </button>
+        `).join('');
+
+        suggestionsBox.classList.remove('hidden');
+      }, 180);
+    }
+
+    function selectCollege(name, city, state) {
+      document.getElementById('field-college').value = name;
+      if (city) document.getElementById('field-city').value = city;
+      if (state) document.getElementById('field-state').value = state;
+      document.getElementById('college-suggestions').classList.add('hidden');
+      clearFieldInvalid('field-college');
+      if (city) clearFieldInvalid('field-city');
+      if (state) clearFieldInvalid('field-state');
+      saveDraftToStorage();
+    }
+
+    // Close suggestions if clicked outside
+    document.addEventListener('click', (e) => {
+      const suggestionsBox = document.getElementById('college-suggestions');
+      const inputEl = document.getElementById('field-college');
+      if (suggestionsBox && !suggestionsBox.contains(e.target) && e.target !== inputEl) {
+        suggestionsBox.classList.add('hidden');
+      }
+
+      const skillSuggestBox = document.getElementById('skill-suggestions');
+      const skillInputEl = document.getElementById('field-skill-input');
+      if (skillSuggestBox && !skillSuggestBox.contains(e.target) && e.target !== skillInputEl) {
+        hideSkillSuggestions();
+      }
+    });
+
+    // =========================================================================
+    // STEP 2: Skills & Aspirations (Autocomplete Engine & Top 10 Badges)
+    // =========================================================================
+
+    const KNOWN_ALIASES = [
+      ['react', 'react.js'],
+      ['dsa', 'data structures & algorithms (dsa)'],
+      ['oop', 'object-oriented programming (oop)'],
+      ['dbms', 'database management systems (dbms)'],
+      ['cn', 'computer networks (cn)'],
+      ['os', 'operating systems (os)']
+    ];
+
+    function isSameSkill(a, b) {
+      if (!a || !b) return false;
+      const na = a.trim().toLowerCase();
+      const nb = b.trim().toLowerCase();
+      if (na === nb) return true;
+      return KNOWN_ALIASES.some(([x, y]) => (na === x && nb === y) || (na === y && nb === x));
+    }
+
+    function hasSkill(skill) {
+      if (!skill) return false;
+      return selectedSkills.some(s => isSameSkill(s, skill));
+    }
+
+    function sanitizeSkillInput(str) {
+      return (str || '')
+        .replace(/<[^>]*>/g, '')
+        .replace(/[<>'"]/g, '')
+        .trim()
+        .slice(0, 60);
+    }
+
+    function addSkill(rawSkill) {
+      if (!rawSkill) return false;
+
+      // Support comma-delimited pasting or multiple inputs
+      if (rawSkill.includes(',')) {
+        const parts = rawSkill.split(',').map(s => s.trim()).filter(Boolean);
+        let anyAdded = false;
+        parts.forEach(p => {
+          if (addSkill(p)) anyAdded = true;
+        });
+        return anyAdded;
+      }
+
+      const sanitized = sanitizeSkillInput(rawSkill);
+      if (!sanitized) return false;
+
+      // Case-insensitive & alias deduplication check
+      if (hasSkill(sanitized)) {
+        if (typeof JoblexApiClient !== 'undefined' && JoblexApiClient.showToast) {
+          JoblexApiClient.showToast(`"${sanitized}" is already selected.`, 'info');
+        } else if (window.showToast) {
+          window.showToast(`"${sanitized}" is already selected.`, 'Skills Engine', 'info');
+        }
+        hideSkillSuggestions();
+        const input = document.getElementById('field-skill-input');
+        if (input) input.value = '';
+        return false;
+      }
+
+      // Check if canonical casing exists in MASTER_SKILLS
+      const canonical = MASTER_SKILLS.find(s => isSameSkill(s, sanitized));
+      const finalSkill = canonical || sanitized;
+
+      selectedSkills.push(finalSkill);
+      renderActiveSkillChips();
+      renderQuickAddBadges();
+      saveDraftToStorage();
+
+      // Clear input and suggestions
+      const input = document.getElementById('field-skill-input');
+      if (input) input.value = '';
+      hideSkillSuggestions();
+
+      // Clear any validation error on skills
+      clearFieldInvalid('field-skill-input');
+      return true;
+    }
+
+    function removeSkill(skill) {
+      if (!skill) return;
+      selectedSkills = selectedSkills.filter(s => !isSameSkill(s, skill));
+      renderActiveSkillChips();
+      renderQuickAddBadges();
+      saveDraftToStorage();
+    }
+
+    function renderActiveSkillChips() {
+      const container = document.getElementById('selected-skills-container');
+      const counter = document.getElementById('selected-skills-count');
+      if (counter) counter.innerText = `${selectedSkills.length} Selected`;
       if (!container) return;
-      container.innerHTML = ALL_SKILL_OPTIONS.map(skill => {
-        const isSelected = SELECTED_SKILLS.has(skill);
+
+      if (selectedSkills.length === 0) {
+        container.innerHTML = `<span class="text-xs text-gray-500 italic p-1">No skills added yet. Click instant badges below or search above.</span>`;
+        return;
+      }
+
+      container.innerHTML = selectedSkills.map(skill => {
+        const safeSkill = skill.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const encodedSkill = encodeURIComponent(skill);
         return `
-          <button type="button" onclick="toggleSkillPill('${skill}')" class="px-3 py-1.5 rounded-xl text-xs font-semibold transition border ${
-            isSelected 
-              ? 'bg-purple-950/80 border-purple-500 text-purple-200 shadow-sm' 
-              : 'bg-black/40 border-gray-800 text-gray-400 hover:border-purple-500/40'
-          }">
-            ${isSelected ? '✓ ' : '+ '}${skill}
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-purple-950/80 border border-purple-500/50 text-purple-200 text-xs font-semibold shadow-sm transition hover:border-purple-400">
+            <span>${safeSkill}</span>
+            <button type="button" data-remove-skill="${encodedSkill}" onclick="removeSkill('${safeSkill.replace(/'/g, "\\'")}')" class="remove-skill-chip-btn hover:text-rose-400 font-mono text-xs ml-0.5 transition" aria-label="Remove ${safeSkill}">✕</button>
+          </span>
+        `;
+      }).join('');
+    }
+
+    function renderQuickAddBadges() {
+      const container = document.getElementById('quick-add-badges-container');
+      if (!container) return;
+
+      container.innerHTML = QUICK_ADD_TOP_10.map(badge => {
+        const isSelected = hasSkill(badge);
+        const safeBadge = badge.replace(/"/g, '&quot;');
+        if (isSelected) {
+          return `
+            <button 
+              type="button" 
+              disabled 
+              title="${safeBadge} is already added"
+              class="px-2.5 py-1 rounded-lg text-xs font-semibold border transition opacity-35 border-gray-800 bg-black/40 text-gray-500 cursor-not-allowed"
+            >
+              ✓ ${safeBadge}
+            </button>
+          `;
+        }
+        return `
+          <button 
+            type="button" 
+            onclick="addSkill('${safeBadge.replace(/'/g, "\\'")}')" 
+            title="Click to add ${safeBadge}"
+            class="px-2.5 py-1 rounded-lg text-xs font-semibold border border-cyan-500/40 bg-cyan-950/30 text-cyan-300 hover:bg-cyan-900/60 hover:border-cyan-400 cursor-pointer shadow-sm transition active:scale-95"
+          >
+            + ${safeBadge}
           </button>
         `;
       }).join('');
     }
 
-    function toggleSkillPill(skill) {
-      if (SELECTED_SKILLS.has(skill)) {
-        SELECTED_SKILLS.delete(skill);
-      } else {
-        SELECTED_SKILLS.add(skill);
+    // Debounced Search & Keyboard Navigation
+    let skillSearchTimeout = null;
+    let activeSkillSuggestionIdx = -1;
+    let currentSkillMatches = [];
+
+    function handleSkillSearch(val) {
+      if (skillSearchTimeout) clearTimeout(skillSearchTimeout);
+      const query = (val || '').trim();
+
+      if (!query) {
+        hideSkillSuggestions();
+        return;
       }
-      renderSkillPills();
+
+      skillSearchTimeout = setTimeout(() => {
+        const qLower = query.toLowerCase();
+        // Filter master skills matching query that are not already selected
+        currentSkillMatches = MASTER_SKILLS.filter(s => s.toLowerCase().includes(qLower) && !hasSkill(s)).slice(0, 8);
+        activeSkillSuggestionIdx = -1;
+
+        const box = document.getElementById('skill-suggestions');
+        if (!box) return;
+
+        let html = '';
+        if (currentSkillMatches.length > 0) {
+          html = currentSkillMatches.map((s, idx) => {
+            const safe = s.replace(/"/g, '&quot;');
+            return `
+              <div 
+                id="skill-opt-${idx}" 
+                onclick="addSkill('${safe.replace(/'/g, "\\'")}')" 
+                class="skill-suggestion-item px-3.5 py-2 hover:bg-cyan-950/70 hover:text-cyan-200 cursor-pointer transition flex items-center justify-between border-b border-gray-800/40 last:border-none"
+              >
+                <span class="font-medium text-white">${highlightMatch(s, query)}</span>
+                <span class="text-[10px] font-mono text-cyan-400 bg-cyan-950/80 px-2 py-0.5 rounded-full border border-cyan-500/30">+ Add</span>
+              </div>
+            `;
+          }).join('');
+        }
+
+        // Custom free-text option if query isn't already in selected skills
+        const hasExactMatch = currentSkillMatches.some(s => s.toLowerCase() === qLower);
+        if (!hasExactMatch && !hasSkill(query)) {
+          const safeQuery = sanitizeSkillInput(query).replace(/"/g, '&quot;');
+          html += `
+            <div 
+              id="skill-opt-custom" 
+              onclick="addSkill('${safeQuery.replace(/'/g, "\\'")}')" 
+              class="skill-suggestion-item px-3.5 py-2 hover:bg-purple-950/70 text-purple-200 cursor-pointer transition flex items-center justify-between border-t border-purple-500/20 bg-purple-950/30"
+            >
+              <span class="italic text-xs">Add custom skill: <strong class="text-white">"${safeQuery}"</strong></span>
+              <span class="text-[10px] font-mono text-purple-300 bg-purple-900/60 px-2 py-0.5 rounded border border-purple-500/40">Enter ↵</span>
+            </div>
+          `;
+        }
+
+        if (!html) {
+          box.innerHTML = `<div class="px-3.5 py-2 text-gray-500 text-xs italic">All matching skills already selected.</div>`;
+        } else {
+          box.innerHTML = html;
+        }
+        box.classList.remove('hidden');
+      }, 150);
     }
 
-    function navigateWizardStep(delta) {
-      const targetStep = currentStep + delta;
-      if (targetStep < 1 || targetStep > totalSteps) return;
+    function highlightMatch(text, query) {
+      const idx = text.toLowerCase().indexOf(query.toLowerCase());
+      if (idx === -1) return text;
+      const before = text.slice(0, idx);
+      const match = text.slice(idx, idx + query.length);
+      const after = text.slice(idx + query.length);
+      return `${before}<span class="text-cyan-300 font-bold underline decoration-cyan-500/50">${match}</span>${after}`;
+    }
 
-      document.getElementById(`step-${currentStep}`).classList.add('hidden');
+    function hideSkillSuggestions() {
+      const box = document.getElementById('skill-suggestions');
+      if (box) box.classList.add('hidden');
+      activeSkillSuggestionIdx = -1;
+      currentSkillMatches = [];
+    }
+
+    function handleSkillKeyDown(e) {
+      const box = document.getElementById('skill-suggestions');
+      const isOpen = box && !box.classList.contains('hidden');
+
+      if (e.key === 'ArrowDown' && isOpen) {
+        e.preventDefault();
+        const totalItems = currentSkillMatches.length + 1; // including custom
+        activeSkillSuggestionIdx = Math.min(activeSkillSuggestionIdx + 1, totalItems - 1);
+        updateSuggestionFocus();
+        return;
+      }
+
+      if (e.key === 'ArrowUp' && isOpen) {
+        e.preventDefault();
+        activeSkillSuggestionIdx = Math.max(activeSkillSuggestionIdx - 1, -1);
+        updateSuggestionFocus();
+        return;
+      }
+
+      if (e.key === 'Escape' && isOpen) {
+        e.preventDefault();
+        hideSkillSuggestions();
+        return;
+      }
+
+      if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        const input = document.getElementById('field-skill-input');
+
+        // If keyboard navigated to a specific suggestion
+        if (isOpen && activeSkillSuggestionIdx >= 0 && activeSkillSuggestionIdx < currentSkillMatches.length) {
+          addSkill(currentSkillMatches[activeSkillSuggestionIdx]);
+          return;
+        }
+
+        // Commit custom free-text entered in input
+        if (input && input.value.trim()) {
+          addSkill(input.value.trim());
+        }
+      }
+    }
+
+    function updateSuggestionFocus() {
+      document.querySelectorAll('.skill-suggestion-item').forEach((item, idx) => {
+        if (idx === activeSkillSuggestionIdx) {
+          item.classList.add('bg-cyan-900/60', 'ring-1', 'ring-cyan-400');
+        } else {
+          item.classList.remove('bg-cyan-900/60', 'ring-1', 'ring-cyan-400');
+        }
+      });
+    }
+
+    function setSkillLevel(level) {
+      document.getElementById('field-skill-level').value = level;
+      const btns = ['Beginner', 'Intermediate', 'Advanced'];
+      btns.forEach(lvl => {
+        const btn = document.getElementById(`btn-level-${lvl.toLowerCase()}`);
+        if (!btn) return;
+        if (lvl === level) {
+          btn.className = 'skill-level-btn py-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md';
+        } else {
+          btn.className = 'skill-level-btn py-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 text-gray-400 hover:text-white';
+        }
+      });
+      saveDraftToStorage();
+    }
+
+    // Target Roles tag handling
+    function handleTargetRoleKeyDown(e) {
+      if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        const input = document.getElementById('field-target-role-input');
+        const role = input.value.trim();
+        if (role) {
+          activeTargetRoles.add(role);
+          input.value = '';
+          renderTargetRoles();
+          saveDraftToStorage();
+        }
+      }
+    }
+
+    function renderTargetRoles() {
+      const container = document.getElementById('target-roles-container');
+      if (!container) return;
+      container.innerHTML = Array.from(activeTargetRoles).map(role => `
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-cyan-950/80 border border-cyan-500/40 text-cyan-200 text-xs font-semibold">
+          <span>${role}</span>
+          <button type="button" onclick="activeTargetRoles.delete('${role}'); renderTargetRoles(); saveDraftToStorage();" class="hover:text-rose-400">✕</button>
+        </span>
+      `).join('');
+    }
+
+    // Preferred Company Types pill toggle
+    function toggleCompanyType(el, type) {
+      if (activeCompanyTypes.has(type)) {
+        activeCompanyTypes.delete(type);
+        el.classList.remove('bg-purple-950/80', 'border-purple-500', 'text-purple-200', 'shadow-sm');
+        el.classList.add('bg-black/40', 'border-gray-800', 'text-gray-300');
+      } else {
+        activeCompanyTypes.add(type);
+        el.classList.remove('bg-black/40', 'border-gray-800', 'text-gray-300');
+        el.classList.add('bg-purple-950/80', 'border-purple-500', 'text-purple-200', 'shadow-sm');
+      }
+      saveDraftToStorage();
+    }
+
+    // Company Wishlist tag handling
+    function handleCompanyWishlistKeyDown(e) {
+      if (e.key === 'Enter' || e.key === ',') {
+        e.preventDefault();
+        const input = document.getElementById('field-target-companies-input');
+        const comp = input.value.trim();
+        if (comp) {
+          activeTargetCompanies.add(comp);
+          input.value = '';
+          renderCompanyWishlist();
+          saveDraftToStorage();
+        }
+      }
+    }
+
+    function renderCompanyWishlist() {
+      const container = document.getElementById('company-wishlist-container');
+      if (!container) return;
+      container.innerHTML = Array.from(activeTargetCompanies).map(c => `
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-800 border border-gray-700 text-gray-200 text-xs font-semibold">
+          <span>${c}</span>
+          <button type="button" onclick="activeTargetCompanies.delete('${c}'); renderCompanyWishlist(); saveDraftToStorage();" class="hover:text-rose-400">✕</button>
+        </span>
+      `).join('');
+    }
+
+    // =========================================================================
+    // STEP 3: Work Preferences, Availability & Academic History
+    // =========================================================================
+
+    function toggleLocationPreferences(checked) {
+      const sec = document.getElementById('preferred-cities-section');
+      if (checked) sec.classList.remove('hidden');
+      else sec.classList.add('hidden');
+      saveDraftToStorage();
+    }
+
+    function setRelocate(val) {
+      document.getElementById('field-willing-relocate').value = String(val);
+      const noBtn = document.getElementById('btn-relocate-no');
+      const yesBtn = document.getElementById('btn-relocate-yes');
+      if (val) {
+        yesBtn.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-emerald-600 text-white transition';
+        noBtn.className = 'px-3 py-1 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition';
+      } else {
+        noBtn.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-gray-800 text-white transition';
+        yesBtn.className = 'px-3 py-1 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition';
+      }
+      saveDraftToStorage();
+    }
+
+    function setInternshipDuration(dur) {
+      document.getElementById('field-internship-duration').value = dur;
+      ['1 Month', '3 Months', '6 Months'].forEach(d => {
+        const id = d === '1 Month' ? 'btn-dur-1' : (d === '3 Months' ? 'btn-dur-3' : 'btn-dur-6');
+        const btn = document.getElementById(id);
+        if (!btn) return;
+        if (d === dur) {
+          btn.className = 'dur-btn py-1.5 rounded-lg text-[11px] font-bold bg-gradient-to-r from-cyan-600 to-teal-600 text-white shadow-sm transition';
+        } else {
+          btn.className = 'dur-btn py-1.5 rounded-lg text-[11px] font-bold text-gray-400 hover:text-white transition';
+        }
+      });
+      saveDraftToStorage();
+    }
+
+    function handleJobAvailChange(val) {
+      const customEl = document.getElementById('custom-avail-date-container');
+      if (val === 'Custom Date') {
+        customEl.classList.remove('hidden');
+      } else {
+        customEl.classList.add('hidden');
+      }
+      saveDraftToStorage();
+    }
+
+    function toggleExperienceFields(checked) {
+      const el = document.getElementById('experience-fields');
+      if (checked) el.classList.remove('hidden');
+      else el.classList.add('hidden');
+      saveDraftToStorage();
+    }
+
+    function togglePublicationFields(checked) {
+      const el = document.getElementById('publication-fields');
+      if (checked) el.classList.remove('hidden');
+      else el.classList.add('hidden');
+      saveDraftToStorage();
+    }
+
+    function setBacklogToggle(hasBacklogs) {
+      document.getElementById('field-has-backlogs').value = String(hasBacklogs);
+      const noBtn = document.getElementById('btn-backlog-no');
+      const yesBtn = document.getElementById('btn-backlog-yes');
+      const countEl = document.getElementById('backlog-count-container');
+
+      if (hasBacklogs) {
+        yesBtn.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-rose-600 text-white transition';
+        noBtn.className = 'px-3 py-1 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition';
+        countEl.classList.remove('hidden');
+      } else {
+        noBtn.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-gray-800 text-white transition';
+        yesBtn.className = 'px-3 py-1 rounded-lg text-xs font-bold text-gray-400 hover:text-white transition';
+        countEl.classList.add('hidden');
+      }
+      saveDraftToStorage();
+    }
+
+    function adjustBacklogCount(delta) {
+      const field = document.getElementById('field-backlog-count');
+      const display = document.getElementById('backlog-count-display');
+      let current = parseInt(field.value, 10) || 1;
+      current = Math.max(1, Math.min(20, current + delta));
+      field.value = current;
+      display.innerText = current;
+      saveDraftToStorage();
+    }
+
+    // =========================================================================
+    // STEP NAVIGATION & VALIDATION (Save & Continue Engine)
+    // =========================================================================
+
+    function markFieldInvalid(fieldId, errorMsg) {
+      const el = document.getElementById(fieldId);
+      if (el) {
+        el.classList.add('field-invalid', '!border-rose-500', 'ring-2', 'ring-rose-500/40');
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        try { el.focus(); } catch(e) {}
+        const clearFn = () => el.classList.remove('field-invalid', '!border-rose-500', 'ring-2', 'ring-rose-500/40');
+        el.addEventListener('input', clearFn, { once: true });
+        el.addEventListener('change', clearFn, { once: true });
+      }
+      if (errorMsg) {
+        showValidationError(errorMsg);
+      }
+    }
+
+    function clearFieldInvalid(fieldId) {
+      const el = document.getElementById(fieldId);
+      if (el) el.classList.remove('field-invalid', '!border-rose-500', 'ring-2', 'ring-rose-500/40');
+    }
+
+    function showValidationError(msg) {
+      const banner = document.getElementById('validation-banner');
+      const text = document.getElementById('validation-message');
+      if (banner && text) {
+        text.innerText = msg;
+        banner.classList.remove('hidden');
+        banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      // Vibrate / Shake Next Button to give tactile response
+      const nextBtn = document.getElementById('wizard-next-btn');
+      if (nextBtn) {
+        nextBtn.classList.remove('animate-shake');
+        void nextBtn.offsetWidth; // force DOM reflow
+        nextBtn.classList.add('animate-shake');
+      }
+
+      // Trigger user-friendly UI toast if available
+      if (typeof JoblexApiClient !== 'undefined' && JoblexApiClient.showToast) {
+        JoblexApiClient.showToast(msg, 'warning');
+      } else if (window.showToast) {
+        window.showToast(msg, 'Validation Required', 'warning');
+      }
+    }
+
+    function clearValidationError() {
+      const banner = document.getElementById('validation-banner');
+      if (banner) banner.classList.add('hidden');
+      document.querySelectorAll('.field-invalid').forEach(el => {
+        el.classList.remove('field-invalid', '!border-rose-500', 'ring-2', 'ring-rose-500/40');
+      });
+    }
+
+    function flushPendingInputs() {
+      // Step 2: Flush pending skill input
+      const skillInput = document.getElementById('field-skill-input');
+      if (skillInput && skillInput.value.trim()) {
+        addSkill(skillInput.value.trim());
+      }
+
+      // Step 2: Flush pending target role input
+      const roleInput = document.getElementById('field-target-role-input');
+      if (roleInput && roleInput.value.trim()) {
+        activeTargetRoles.add(roleInput.value.trim());
+        roleInput.value = '';
+        renderTargetRoles();
+      }
+
+      // Step 2: Flush pending target companies input
+      const compInput = document.getElementById('field-target-companies-input');
+      if (compInput && compInput.value.trim()) {
+        activeTargetCompanies.add(compInput.value.trim());
+        compInput.value = '';
+        renderCompanyWishlist();
+      }
+    }
+
+    function validateCurrentStep() {
+      clearValidationError();
+      flushPendingInputs();
+
+      if (currentStep === 1) {
+        const college = document.getElementById('field-college')?.value.trim();
+        const city = document.getElementById('field-city')?.value.trim();
+        const state = document.getElementById('field-state')?.value.trim();
+        const degree = document.getElementById('field-degree')?.value.trim();
+        const specialization = document.getElementById('field-specialization')?.value.trim();
+        const semester = document.getElementById('field-semester')?.value.trim();
+        const durationLeft = document.getElementById('field-duration-left')?.value.trim();
+
+        if (!college) {
+          markFieldInvalid('field-college', 'Please enter or select your College / University name.');
+          return false;
+        }
+        if (!city) {
+          markFieldInvalid('field-city', 'City is required.');
+          return false;
+        }
+        if (!state) {
+          markFieldInvalid('field-state', 'State / Union Territory is required.');
+          return false;
+        }
+        if (!degree) {
+          markFieldInvalid('field-degree', 'Please select your Degree.');
+          return false;
+        }
+        if (!specialization) {
+          markFieldInvalid('field-specialization', 'Specialization / Branch is required.');
+          return false;
+        }
+        if (!semester) {
+          markFieldInvalid('field-semester', 'Current Semester is required.');
+          return false;
+        }
+        if (!durationLeft) {
+          markFieldInvalid('field-duration-left', 'Please specify Time Remaining to Complete.');
+          return false;
+        }
+      } else if (currentStep === 2) {
+        if (selectedSkills.length === 0) {
+          markFieldInvalid('field-skill-input', 'Please select or add at least one Technical Skill before proceeding.');
+          return false;
+        }
+        const skillLevel = document.getElementById('field-skill-level')?.value;
+        if (!skillLevel) {
+          showValidationError('Please select your Self-Assessed Skill Level.');
+          return false;
+        }
+      } else if (currentStep === 3) {
+        const locPrefChecked = document.getElementById('toggle-location-pref')?.checked;
+        const prefCities = document.getElementById('field-preferred-cities')?.value.trim();
+        if (locPrefChecked && !prefCities) {
+          markFieldInvalid('field-preferred-cities', 'Please specify your preferred cities for Location-Based Opportunities.');
+          return false;
+        }
+
+        const selectedJobAvailRadio = document.querySelector('input[name="job-avail-type"]:checked');
+        const jobAvailType = selectedJobAvailRadio ? selectedJobAvailRadio.value : 'Immediate';
+        const customAvailDate = document.getElementById('field-custom-avail-date')?.value;
+        if (jobAvailType === 'Custom Date' && !customAvailDate) {
+          markFieldInvalid('field-custom-avail-date', 'Please pick a date for your Custom Date job availability.');
+          return false;
+        }
+
+        const expChecked = document.getElementById('toggle-experience')?.checked;
+        const expCompany = document.getElementById('exp-company')?.value.trim();
+        if (expChecked && !expCompany) {
+          markFieldInvalid('exp-company', 'Please enter your Company / Lab name for Prior Work Experience or uncheck the toggle.');
+          return false;
+        }
+
+        const pubChecked = document.getElementById('toggle-publications')?.checked;
+        const pubTitle = document.getElementById('pub-title')?.value.trim();
+        if (pubChecked && !pubTitle) {
+          markFieldInvalid('pub-title', 'Please enter your Research Publication Title or uncheck the toggle.');
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    function goToStep(targetStep) {
+      if (targetStep === currentStep) return;
+      flushPendingInputs();
+      if (targetStep > currentStep) {
+        if (!validateCurrentStep()) return;
+      }
+      clearValidationError();
+      document.getElementById(`wizard-step-${currentStep}`).classList.add('hidden');
       currentStep = targetStep;
-      document.getElementById(`step-${currentStep}`).classList.remove('hidden');
+      document.getElementById(`wizard-step-${currentStep}`).classList.remove('hidden');
+      updateStepperUI();
+      saveDraftToStorage();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
-      // Update Header Progress
-      const stepsText = [
-        "Step 1 of 4: Academic Background",
-        "Step 2 of 4: Social & Developer Profiles",
-        "Step 3 of 4: Skill Verification",
-        "Step 4 of 4: Career Goals & Work Mode"
+    let isNavigating = false;
+
+    function navigateWizard(delta) {
+      if (isNavigating) return;
+      if (delta > 0 && !validateCurrentStep()) {
+        return;
+      }
+
+      const nextStep = currentStep + delta;
+      if (nextStep < 1 || nextStep > totalSteps) return;
+
+      isNavigating = true;
+      try {
+        const nextBtn = document.getElementById('wizard-next-btn');
+        if (nextBtn && delta > 0) {
+          nextBtn.classList.add('opacity-80', 'scale-95');
+          setTimeout(() => nextBtn.classList.remove('opacity-80', 'scale-95'), 180);
+        }
+
+        // Hide current step
+        document.getElementById(`wizard-step-${currentStep}`).classList.add('hidden');
+        currentStep = nextStep;
+        // Show next step
+        document.getElementById(`wizard-step-${currentStep}`).classList.remove('hidden');
+
+        // Update Stepper Visuals
+        updateStepperUI();
+        saveDraftToStorage();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } finally {
+        setTimeout(() => { isNavigating = false; }, 250);
+      }
+    }
+
+    function updateStepperUI() {
+      // Step Labels & Percentages
+      const stepLabels = [
+        'Step 1 of 3: Academic Profile & Education',
+        'Step 2 of 3: Technical Skills & Aspirations',
+        'Step 3 of 3: Work Preferences, Availability & History'
       ];
-      document.getElementById('wizard-step-label').innerText = stepsText[currentStep - 1];
-      document.getElementById('wizard-percent-label').innerText = `${currentStep * 25}% Completed`;
-      document.getElementById('wizard-progress-bar').style.width = `${currentStep * 25}%`;
+      const percentages = ['33%', '66%', '100%'];
+      const barWidths = ['33.33%', '66.66%', '100%'];
 
-      // Update Navigation Buttons
+      document.getElementById('step-label').innerText = stepLabels[currentStep - 1];
+      document.getElementById('progress-percent').innerText = `${percentages[currentStep - 1]} Completed`;
+      document.getElementById('progress-bar').style.width = barWidths[currentStep - 1];
+
+      // Update Step Circles
+      for (let s = 1; s <= 3; s++) {
+        const tabEl = document.getElementById(`step-tab-${s}`);
+        const badgeEl = tabEl.querySelector('.step-badge');
+        if (s < currentStep) {
+          tabEl.className = 'step-tab transition-all duration-300 flex flex-col items-center gap-1.5 text-emerald-400 font-semibold';
+          badgeEl.className = 'w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-emerald-500 bg-emerald-950 flex items-center justify-center font-mono text-xs font-bold text-white shadow-sm';
+          badgeEl.innerText = '✓';
+        } else if (s === currentStep) {
+          tabEl.className = 'step-tab transition-all duration-300 flex flex-col items-center gap-1.5 text-purple-400 font-bold';
+          badgeEl.className = 'w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 border-purple-500 bg-purple-950 flex items-center justify-center font-mono text-xs font-bold text-white shadow-md shadow-purple-500/30';
+          badgeEl.innerText = s;
+        } else {
+          tabEl.className = 'step-tab transition-all duration-300 flex flex-col items-center gap-1.5 text-gray-400';
+          badgeEl.className = 'w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-gray-700 bg-gray-900 flex items-center justify-center font-mono text-xs font-bold text-gray-400';
+          badgeEl.innerText = s;
+        }
+      }
+
+      // Buttons
       const prevBtn = document.getElementById('wizard-prev-btn');
       const nextBtn = document.getElementById('wizard-next-btn');
       const submitBtn = document.getElementById('wizard-submit-btn');
@@ -351,44 +1712,352 @@
       }
     }
 
-    async function handleOnboardingSubmit(e) {
-      e.preventDefault();
-      const submitBtn = document.getElementById('wizard-submit-btn');
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.innerText = 'Persisting Profile...';
+    // =========================================================================
+    // DRAFT AUTO-SAVE TO LOCALSTORAGE
+    // =========================================================================
+
+    function collectCurrentFormData() {
+      const selectedJobAvailRadio = document.querySelector('input[name="job-avail-type"]:checked');
+      const jobAvailType = selectedJobAvailRadio ? selectedJobAvailRadio.value : 'Immediate';
+
+      return {
+        step: currentStep,
+        collegeName: document.getElementById('field-college')?.value.trim() || '',
+        city: document.getElementById('field-city')?.value.trim() || '',
+        state: document.getElementById('field-state')?.value.trim() || '',
+        degree: document.getElementById('field-degree')?.value || 'B.Tech',
+        specialization: document.getElementById('field-specialization')?.value.trim() || '',
+        currentSemester: document.getElementById('field-semester')?.value || 'Sem 4',
+        durationLeft: document.getElementById('field-duration-left')?.value || '1 year',
+
+        skills: Array.from(activeSkills),
+        skillLevel: document.getElementById('field-skill-level')?.value || 'Intermediate',
+        targetRoles: Array.from(activeTargetRoles),
+        preferredCompanyTypes: Array.from(activeCompanyTypes),
+        targetCompanies: Array.from(activeTargetCompanies),
+
+        locationBasedOpportunities: document.getElementById('toggle-location-pref')?.checked || false,
+        preferredCities: document.getElementById('field-preferred-cities')?.value.trim() || '',
+        willingToRelocate: document.getElementById('field-willing-relocate')?.value === 'true',
+        availableFrom: document.getElementById('field-available-from')?.value || '',
+        internshipDuration: document.getElementById('field-internship-duration')?.value || '3 Months',
+        jobAvailabilityType: jobAvailType,
+        customAvailDate: document.getElementById('field-custom-avail-date')?.value || '',
+
+        hasExperience: document.getElementById('toggle-experience')?.checked || false,
+        expCompany: document.getElementById('exp-company')?.value.trim() || '',
+        expRole: document.getElementById('exp-role')?.value.trim() || '',
+        expDuration: document.getElementById('exp-duration')?.value || '',
+
+        hasPublications: document.getElementById('toggle-publications')?.checked || false,
+        pubTitle: document.getElementById('pub-title')?.value.trim() || '',
+        pubLink: document.getElementById('pub-link')?.value.trim() || '',
+
+        hasBacklogs: document.getElementById('field-has-backlogs')?.value === 'true',
+        backlogCount: parseInt(document.getElementById('field-backlog-count')?.value, 10) || 0
+      };
+    }
+
+    function saveDraftToStorage() {
+      try {
+        const draft = collectCurrentFormData();
+        localStorage.setItem('joblex_onboarding_draft', JSON.stringify(draft));
+        const ind = document.getElementById('draft-save-indicator');
+        if (ind) {
+          ind.classList.remove('opacity-0');
+          setTimeout(() => ind.classList.add('opacity-0'), 2500);
+        }
+      } catch (e) {}
+    }
+
+    const COLLEGES_LOOKUP = [
+      { name: 'Indian Institute of Technology Bombay (IIT Bombay)', city: 'Mumbai', state: 'Maharashtra' },
+      { name: 'Indian Institute of Technology Delhi (IIT Delhi)', city: 'New Delhi', state: 'Delhi' },
+      { name: 'Indian Institute of Technology Madras (IIT Madras)', city: 'Chennai', state: 'Tamil Nadu' },
+      { name: 'Indian Institute of Technology Kanpur (IIT Kanpur)', city: 'Kanpur', state: 'Uttar Pradesh' },
+      { name: 'Indian Institute of Technology Kharagpur (IIT Kharagpur)', city: 'Kharagpur', state: 'West Bengal' },
+      { name: 'Indian Institute of Technology Roorkee (IIT Roorkee)', city: 'Roorkee', state: 'Uttarakhand' },
+      { name: 'Indian Institute of Technology Guwahati (IIT Guwahati)', city: 'Guwahati', state: 'Assam' },
+      { name: 'Indian Institute of Technology Hyderabad (IIT Hyderabad)', city: 'Hyderabad', state: 'Telangana' },
+      { name: 'Birla Institute of Technology and Science (BITS Pilani)', city: 'Pilani', state: 'Rajasthan' },
+      { name: 'BITS Pilani - Goa Campus', city: 'Goa', state: 'Goa' },
+      { name: 'BITS Pilani - Hyderabad Campus', city: 'Hyderabad', state: 'Telangana' },
+      { name: 'National Institute of Technology Tiruchirappalli (NIT Trichy)', city: 'Tiruchirappalli', state: 'Tamil Nadu' },
+      { name: 'National Institute of Technology Karnataka (NIT Surathkal)', city: 'Surathkal', state: 'Karnataka' },
+      { name: 'National Institute of Technology Warangal (NIT Warangal)', city: 'Warangal', state: 'Telangana' },
+      { name: 'National Institute of Technology Rourkela (NIT Rourkela)', city: 'Rourkela', state: 'Odisha' },
+      { name: 'Delhi Technological University (DTU)', city: 'New Delhi', state: 'Delhi' },
+      { name: 'Netaji Subhas University of Technology (NSUT)', city: 'New Delhi', state: 'Delhi' },
+      { name: 'International Institute of Information Technology (IIIT) Hyderabad', city: 'Hyderabad', state: 'Telangana' },
+      { name: 'International Institute of Information Technology (IIIT) Bangalore', city: 'Bengaluru', state: 'Karnataka' },
+      { name: 'Vellore Institute of Technology (VIT)', city: 'Vellore', state: 'Tamil Nadu' },
+      { name: 'Manipal Institute of Technology (MAHE)', city: 'Manipal', state: 'Karnataka' },
+      { name: 'SRM Institute of Science and Technology', city: 'Chennai', state: 'Tamil Nadu' },
+      { name: 'Thapar Institute of Engineering and Technology', city: 'Patiala', state: 'Punjab' },
+      { name: 'College of Engineering Pune (COEP)', city: 'Pune', state: 'Maharashtra' },
+      { name: 'Jadavpur University', city: 'Kolkata', state: 'West Bengal' },
+      { name: 'All India Institute of Ayurveda (AIIA)', city: 'New Delhi', state: 'Delhi' },
+      { name: 'National Institute of Ayurveda (NIA)', city: 'Jaipur', state: 'Rajasthan' },
+      { name: 'Institute of Teaching and Research in Ayurveda (ITRA)', city: 'Jamnagar', state: 'Gujarat' },
+      { name: 'Banaras Hindu University (BHU)', city: 'Varanasi', state: 'Uttar Pradesh' },
+      { name: 'University of Delhi (DU)', city: 'New Delhi', state: 'Delhi' },
+      { name: 'Jawaharlal Nehru University (JNU)', city: 'New Delhi', state: 'Delhi' },
+      { name: 'Anna University', city: 'Chennai', state: 'Tamil Nadu' },
+      { name: 'Mumbai University', city: 'Mumbai', state: 'Maharashtra' },
+      { name: 'RV College of Engineering', city: 'Bengaluru', state: 'Karnataka' },
+      { name: 'BMS College of Engineering', city: 'Bengaluru', state: 'Karnataka' },
+      { name: 'PES University', city: 'Bengaluru', state: 'Karnataka' },
+      { name: 'MS Ramaiah Institute of Technology', city: 'Bengaluru', state: 'Karnataka' }
+    ];
+
+    function restoreDraft(user) {
+      let draft = null;
+      try {
+        const stored = localStorage.getItem('joblex_onboarding_draft');
+        if (stored) draft = JSON.parse(stored);
+      } catch (e) {}
+
+      // Pre-populate with draft or current user details
+      const collegeVal = draft?.collegeName || user?.institution || '';
+      let cityVal = draft?.city || '';
+      let stateVal = draft?.state || '';
+      function mapYearToSemester(yearStr) {
+        if (!yearStr) return 'Sem 4';
+        const y = yearStr.toLowerCase();
+        if (y.includes('1st') || y.includes('first')) return 'Sem 2';
+        if (y.includes('2nd') || y.includes('second')) return 'Sem 4';
+        if (y.includes('3rd') || y.includes('third')) return 'Sem 6';
+        if (y.includes('final') || y.includes('4th') || y.includes('fourth')) return 'Final Year';
+        return yearStr;
       }
 
-      const customSkills = (document.getElementById('ob-custom-skills').value || '')
-        .split(',')
-        .map(s => s.trim())
-        .filter(Boolean);
+      function setSelectSafe(selectId, targetValue, defaultValue) {
+        const el = document.getElementById(selectId);
+        if (!el) return;
+        const hasOption = Array.from(el.options).some(opt => opt.value === targetValue);
+        if (hasOption) {
+          el.value = targetValue;
+        } else if (defaultValue) {
+          el.value = defaultValue;
+        }
+      }
 
-      const allSkills = [...new Set([...SELECTED_SKILLS, ...customSkills])];
+      const specVal = draft?.specialization || user?.department || '';
+      const semVal = draft?.currentSemester || mapYearToSemester(user?.year) || 'Sem 4';
 
-      const onboardingData = {
-        institution: document.getElementById('ob-institution').value,
-        degree: document.getElementById('ob-degree').value,
-        year: document.getElementById('ob-year').value,
-        department: document.getElementById('ob-department').value,
-        selectedSkills: allSkills,
-        targetRole: document.getElementById('ob-target-role').value || 'Phytochemical Research Intern',
-        opportunityType: document.getElementById('ob-opportunity-type').value,
-        workMode: document.getElementById('ob-work-mode').value,
-        location: document.getElementById('ob-location').value || 'Delhi-NCR / Hybrid'
+      // Auto-resolve city & state if known college was selected/passed during registration
+      if (collegeVal && (!cityVal || !stateVal)) {
+        const lower = collegeVal.toLowerCase();
+        const matched = COLLEGES_LOOKUP.find(c => 
+          lower.includes(c.name.toLowerCase()) || 
+          c.name.toLowerCase().includes(lower) ||
+          (lower.includes('delhi') && c.name.includes('Delhi')) ||
+          (lower.includes('bombay') && c.name.includes('Bombay')) ||
+          (lower.includes('pilani') && c.name.includes('Pilani')) ||
+          (lower.includes('trichy') && c.name.includes('Trichy'))
+        );
+        if (matched) {
+          if (!cityVal) cityVal = matched.city;
+          if (!stateVal) stateVal = matched.state;
+        }
+      }
+
+      if (collegeVal) document.getElementById('field-college').value = collegeVal;
+      if (cityVal) document.getElementById('field-city').value = cityVal;
+      if (stateVal) document.getElementById('field-state').value = stateVal;
+      if (specVal) document.getElementById('field-specialization').value = specVal;
+
+      setSelectSafe('field-degree', draft?.degree || 'B.Tech', 'B.Tech');
+      setSelectSafe('field-semester', semVal, 'Sem 4');
+      setSelectSafe('field-duration-left', draft?.durationLeft || '1 year', '1 year');
+
+      // Skills: populate without re-rendering per item
+      const restoredSkills = draft?.skills || user?.verified_skills || [];
+      if (Array.isArray(restoredSkills)) {
+        restoredSkills.forEach(s => {
+          if (s && !hasSkill(s)) {
+            const canonical = MASTER_SKILLS.find(ms => isSameSkill(ms, s));
+            selectedSkills.push(canonical || s);
+          }
+        });
+      }
+      renderActiveSkillChips();
+      renderQuickAddBadges();
+
+      if (draft?.skillLevel) setSkillLevel(draft.skillLevel);
+
+      // Target Roles
+      if (Array.isArray(draft?.targetRoles)) {
+        draft.targetRoles.forEach(r => activeTargetRoles.add(r));
+        renderTargetRoles();
+      }
+
+      // Company Types
+      if (Array.isArray(draft?.preferredCompanyTypes)) {
+        draft.preferredCompanyTypes.forEach(t => activeCompanyTypes.add(t));
+        document.querySelectorAll('.company-type-pill').forEach(pill => {
+          const txt = pill.innerText.trim();
+          if (activeCompanyTypes.has(txt)) {
+            pill.classList.remove('bg-black/40', 'border-gray-800', 'text-gray-300');
+            pill.classList.add('bg-purple-950/80', 'border-purple-500', 'text-purple-200', 'shadow-sm');
+          }
+        });
+      }
+
+      // Wishlist
+      if (Array.isArray(draft?.targetCompanies)) {
+        draft.targetCompanies.forEach(c => activeTargetCompanies.add(c));
+        renderCompanyWishlist();
+      }
+
+      // Location Prefs
+      if (draft?.locationBasedOpportunities) {
+        document.getElementById('toggle-location-pref').checked = true;
+        toggleLocationPreferences(true);
+        if (draft.preferredCities) document.getElementById('field-preferred-cities').value = draft.preferredCities;
+      }
+
+      if (typeof draft?.willingToRelocate === 'boolean') {
+        setRelocate(draft.willingToRelocate);
+      }
+
+      if (draft?.availableFrom) {
+        document.getElementById('field-available-from').value = draft.availableFrom;
+      }
+
+      if (draft?.internshipDuration) {
+        setInternshipDuration(draft.internshipDuration);
+      }
+
+      if (draft?.jobAvailabilityType) {
+        const radio = document.querySelector(`input[name="job-avail-type"][value="${draft.jobAvailabilityType}"]`);
+        if (radio) radio.checked = true;
+        handleJobAvailChange(draft.jobAvailabilityType);
+        if (draft.customAvailDate) document.getElementById('field-custom-avail-date').value = draft.customAvailDate;
+      }
+
+      if (draft?.hasExperience) {
+        document.getElementById('toggle-experience').checked = true;
+        toggleExperienceFields(true);
+        if (draft.expCompany) document.getElementById('exp-company').value = draft.expCompany;
+        if (draft.expRole) document.getElementById('exp-role').value = draft.expRole;
+        if (draft.expDuration) document.getElementById('exp-duration').value = draft.expDuration;
+      }
+
+      if (draft?.hasPublications) {
+        document.getElementById('toggle-publications').checked = true;
+        togglePublicationFields(true);
+        if (draft.pubTitle) document.getElementById('pub-title').value = draft.pubTitle;
+        if (draft.pubLink) document.getElementById('pub-link').value = draft.pubLink;
+      }
+
+      if (typeof draft?.hasBacklogs === 'boolean') {
+        setBacklogToggle(draft.hasBacklogs);
+        if (draft.backlogCount) {
+          document.getElementById('field-backlog-count').value = draft.backlogCount;
+          document.getElementById('backlog-count-display').innerText = draft.backlogCount;
+        }
+      }
+
+      // Restore active step if valid
+      if (draft?.step && draft.step >= 1 && draft.step <= 3) {
+        if (draft.step > 1) {
+          document.getElementById(`wizard-step-1`).classList.add('hidden');
+          currentStep = draft.step;
+          document.getElementById(`wizard-step-${currentStep}`).classList.remove('hidden');
+          updateStepperUI();
+        }
+      }
+    }
+
+    // =========================================================================
+    // FINAL SUBMISSION HANDLER
+    // =========================================================================
+
+    async function handleFinalSubmit() {
+      flushPendingInputs();
+      if (!validateCurrentStep()) return;
+
+      const submitBtn = document.getElementById('wizard-submit-btn');
+      const spinner = document.getElementById('submit-btn-spinner');
+      const btnText = document.getElementById('submit-btn-text');
+
+      submitBtn.disabled = true;
+      spinner.classList.remove('hidden');
+      btnText.innerText = 'Persisting Profile...';
+
+      const formData = collectCurrentFormData();
+
+      // Format payload according to StudentProfile Specification
+      const preferredLocs = formData.locationBasedOpportunities && formData.preferredCities
+        ? formData.preferredCities.split(',').map(s => s.trim()).filter(Boolean)
+        : (formData.city ? [formData.city] : []);
+
+      const experienceList = formData.hasExperience && formData.expCompany
+        ? [{ company: formData.expCompany, role: formData.expRole || 'Intern', months: parseInt(formData.expDuration, 10) || 6 }]
+        : [];
+
+      const publicationList = formData.hasPublications && formData.pubTitle
+        ? [{ title: formData.pubTitle, url: formData.pubLink || '' }]
+        : [];
+
+      let jobAvailType = formData.jobAvailabilityType;
+      let availFromDate = formData.availableFrom || null;
+      if (jobAvailType === 'Custom Date') {
+        jobAvailType = 'SPECIFIC_DATE';
+        availFromDate = formData.customAvailDate || availFromDate;
+      } else if (jobAvailType === 'Immediate') {
+        jobAvailType = 'IMMEDIATE';
+      } else if (jobAvailType === 'After Graduation') {
+        jobAvailType = 'AFTER_GRADUATION';
+      }
+
+      const payload = {
+        collegeName: formData.collegeName,
+        city: formData.city,
+        state: formData.state,
+        degree: formData.degree,
+        specialization: formData.specialization,
+        currentSemester: formData.currentSemester,
+        durationLeft: formData.durationLeft,
+
+        skills: formData.skills,
+        skillLevel: formData.skillLevel,
+        targetRoles: formData.targetRoles,
+        preferredCompanyTypes: formData.preferredCompanyTypes,
+        targetCompanies: formData.targetCompanies,
+
+        preferredLocations: preferredLocs,
+        willingToRelocate: formData.willingToRelocate,
+        availableFrom: availFromDate,
+        internshipDuration: formData.internshipDuration,
+        jobAvailabilityType: jobAvailType,
+        customAvailDate: formData.customAvailDate || null,
+
+        hasBacklogs: formData.hasBacklogs,
+        backlogCount: formData.backlogCount,
+        hasPublications: formData.hasPublications,
+        publications: publicationList,
+        hasExperience: formData.hasExperience,
+        experience: experienceList
       };
 
-      const socialLinks = {
-        linkedin: document.getElementById('link-linkedin').value,
-        github: document.getElementById('link-github').value,
-        leetcode: document.getElementById('link-leetcode').value,
-        hackerrank: document.getElementById('link-hackerrank').value,
-        portfolio: document.getElementById('link-portfolio').value
-      };
+      try {
+        await JoblexApiClient.completeStudentOnboarding(payload);
+        
+        // Show success state
+        btnText.innerText = '✓ Profile Personalization Complete!';
+        submitBtn.className = 'w-full sm:w-auto px-7 py-3 rounded-xl bg-emerald-600 text-white font-black text-xs uppercase tracking-wider shadow-xl transition flex items-center justify-center gap-2';
 
-      await JoblexApiClient.completeStudentOnboarding(onboardingData, socialLinks);
-
-      window.location.href = '/student.html';
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 600);
+      } catch (err) {
+        submitBtn.disabled = false;
+        spinner.classList.add('hidden');
+        btnText.innerText = '🚀 Complete Profile & Launch';
+        showValidationError(err.message || 'Failed to persist student profile. Please try again.');
+      }
     }
   </script>
 </body>

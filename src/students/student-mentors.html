@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JOBLEX | Find a Mentor & 1-on-1 Guidance</title>
+  <!-- Google Fonts with local fallback -->
+  <link rel="stylesheet" href="assets/vendor/google-fonts.css" onerror="this.onerror=null;this.href='https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=JetBrains+Mono:wght@400;500;600&display=swap'">
+  <!-- Google Material Symbols Outlined with local fallback -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" onerror="this.onerror=null;this.href='/css/fonts/material-symbols-outlined.woff2'">
+  <script src="/js/frontend/theme.js"></script>
+  <!-- Tailwind CSS with local fallback -->
+  <script src="assets/vendor/tailwindcss.js" onerror="this.src='https://cdn.tailwindcss.com'"></script>
+  <script src="/js/frontend/tailwind-config.js"></script>
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="/css/styles.css">
+
+</head>
+<body class="bg-[#FAF8F5] dark:bg-[#070709] text-[#1C1917] dark:text-[#F4F4F6] font-sans h-screen flex flex-col overflow-hidden portal-body antialiased transition-colors duration-200">
+
+
+<header class="sticky top-0 z-50 w-full bg-white/85 dark:bg-[#070709]/90 backdrop-blur-md border-b border-[#E7E4DC] dark:border-white/5 transition-colors duration-200">
+  <div class="w-full px-3 sm:px-6 py-2 flex items-center justify-between">
+    <!-- Mobile Hamburger + Brand Logo -->
+    <div class="flex items-center gap-3">
+      <button onclick="toggleMobileMenu()" class="lg:hidden p-2 rounded-xl text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 border border-slate-200 dark:border-gray-800 transition" aria-label="Toggle Navigation">
+        <span class="material-symbols-outlined text-[20px]">menu</span>
+      </button>
+      <a href="/student.html" class="flex items-center gap-2.5 cursor-pointer select-none">
+        <div class="w-1.5 h-7 bg-[#2D5542] dark:bg-[#4EBA87] rounded-full"></div>
+        <span class="text-xl font-extrabold tracking-widest text-[#1C1917] dark:text-white uppercase block">JOBLEX</span>
+      </a>
+    </div>
+
+    <!-- Student Stats + Notifications + Theme Toggle + Avatar -->
+    <div class="flex items-center gap-2 sm:gap-3">
+      <!-- Live Metrics -->
+      <span id="header-xp-badge" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-mono text-xs font-bold border border-purple-200 dark:border-purple-800/60">
+        <span class="material-symbols-outlined text-purple-500 text-sm align-middle mr-1">bolt</span>0 XP
+      </span>
+      <span id="header-streak-badge" class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-mono text-xs font-bold border border-emerald-200 dark:border-emerald-800/60">
+        <span class="material-symbols-outlined text-amber-500 text-sm align-middle mr-1">local_fire_department</span>0-Day Streak
+      </span>
+
+      <!-- Notification Bell -->
+      <button id="notification-bell-btn" type="button" aria-label="Open Notifications" class="relative p-2 rounded-xl text-[#6E6962] dark:text-gray-300 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 border border-[#E7E4DC] dark:border-white/10 transition-colors">
+        <span class="material-symbols-outlined text-[20px]">notifications</span>
+        <span class="notification-badge-indicator hidden absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-[#2D5542] dark:bg-[#4EBA87] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm">0</span>
+      </button>
+
+      <!-- Theme Switcher -->
+      <button id="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Light/Dark Theme" title="Toggle Light/Dark Theme" class="p-2 rounded-xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-white/5 text-[#6E6962] dark:text-gray-300 hover:text-[#1C1917] dark:hover:text-white transition-colors duration-150 flex items-center justify-center">
+        <span id="theme-toggle-icon" class="material-symbols-outlined text-[18px]">dark_mode</span>
+      </button>
+
+      <div class="nav-user-account-container relative"></div>
+    </div>
+  </div>
+</header>
+
+<!-- MOBILE SLIDE-OUT DRAWER -->
+<div id="mobile-drawer" onclick="if(event.target === this) closeMobileMenu()" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden lg:hidden">
+  <div class="fixed inset-y-0 left-0 w-72 bg-white dark:bg-[#101115] p-5 flex flex-col justify-between shadow-2xl border-r border-[#E7E4DC] dark:border-white/10 overflow-y-auto">
+    <div class="space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-gray-800">
+        <span class="text-xs uppercase tracking-wider text-purple-600 dark:text-purple-400 font-bold">Student Navigation</span>
+        <button onclick="closeMobileMenu()" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white"><span class="material-symbols-outlined text-lg">close</span></button>
+      </div>
+      <div class="space-y-1 pt-1">
+        <a href="/student.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-purple-400 text-base">grid_view</span> <span>Student Overview</span></span>
+
+        </a>
+        <a href="student-roadmap.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-cyan-400 text-base">alt_route</span> <span>Career Roadmap</span></span>
+
+        </a>
+        <a href="student-resume.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-blue-400 text-base">document_scanner</span> <span>AI Resume Analyzer</span></span>
+
+        </a>
+        <a href="student-quiz.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-amber-400 text-base">quiz</span> <span>Quiz Arena</span></span>
+
+        </a>
+        <a href="student-internships.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-emerald-400 text-base">work_outline</span> <span>Apply for Internships</span></span>
+
+        </a>
+        <a href="student-jobs.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-indigo-400 text-base">apartment</span> <span>Apply for Jobs</span></span>
+
+        </a>
+        <a href="student-zulu.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-pink-400 text-base">smart_toy</span> <span>Zulu AI Companion</span></span>
+
+        </a>
+        <a href="student-skilltree.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-teal-400 text-base">hub</span> <span>Skill Constellation</span></span>
+
+        </a>
+        <a href="student-portfolio.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-yellow-400 text-base">verified</span> <span>Verified Portfolio</span></span>
+
+        </a>
+        <a href="student-mentors.html" onclick="closeMobileMenu()" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-medium transition bg-[#0F172A] text-white dark:bg-white/10 dark:text-white font-bold">
+          <span class="flex items-center gap-3"><span class="material-symbols-outlined text-orange-400 text-base">supervisor_account</span> <span>Find a Mentor</span></span>
+          <span class="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-500 text-white font-bold">Active</span>
+        </a>
+      </div>
+    </div>
+    <div class="pt-4 border-t border-slate-200 dark:border-gray-800">
+      <button onclick="JoblexApiClient.logout()" class="w-full py-2.5 rounded-xl text-center text-xs font-semibold text-slate-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-rose-400 text-base">logout</span> <span>Sign Out</span>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="flex-1 flex overflow-hidden min-h-0">
+  <!-- COLLAPSIBLE SIDEBAR -->
+  <aside id="student-sidebar" class="hidden lg:flex w-64 bg-white/80 dark:bg-[#101115]/90 border-r border-[#E7E4DC] dark:border-white/5 backdrop-blur-md p-3.5 flex-col justify-between shrink-0 transition-all duration-300">
+    <div class="space-y-1">
+      <div class="flex items-center justify-between px-2 pb-2 mb-2 border-b border-slate-200 dark:border-gray-800/80">
+        <span class="sidebar-text-label text-[10px] uppercase tracking-wider text-purple-600 dark:text-purple-400 font-bold">Student Modules</span>
+        <button id="sidebar-collapse-btn" onclick="toggleSidebarCollapse()" title="Minimize / Expand Sidebar" class="p-1.5 rounded-lg bg-slate-100 dark:bg-gray-900 border border-slate-200 dark:border-gray-800 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white text-xs transition">
+          <span class="material-symbols-outlined text-xs">chevron_left</span>
+        </button>
+      </div>
+      <a href="/student.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 border border-transparent">
+        <span class="material-symbols-outlined text-base shrink-0 text-purple-400">grid_view</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">Student Overview</span>
+          <span class="text-[10px] text-[#6E6962] dark:text-gray-500 truncate">Central Dashboard</span>
+        </div>
+      </a>
+      <a href="student-roadmap.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 border border-transparent">
+        <span class="material-symbols-outlined text-base shrink-0 text-cyan-400">alt_route</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">Career Roadmap</span>
+          <span class="text-[10px] text-[#6E6962] dark:text-gray-500 truncate">4-Phase Progression</span>
+        </div>
+      </a>
+      <a href="student-resume.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 border border-transparent">
+        <span class="material-symbols-outlined text-base shrink-0 text-blue-400">document_scanner</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">AI Resume Analyzer</span>
+          <span class="text-[10px] text-[#6E6962] dark:text-gray-500 truncate">Skill Gap Discovery</span>
+        </div>
+      </a>
+      <a href="student-quiz.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 border border-transparent">
+        <span class="material-symbols-outlined text-base shrink-0 text-amber-400">quiz</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">Quiz Arena</span>
+          <span class="text-[10px] text-[#6E6962] dark:text-gray-500 truncate">Knowledge Validation</span>
+        </div>
+      </a>
+      <a href="student-internships.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 border border-transparent">
+        <span class="material-symbols-outlined text-base shrink-0 text-emerald-400">work_outline</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">Apply for Internships</span>
+          <span class="text-[10px] text-[#6E6962] dark:text-gray-500 truncate">Fellowships & Bounties</span>
+        </div>
+      </a>
+      <a href="student-jobs.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 border border-transparent">
+        <span class="material-symbols-outlined text-base shrink-0 text-indigo-400">apartment</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">Apply for Jobs</span>
+          <span class="text-[10px] text-[#6E6962] dark:text-gray-500 truncate">Corporate Placements</span>
+        </div>
+      </a>
+      <a href="student-zulu.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 border border-transparent">
+        <span class="material-symbols-outlined text-base shrink-0 text-pink-400">smart_toy</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">Zulu AI Companion</span>
+          <span class="text-[10px] text-[#6E6962] dark:text-gray-500 truncate">Career Counselor</span>
+        </div>
+      </a>
+      <a href="student-skilltree.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 border border-transparent">
+        <span class="material-symbols-outlined text-base shrink-0 text-teal-400">hub</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">Skill Constellation</span>
+          <span class="text-[10px] text-[#6E6962] dark:text-gray-500 truncate">Interactive 2D Map</span>
+        </div>
+      </a>
+      <a href="student-portfolio.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-[#6E6962] dark:text-gray-400 hover:text-[#1C1917] dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-white/5 border border-transparent">
+        <span class="material-symbols-outlined text-base shrink-0 text-yellow-400">verified</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">Verified Portfolio</span>
+          <span class="text-[10px] text-[#6E6962] dark:text-gray-500 truncate">Tamper-Proof Ledger</span>
+        </div>
+      </a>
+      <a href="student-mentors.html" class="sidebar-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all bg-[#0F172A] text-white dark:bg-white/10 dark:text-white shadow-sm">
+        <span class="material-symbols-outlined text-base shrink-0 text-orange-400">supervisor_account</span>
+        <div class="sidebar-text-label flex flex-col text-left overflow-hidden">
+          <span class="font-bold text-xs truncate">Find a Mentor</span>
+          <span class="text-[10px] text-gray-300 dark:text-gray-400 truncate">1-on-1 Guidance</span>
+        </div>
+      </a>
+    </div>
+    <div class="mt-4 pt-3 border-t border-slate-200 dark:border-gray-800/80">
+      <button onclick="JoblexApiClient.logout()" class="w-full py-2 rounded-xl text-center text-xs font-semibold text-slate-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 transition flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-base shrink-0">logout</span> <span class="sidebar-text-label">Sign Out</span>
+      </button>
+    </div>
+  </aside>
+  <!-- WORKSPACE -->
+  <main class="flex-1 overflow-y-auto min-h-0 px-4 sm:px-6 lg:px-8 py-6 custom-scrollbar">
+    <div class="w-full max-w-7xl mx-auto space-y-6">
+
+      <!-- HERO BANNER -->
+      <div class="rounded-2xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-white/[0.03] p-6 sm:p-8 shadow-sm">
+        <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+          <div class="space-y-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold uppercase tracking-wider text-[#6E6962] dark:text-gray-400">Verified Academicians & Industry Leaders</span>
+              <span class="text-slate-300 dark:text-gray-700">•</span>
+              <span class="inline-flex items-center gap-1 text-[11px] font-mono text-orange-700 dark:text-orange-300 bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/60 px-2.5 py-0.5 rounded-full">
+                <span class="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+                Mentor Network Active
+              </span>
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-[#1C1917] dark:text-white">
+              Find a Mentor & 1-on-1 Guidance
+            </h1>
+            <p class="text-sm text-[#6E6962] dark:text-gray-300 max-w-3xl leading-relaxed">
+              Connect with verified academic professors and industry leaders for personalized career guidance. Apply for mentorship across tracks: Career Readiness, Research Methodology, Technical Deep-Dive, and Placement Preparation.
+            </p>
+          </div>
+          <div class="flex items-center gap-4 shrink-0">
+            <div class="text-right">
+              <div class="text-xs text-[#6E6962] dark:text-gray-400">Verified Mentors</div>
+              <div id="mentor-count-badge" class="text-xl font-extrabold text-[#1C1917] dark:text-white font-mono">0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEARCH & FILTER BAR -->
+      <div class="rounded-2xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-white/[0.03] p-5 shadow-sm">
+        <div class="space-y-4">
+          <!-- Free Text Search -->
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 text-lg">search</span>
+            <input
+              type="text"
+              id="mentor-search-input"
+              oninput="debounceSearchMentors()"
+              placeholder="Search mentors by name, expertise, institution, company..."
+              class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl bg-slate-50 dark:bg-black/40 border border-[#E7E4DC] dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition"
+            >
+          </div>
+
+          <!-- Filter Chips Row -->
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 overflow-x-auto pb-1 scrollbar-none">
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="text-[10px] uppercase tracking-wider text-slate-500 dark:text-gray-400 font-bold hidden sm:block">Type:</span>
+              <select id="filter-mentor-type" onchange="applyMentorFilters()" class="px-3 py-2 rounded-xl text-xs font-medium bg-slate-50 dark:bg-white/[0.02] border border-[#E7E4DC] dark:border-white/10 text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition">
+                <option value="all">All Types</option>
+                <option value="academy">Academician</option>
+                <option value="industry">Industry Leader</option>
+              </select>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="text-[10px] uppercase tracking-wider text-slate-500 dark:text-gray-400 font-bold hidden sm:block">Domain:</span>
+              <select id="filter-mentor-domain" onchange="applyMentorFilters()" class="px-3 py-2 rounded-xl text-xs font-medium bg-slate-50 dark:bg-white/[0.02] border border-[#E7E4DC] dark:border-white/10 text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition">
+                <option value="all">All Domains</option>
+                <option value="Phytochemistry">Phytochemistry</option>
+                <option value="HPTLC Fingerprinting">HPTLC Fingerprinting</option>
+                <option value="GLP Compliance">GLP Compliance</option>
+                <option value="Formulation Recruiting">Formulation Recruiting</option>
+                <option value="Full-Stack Engineering">Full-Stack Engineering</option>
+                <option value="Data Science">Data Science</option>
+                <option value="AI/ML">AI/ML</option>
+                <option value="Cloud & DevOps">Cloud & DevOps</option>
+                <option value="Cybersecurity">Cybersecurity</option>
+              </select>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="text-[10px] uppercase tracking-wider text-slate-500 dark:text-gray-400 font-bold hidden sm:block">Institution:</span>
+              <select id="filter-mentor-institution" onchange="applyMentorFilters()" class="px-3 py-2 rounded-xl text-xs font-medium bg-slate-50 dark:bg-white/[0.02] border border-[#E7E4DC] dark:border-white/10 text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition">
+                <option value="all">All Institutions</option>
+                <option value="All India Institute of Ayurveda">All India Institute of Ayurveda</option>
+                <option value="Dabur India Ltd.">Dabur India Ltd.</option>
+                <option value="Himalaya Wellness">Himalaya Wellness</option>
+                <option value="Baidyanath Research Labs">Baidyanath Research Labs</option>
+              </select>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+              <span class="text-[10px] uppercase tracking-wider text-slate-500 dark:text-gray-400 font-bold hidden sm:block">Min Rating:</span>
+              <select id="filter-mentor-rating" onchange="applyMentorFilters()" class="px-3 py-2 rounded-xl text-xs font-medium bg-slate-50 dark:bg-white/[0.02] border border-[#E7E4DC] dark:border-white/10 text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition">
+                <option value="0">Any Rating</option>
+                <option value="4.0">4.0+ Stars</option>
+                <option value="4.5">4.5+ Stars</option>
+                <option value="4.8">4.8+ Stars</option>
+              </select>
+            </div>
+            <label class="flex items-center gap-2 shrink-0 cursor-pointer">
+              <input type="checkbox" id="filter-mentor-accepting" onchange="applyMentorFilters()" checked class="w-4 h-4 rounded border-[#E7E4DC] dark:border-white/20 text-orange-600 focus:ring-orange-500 focus:ring-2">
+              <span class="text-xs font-medium text-slate-700 dark:text-gray-300">Only Accepting Mentees</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- MENTOR CARDS GRID -->
+      <div id="mentor-cards-section">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <span class="material-symbols-outlined text-orange-500 text-lg">supervisor_account</span>
+            <span>Available Mentors</span>
+            <span id="mentor-results-count" class="text-xs font-mono font-normal px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-gray-400">Loading...</span>
+          </h2>
+          <span class="text-xs text-slate-500 dark:text-gray-400 hidden sm:inline">Click "Apply for Mentorship" to send a guidance request</span>
+        </div>
+        <div id="mentor-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <!-- Populated by JavaScript -->
+          <div class="p-8 rounded-2xl bg-white dark:bg-white/[0.02] border border-[#E7E4DC] dark:border-white/5 flex items-center justify-center col-span-full text-slate-400">
+            <div class="flex items-center gap-3">
+              <span class="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></span>
+              <span class="text-xs font-mono">Loading mentor directory...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NO RESULTS STATE -->
+      <div id="mentor-no-results" class="hidden text-center py-12">
+        <span class="material-symbols-outlined text-4xl text-slate-300 dark:text-gray-600">search_off</span>
+        <h3 class="mt-2 text-lg font-semibold text-slate-700 dark:text-gray-300">No mentors found</h3>
+        <p class="mt-1 text-sm text-slate-500 dark:text-gray-400">Try adjusting your search or filter criteria</p>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- APPLY FOR MENTORSHIP MODAL -->
+<div id="mentor-application-modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm">
+  <div class="fixed inset-y-0 right-0 w-full max-w-xl bg-white dark:bg-[#0c0d12] shadow-2xl border-l border-[#E7E4DC] dark:border-white/10 flex flex-col overflow-hidden animate-slide-in-right" role="dialog" aria-modal="true" aria-labelledby="mentor-application-title">
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between p-4 sm:p-6 border-b border-[#E7E4DC] dark:border-white/10 bg-gradient-to-r from-orange-900/20 to-amber-900/20">
+      <div class="space-y-1">
+        <h2 id="mentor-application-title" class="text-xl sm:text-2xl font-extrabold text-white">Apply for Mentorship</h2>
+        <p class="text-xs text-gray-300">Send a guidance request to <span id="modal-mentor-name" class="font-semibold"></span></p>
+      </div>
+      <button onclick="closeMentorApplicationModal()" class="p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition" aria-label="Close">
+        <span class="material-symbols-outlined text-xl">close</span>
+      </button>
+    </div>
+
+    <!-- Modal Content -->
+    <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
+      <!-- Mentor Info Card -->
+      <div id="modal-mentor-info" class="p-4 rounded-xl bg-slate-50 dark:bg-white/5 border border-[#E7E4DC] dark:border-white/10">
+        <!-- Populated dynamically -->
+      </div>
+
+      <!-- Guidance Track Selection -->
+      <div>
+        <label class="block text-xs font-bold text-slate-800 dark:text-gray-200 mb-2">Guidance Track <span class="text-red-500">*</span></label>
+        <select id="modal-guidance-track" class="w-full px-4 py-2.5 text-sm rounded-xl bg-white dark:bg-black/50 border border-[#E7E4DC] dark:border-white/10 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition">
+          <option value="">Select a guidance track</option>
+          <option value="Career & Placement Readiness">Career & Placement Readiness</option>
+          <option value="Research Proposal & Methodology">Research Proposal & Methodology</option>
+          <option value="Technical Project Architecture Review">Technical Project Architecture Review</option>
+          <option value="Curriculum & Advanced Electives Consultation">Curriculum & Advanced Electives Consultation</option>
+        </select>
+      </div>
+
+      <!-- Personal Statement -->
+      <div>
+        <label for="modal-personal-statement" class="block text-xs font-bold text-slate-800 dark:text-gray-200 mb-2">Personal Statement <span class="text-red-500">*</span></label>
+        <textarea
+          id="modal-personal-statement"
+          rows="4"
+          minlength="50"
+          placeholder="Why do you want this mentor? What do you hope to learn? (minimum 50 characters)"
+          class="w-full px-4 py-2.5 text-sm rounded-xl bg-white dark:bg-black/50 border border-[#E7E4DC] dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition resize-none"
+        ></textarea>
+        <p class="mt-1 text-xs text-slate-500 dark:text-gray-400" id="personal-statement-char-count">0/50 minimum</p>
+      </div>
+
+      <!-- Current Skills (Auto-filled from profile) -->
+      <div>
+        <label class="block text-xs font-bold text-slate-800 dark:text-gray-200 mb-2">Your Verified Skills</label>
+        <div id="modal-student-skills" class="flex flex-wrap gap-1.5 min-h-[38px]">
+          <!-- Populated from user profile -->
+        </div>
+      </div>
+
+      <!-- Goals -->
+      <div>
+        <label for="modal-goals" class="block text-xs font-bold text-slate-800 dark:text-gray-200 mb-2">Your Goals <span class="text-red-500">*</span></label>
+        <textarea
+          id="modal-goals"
+          rows="3"
+          placeholder="e.g. Prepare for phytochemistry research role, transition to full-stack development, publish a paper..."
+          class="w-full px-4 py-2.5 text-sm rounded-xl bg-white dark:bg-black/50 border border-[#E7E4DC] dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition resize-none"
+        ></textarea>
+      </div>
+
+      <!-- Preferred Time Slot -->
+      <div>
+        <label for="modal-preferred-slot" class="block text-xs font-bold text-slate-800 dark:text-gray-200 mb-2">Preferred Time Slot <span class="text-red-500">*</span></label>
+        <input
+          type="text"
+          id="modal-preferred-slot"
+          placeholder="e.g. Tuesday 16:00 IST, Thursday 15:00 IST, or flexible"
+          class="w-full px-4 py-2.5 text-sm rounded-xl bg-white dark:bg-black/50 border border-[#E7E4DC] dark:border-white/10 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 transition"
+        >
+        <p class="mt-1 text-xs text-slate-500 dark:text-gray-400">Suggest a day/time that works for your schedule</p>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="p-4 border-t border-[#E7E4DC] dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] flex items-center justify-end gap-3">
+      <button onclick="closeMentorApplicationModal()" class="px-5 py-2.5 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-gray-300 font-bold text-sm transition flex items-center gap-2">
+        <span class="material-symbols-outlined">close</span>
+        <span>Cancel</span>
+      </button>
+      <button onclick="submitMentorApplication()" id="modal-submit-btn" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white font-bold text-sm shadow-md transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+        <span class="material-symbols-outlined">send</span>
+        <span>Submit Application</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MY APPLICATIONS & MENTORSHIPS MODAL -->
+<div id="my-mentorships-modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm">
+  <div class="fixed inset-y-0 right-0 w-full max-w-2xl bg-white dark:bg-[#0c0d12] shadow-2xl border-l border-[#E7E4DC] dark:border-white/10 flex flex-col overflow-hidden animate-slide-in-right" role="dialog" aria-modal="true" aria-labelledby="my-mentorships-title">
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between p-4 sm:p-6 border-b border-[#E7E4DC] dark:border-white/10 bg-gradient-to-r from-purple-900/20 to-indigo-900/20">
+      <div class="space-y-1">
+        <h2 id="my-mentorships-title" class="text-xl sm:text-2xl font-extrabold text-white">My Applications & Mentorships</h2>
+        <p class="text-xs text-gray-300">Track your guidance requests and active mentorships</p>
+      </div>
+      <button onclick="closeMyMentorshipsModal()" class="p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition" aria-label="Close">
+        <span class="material-symbols-outlined text-xl">close</span>
+      </button>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="flex border-b border-[#E7E4DC] dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] overflow-x-auto">
+      <button onclick="switchMentorshipTab('pending')" id="tab-pending" class="mentorship-tab px-4 py-3 text-sm font-semibold text-orange-600 dark:text-orange-400 border-b-2 border-orange-500 dark:border-orange-500 whitespace-nowrap">Pending Applications</button>
+      <button onclick="switchMentorshipTab('active')" id="tab-active" class="mentorship-tab px-4 py-3 text-sm font-semibold text-slate-500 dark:text-gray-400 border-b-2 border-transparent whitespace-nowrap">Active Mentorships</button>
+      <button onclick="switchMentorshipTab('completed')" id="tab-completed" class="mentorship-tab px-4 py-3 text-sm font-semibold text-slate-500 dark:text-gray-400 border-b-2 border-transparent whitespace-nowrap">Completed</button>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+      <!-- Pending Applications -->
+      <div id="mentorship-tab-pending" class="mentorship-tab-content">
+        <div id="pending-applications-list" class="space-y-3">
+          <!-- Populated dynamically -->
+        </div>
+        <div id="pending-empty-state" class="hidden text-center py-8 text-slate-500 dark:text-gray-400">
+          <span class="material-symbols-outlined text-3xl">inbox</span>
+          <p class="mt-2">No pending applications</p>
+        </div>
+      </div>
+
+      <!-- Active Mentorships -->
+      <div id="mentorship-tab-active" class="mentorship-tab-content hidden">
+        <div id="active-mentorships-list" class="space-y-3">
+          <!-- Populated dynamically -->
+        </div>
+        <div id="active-empty-state" class="hidden text-center py-8 text-slate-500 dark:text-gray-400">
+          <span class="material-symbols-outlined text-3xl">supervisor_account</span>
+          <p class="mt-2">No active mentorships</p>
+        </div>
+      </div>
+
+      <!-- Completed Mentorships -->
+      <div id="mentorship-tab-completed" class="mentorship-tab-content hidden">
+        <div id="completed-mentorships-list" class="space-y-3">
+          <!-- Populated dynamically -->
+        </div>
+        <div id="completed-empty-state" class="hidden text-center py-8 text-slate-500 dark:text-gray-400">
+          <span class="material-symbols-outlined text-3xl">check_circle</span>
+          <p class="mt-2">No completed mentorships</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/frontend/api-client.js"></script>
+<script src="/js/frontend/notifications.js"></script>
+<script src="/js/frontend/student-ui.js"></script>
+<script src="../../js/frontend/animations.js"></script>
+</body>
+</html>

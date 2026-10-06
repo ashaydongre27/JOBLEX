@@ -509,11 +509,22 @@ router.post('/applications/:id/status', async (req, res) => {
     console.warn('[Update app status] Supabase error:', err.message);
   }
 
+  // Graceful fallback to local DB
+  if (!app) {
+    if (!DB.applications) DB.applications = [];
+    const idx = DB.applications.findIndex(a => a.id === id);
+    if (idx !== -1) {
+      DB.applications[idx].status = updatedStatus;
+      if (interviewSlot) DB.applications[idx].interview_slot = interviewSlot;
+      app = DB.applications[idx];
+    }
+  }
+
   if (!app) {
     return res.status(404).json({ success: false, message: 'Application not found in the database.' });
   }
 
-  const studentId = (app && (app.studentEmail || app.student_email || app.studentId)) || 'usr-student-01';
+  const studentId = 'usr-student-01';
   const studentName = (app && (app.studentName || app.student_name)) || 'Candidate';
   const compName = (app && app.company) || 'Ayush Employer';
   const oppTitle = (app && (app.opportunityTitle || app.opportunity_title)) || 'Position';
@@ -957,5 +968,718 @@ router.get('/quizzes', async (req, res) => {
   }
 });
 
-module.exports = router;
+// ============================================================================
+// FEATURE 2: University Syllabus Review & Bilateral MoU Engine (SIH 26044)
+// ============================================================================
 
+// GET /api/industry/syllabi - Retrieve all accredited university department syllabi available for review
+router.get('/syllabi', async (req, res) => {
+  try {
+    let curriculums = [];
+
+    if (isConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('curriculums').select('*').order('created_at', { ascending: false });
+        if (!error && data && data.length) {
+          curriculums = data;
+        }
+      } catch (err) {
+        console.warn('[Industry Syllabi] Supabase warning:', err.message);
+      }
+    }
+
+    // Fallback to local DB
+    if (curriculums.length === 0) {
+      curriculums = DB.curriculums || [];
+    }
+
+    // Also fetch existing reviews for each curriculum to show average ratings
+    const reviews = DB.syllabus_reviews || [];
+    const curriculumsWithReviews = curriculums.map(curr => {
+      const currReviews = reviews.filter(r => r.curriculum_id === curr.id);
+      const avgRating = currReviews.length > 0
+        ? (currReviews.reduce((sum, r) => sum + r.relevance_rating, 0) / currReviews.length).toFixed(1)
+        : null;
+      return {
+        ...curr,
+        reviewCount: currReviews.length,
+        averageRating: avgRating,
+        latestReview: currReviews.length > 0 ? currReviews[0] : null
+      };
+    });
+
+    return res.json({ success: true, curriculums: curriculumsWithReviews });
+  } catch (err) {
+    console.error('[Industry Syllabi Error]:', err);
+    return res.status(500).json({ success: false, error: 'Unable to retrieve syllabi.' });
+  }
+});
+
+// GET /api/industry/syllabi/:id - View detailed units, learning outcomes, and past industry review scores
+router.get('/syllabi/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    let curriculum = null;
+
+    if (isConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('curriculums').select('*').eq('id', id).single();
+        if (!error && data) {
+          curriculum = data;
+        }
+      } catch (err) {
+        console.warn('[Industry Syllabus Detail] Supabase warning:', err.message);
+      }
+    }
+
+    if (!curriculum) {
+      curriculum = (DB.curriculums || []).find(c => c.id === id);
+    }
+
+    if (!curriculum) {
+      return res.status(404).json({ success: false, error: 'Syllabus not found.' });
+    }
+
+    // Get all reviews for this curriculum
+    const reviews = (DB.syllabus_reviews || []).filter(r => r.curriculum_id === id);
+
+    // Compute average ratings by category
+    const avgRelevance = reviews.length > 0
+      ? (reviews.reduce((sum, r) => sum + r.relevance_rating, 0) / reviews.length).toFixed(1)
+      : null;
+
+    return res.json({
+      success: true,
+      curriculum,
+      reviews,
+      summary: {
+        totalReviews: reviews.length,
+        averageRelevanceRating: avgRelevance,
+        companiesReviewed: [...new Set(reviews.map(r => r.company_name))],
+        allIdentifiedGaps: [...new Set(reviews.flatMap(r => r.identified_gaps))],
+        allRecommendedTechnologies: [...new Set(reviews.flatMap(r => r.recommended_technologies))]
+      }
+    });
+  } catch (err) {
+    console.error('[Industry Syllabus Detail Error]:', err);
+    return res.status(500).json({ success: false, error: 'Unable to retrieve syllabus details.' });
+  }
+});
+
+// POST /api/industry/syllabi/:id/review - Submit formal corporate evaluation, relevance rating, and modern skill recommendations
+router.post('/syllabi/:id/review', async (req, res) => {
+  try {
+    const { id: curriculumId } = req.params;
+    const {
+      companyName = 'Dabur India Ltd.',
+      reviewerName = 'Corporate Reviewer',
+      relevanceRating,
+      strengths = [],
+      identifiedGaps = [],
+      recommendedTechnologies = [],
+      feedbackNotes
+    } = req.body || {};
+
+    // Verify curriculum exists
+    const curriculum = (DB.curriculums || []).find(c => c.id === curriculumId);
+    if (!curriculum) {
+      return res.status(404).json({ success: false, error: 'Curriculum not found.' });
+    }
+
+    if (!relevanceRating || relevanceRating < 1.0 || relevanceRating > 5.0) {
+      return res.status(400).json({ success: false, error: 'Relevance rating (1.0 to 5.0) is required.' });
+    }
+
+    if (!feedbackNotes || !feedbackNotes.trim()) {
+      return res.status(400).json({ success: false, error: 'Feedback notes are required.' });
+    }
+
+    const newReview = {
+      id: `sylrev-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
+      curriculum_id: curriculumId,
+      company_name: companyName.trim(),
+      reviewer_name: reviewerName.trim(),
+      relevance_rating: Number(relevanceRating),
+      strengths: Array.isArray(strengths) ? strengths : [],
+      identified_gaps: Array.isArray(identifiedGaps) ? identifiedGaps : [],
+      recommended_technologies: Array.isArray(recommendedTechnologies) ? recommendedTechnologies : [],
+      feedback_notes: feedbackNotes.trim(),
+      created_at: new Date().toISOString()
+    };
+
+    // Save to database
+    let savedReview;
+    if (isConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('syllabus_reviews').insert({
+          id: newReview.id,
+          curriculum_id: newReview.curriculum_id,
+          company_name: newReview.company_name,
+          reviewer_name: newReview.reviewer_name,
+          relevance_rating: newReview.relevance_rating,
+          strengths: newReview.strengths,
+          identified_gaps: newReview.identified_gaps,
+          recommended_technologies: newReview.recommended_technologies,
+          feedback_notes: newReview.feedback_notes,
+          created_at: newReview.created_at
+        }).select().single();
+        if (!error && data) {
+          savedReview = data;
+        }
+      } catch (err) {
+        console.warn('[Syllabus Review] Supabase warning:', err.message);
+      }
+    }
+
+    // Fallback to local DB
+    if (!savedReview) {
+      if (!DB.syllabus_reviews) DB.syllabus_reviews = [];
+      DB.syllabus_reviews.unshift(newReview);
+      savedReview = newReview;
+    }
+
+    // Notify Academy Dean of new review
+    if (!DB.inPortalNotifications) DB.inPortalNotifications = [];
+    DB.inPortalNotifications.unshift({
+      id: `notif-${Date.now().toString(36)}`,
+      recipientId: 'usr-academy-01',
+      senderId: 'usr-industry-01',
+      title: 'New Industry Curriculum Review Received',
+      message: `${companyName} submitted a review for "${curriculum.department}" (Rating: ${relevanceRating}/5.0).`,
+      actionUrl: '/academy.html#syllabus-reviews',
+      category: 'system_alert',
+      isRead: false,
+      createdAt: new Date().toISOString()
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: 'Curriculum review submitted successfully and forwarded to Academic Board of Studies!',
+      review: savedReview
+    });
+  } catch (err) {
+    console.error('[Syllabus Review Error]:', err);
+    return res.status(500).json({ success: false, error: 'Unable to submit curriculum review.' });
+  }
+});
+
+// POST /api/industry/mou/initiate - Initiate a bilateral MoU agreement with an academic institution
+router.post('/mou/initiate', async (req, res) => {
+  try {
+    const {
+      institution = 'All India Institute of Ayurveda',
+      department = 'Dravyaguna & Ayurvedic Pharmacology',
+      scopeTracks = ['Student Internships'],
+      tenureYears = 3,
+      signatoryIndustry = 'Corporate Talent Lead',
+      deliverables = []
+    } = req.body || {};
+
+    const companyName = req.user?.companyName || 'Dabur India Ltd.';
+    const companyId = req.user?.id || 'usr-industry-01';
+
+    if (!scopeTracks.length) {
+      return res.status(400).json({ success: false, error: 'At least one collaboration scope track is required.' });
+    }
+
+    const newMou = {
+      id: `mou-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
+      company: companyName,
+      institution: institution.trim(),
+      department: department.trim(),
+      scope_tracks: Array.isArray(scopeTracks) ? scopeTracks : [scopeTracks],
+      tenure_years: parseInt(tenureYears, 10) || 3,
+      status: 'Draft',
+      effective_date: null,
+      signatory_industry: signatoryIndustry.trim(),
+      signatory_academy: null,
+      deliverables: Array.isArray(deliverables) ? deliverables : [],
+      created_at: new Date().toISOString()
+    };
+
+    // Save to database
+    let savedMou;
+    if (isConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('mou_partnerships').insert({
+          id: newMou.id,
+          company: newMou.company,
+          institution: newMou.institution,
+          department: newMou.department,
+          scope_tracks: newMou.scope_tracks,
+          tenure_years: newMou.tenure_years,
+          status: newMou.status,
+          effective_date: newMou.effective_date,
+          signatory_industry: newMou.signatory_industry,
+          signatory_academy: newMou.signatory_academy,
+          deliverables: newMou.deliverables,
+          created_at: newMou.created_at
+        }).select().single();
+        if (!error && data) {
+          savedMou = data;
+        }
+      } catch (err) {
+        console.warn('[MoU Initiate] Supabase warning:', err.message);
+      }
+    }
+
+    // Fallback to local DB
+    if (!savedMou) {
+      if (!DB.mou_partnerships) DB.mou_partnerships = [];
+      DB.mou_partnerships.unshift(newMou);
+      savedMou = newMou;
+    }
+
+    // Notify Academy Dean of new MoU proposal
+    if (!DB.inPortalNotifications) DB.inPortalNotifications = [];
+    DB.inPortalNotifications.unshift({
+      id: `notif-${Date.now().toString(36)}`,
+      recipientId: 'usr-academy-01',
+      senderId: companyId,
+      title: 'New Bilateral MoU Proposal Received',
+      message: `${companyName} proposed a MoU for "${institution}" - ${department}. Scope: ${scopeTracks.join(', ')}.`,
+      actionUrl: '/academy.html#mous',
+      category: 'system_alert',
+      isRead: false,
+      createdAt: new Date().toISOString()
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: 'Bilateral MoU proposal submitted to Academic Dean for review!',
+      mou: savedMou
+    });
+  } catch (err) {
+    console.error('[MoU Initiate Error]:', err);
+    return res.status(500).json({ success: false, error: 'Unable to initiate MoU proposal.' });
+  }
+});
+
+// GET /api/industry/mous - View company's active bilateral MoUs and partnership statuses
+router.get('/mous', async (req, res) => {
+  try {
+    const companyName = req.user?.companyName || 'Dabur India Ltd.';
+
+    let mous = [];
+
+    if (isConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('mou_partnerships').select('*').ilike('company', `%${companyName}%`).order('created_at', { ascending: false });
+        if (!error && data) {
+          mous = data;
+        }
+      } catch (err) {
+        console.warn('[Industry MoUs] Supabase warning:', err.message);
+      }
+    }
+
+    // Fallback to local DB
+    if (mous.length === 0) {
+      mous = (DB.mou_partnerships || []).filter(m => m.company && m.company.toLowerCase().includes(companyName.toLowerCase()));
+    }
+
+    return res.json({ success: true, mouPartnerships: mous });
+  } catch (err) {
+    console.error('[Industry MoUs Error]:', err);
+    return res.status(500).json({ success: false, error: 'Unable to retrieve MoU partnerships.' });
+  }
+});
+
+// ============================================================================
+// FEATURE 1: Company Hiring Exam Conduction Engine (SIH 26044)
+// ============================================================================
+
+// Initialize in-memory storage for hiring exams if not present
+if (!DB.hiring_exams) DB.hiring_exams = [];
+if (!DB.hiring_exam_questions) DB.hiring_exam_questions = {};
+if (!DB.candidate_exam_assignments) DB.candidate_exam_assignments = [];
+
+// GET /api/industry/exams: List all hiring exams created by the authenticated company.
+router.get('/exams', async (req, res) => {
+  try {
+    // Get company ID from authenticated user (assuming req.user exists after authentication)
+    const companyId = req.user?.id || 'usr-industry-01'; // Fallback for development
+
+    let exams = [];
+    if (isConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('hiring_exams')
+          .select('*')
+          .eq('company_id', companyId)
+          .order('created_at', { ascending: false });
+        if (!error && data) {
+          exams = data;
+        }
+      } catch (err) {
+        console.warn('[Get hiring exams] Supabase warning:', err.message);
+      }
+    }
+
+    // Fallback to in-memory storage
+    if (exams.length === 0) {
+      exams = DB.hiring_exams.filter(exam => exam.companyId === companyId);
+    }
+
+    // Return exams without questions for list view
+    const examsWithoutQuestions = exams.map(({ questions, ...examWithoutQuestions }) => examWithoutQuestions);
+    return res.json({ success: true, exams: examsWithoutQuestions });
+  } catch (err) {
+    console.error('[Get hiring exams] Error:', err);
+    return res.status(500).json({ success: false, error: 'Unable to retrieve hiring exams.' });
+  }
+});
+
+// POST /api/industry/exams: Create a new hiring exam.
+router.post('/exams', async (req, res) => {
+  try {
+    const {
+      title,
+      roleTitle,
+      department = 'General',
+      durationMinutes = 20,
+      passingPercentage = 70,
+      skills = [],
+      questions = [] // Array of question objects: { questionText, options (array of 4 strings), correctIndex, skillCategory, difficulty, explanation }
+    } = req.body;
+
+    if (!title || !roleTitle) {
+      return res.status(400).json({ success: false, error: 'Title and role title are required.' });
+    }
+
+    if (!Array.isArray(questions) || questions.length === 0) {
+      return res.status(400).json({ success: false, error: 'At least one question is required.' });
+    }
+
+    // Validate each question
+    for (const q of questions) {
+      if (!q.questionText || !Array.isArray(q.options) || q.options.length !== 4 || typeof q.correctIndex !== 'number' || q.correctIndex < 0 || q.correctIndex >= 4) {
+        return res.status(400).json({ success: false, error: 'Each question must have questionText, 4 options, and a correctIndex between 0 and 3.' });
+      }
+    }
+
+    const companyId = req.user?.id || 'usr-industry-01';
+    const companyName = req.user?.companyName || 'Dabur India Ltd.';
+
+    const newExam = {
+      id: `exam-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
+      companyId,
+      companyName,
+      title: title.trim(),
+      roleTitle: roleTitle.trim(),
+      department: department.trim(),
+      durationMinutes: parseInt(durationMinutes, 10) || 20,
+      passingPercentage: parseInt(passingPercentage, 10) || 70,
+      skills: Array.isArray(skills) ? skills.map(s => s.trim()) : [],
+      totalQuestions: questions.length,
+      createdAt: new Date().toISOString()
+    };
+
+    // Save exam to database
+    let savedExam;
+    if (isConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('hiring_exams')
+          .insert({
+            id: newExam.id,
+            company_id: newExam.companyId,
+            company_name: newExam.companyName,
+            title: newExam.title,
+            role_title: newExam.roleTitle,
+            department: newExam.department,
+            duration_minutes: newExam.durationMinutes,
+            passing_percentage: newExam.passingPercentage,
+            skills: newExam.skills,
+            total_questions: newExam.totalQuestions,
+            created_at: newExam.createdAt
+          })
+          .select()
+          .single();
+        if (!error && data) {
+          savedExam = data;
+        }
+      } catch (err) {
+        console.warn('[Create hiring exam] Supabase warning:', err.message);
+      }
+    }
+
+    // Fallback to in-memory storage
+    if (!savedExam) {
+      if (!DB.hiring_exams) DB.hiring_exams = [];
+      DB.hiring_exams.push(newExam);
+      savedExam = newExam;
+    }
+
+    // Save questions associated with this exam
+    const examQuestions = questions.map((q, index) => ({
+      id: `q${newExam.id}-${index}`,
+      exam_id: newExam.id,
+      question_text: q.questionText.trim(),
+      options: q.options.map(opt => opt.trim()),
+      correct_index: q.correctIndex,
+      skill_category: q.skillCategory ? q.skillCategory.trim() : null,
+      difficulty: q.difficulty ? q.difficulty.trim() : 'medium',
+      explanation: q.explanation ? q.explanation.trim() : null
+    }));
+
+    if (isConfigured && supabase) {
+      try {
+        await supabase.from('hiring_exam_questions').insert(examQuestions);
+      } catch (err) {
+        console.warn('[Create hiring exam questions] Supabase warning:', err.message);
+      }
+    } else {
+      if (!DB.hiring_exam_questions) DB.hiring_exam_questions = {};
+      DB.hiring_exam_questions[newExam.id] = examQuestions;
+    }
+
+    // Return created exam (without questions for brevity, but could include if needed)
+    const { questions: _, ...examWithoutQuestions } = savedExam;
+    return res.status(201).json({
+      success: true,
+      message: 'Hiring exam created successfully!',
+      exam: examWithoutQuestions
+    });
+  } catch (err) {
+    console.error('[Create hiring exam] Error:', err);
+    return res.status(500).json({ success: false, error: 'Unable to create hiring exam.' });
+  }
+});
+
+// POST /api/industry/exams/:id/assign: Assign a specific exam to a student email/candidate ID.
+router.post('/exams/:id/assign', async (req, res) => {
+  try {
+    const { id: examId } = req.params;
+    const { candidateEmail, candidateName, opportunityId } = req.body;
+
+    if (!candidateEmail || !candidateName) {
+      return res.status(400).json({ success: false, error: 'Candidate email and name are required.' });
+    }
+
+    // Verify exam exists
+    let exam = null;
+    if (isConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('hiring_exams')
+          .select('*')
+          .eq('id', examId)
+          .single();
+        if (!error && data) {
+          exam = data;
+        }
+      } catch (err) {
+        console.warn('[Verify exam] Supabase warning:', err.message);
+      }
+    }
+    if (!exam) {
+      exam = DB.hiring_exams.find(e => e.id === examId);
+    }
+    if (!exam) {
+      return res.status(404).json({ success: false, error: 'Exam not found.' });
+    }
+
+    // Verify the exam belongs to the authenticated company
+    const companyId = req.user?.id || 'usr-industry-01';
+    if (exam.companyId !== companyId) {
+      return res.status(403).json({ success: false, error: 'Not authorized to assign this exam.' });
+    }
+
+    const newAssignment = {
+      id: `assign-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
+      examId,
+      candidateEmail: candidateEmail.trim(),
+      candidateName: candidateName.trim(),
+      opportunityId: opportunityId ? opportunityId.trim() : null,
+      status: 'Pending',
+      score: null,
+      passed: null,
+      assignedAt: new Date().toISOString(),
+      completedAt: null
+    };
+
+    // Save assignment to database
+    let savedAssignment;
+    if (isConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('candidate_exam_assignments')
+          .insert({
+            id: newAssignment.id,
+            exam_id: newAssignment.examId,
+            candidate_email: newAssignment.candidateEmail,
+            candidate_name: newAssignment.candidateName,
+            opportunity_id: newAssignment.opportunityId,
+            status: newAssignment.status,
+            score: newAssignment.score,
+            passed: newAssignment.passed,
+            assigned_at: newAssignment.assignedAt,
+            completed_at: newAssignment.completedAt
+          })
+          .select()
+          .single();
+        if (!error && data) {
+          savedAssignment = data;
+        }
+      } catch (err) {
+        console.warn('[Create assignment] Supabase warning:', err.message);
+      }
+    }
+
+    // Fallback to in-memory storage
+    if (!savedAssignment) {
+      if (!DB.candidate_exam_assignments) DB.candidate_exam_assignments = [];
+      DB.candidate_exam_assignments.push(newAssignment);
+      savedAssignment = newAssignment;
+    }
+
+    // Notify student via in-portal notification and To-Do (similar to other features)
+    if (!DB.inPortalNotifications) DB.inPortalNotifications = [];
+    DB.inPortalNotifications.unshift({
+      id: `notif-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
+      recipientId: `usr-student-${Date.now().toString(36)}`, // In real app, we'd look up student ID by email
+      senderId: companyId,
+      title: `Hiring Assessment Invitation: ${exam.title}`,
+      message: `${exam.companyName} has invited you to take a hiring assessment for the role of "${exam.roleTitle}".`,
+      actionUrl: '/student.html#assigned-exams',
+      category: 'hiring_exam_invite',
+      isRead: false,
+      createdAt: new Date().toISOString()
+    });
+
+    if (!DB.todos) DB.todos = [];
+    DB.todos.unshift({
+      id: `todo-assign-${Date.now().toString(36)}`,
+      studentId: `usr-student-${Date.now().toString(36)}`, // Match above
+      title: `Complete Hiring Assessment: ${exam.roleTitle} at ${exam.companyName}`,
+      description: `You have been invited to take a skills assessment. Duration: ${exam.durationMinutes} minutes. Passing score: ${exam.passingPercentage}%.`,
+      category: 'Application',
+      priority: 'Urgent',
+      dueDate: new Date(Date.now() + 86400000 * 3).toISOString(), // 3 days
+      isCompleted: false,
+      completedAt: null,
+      sourceType: 'hiring_exam',
+      sourceRefId: newAssignment.id
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: 'Exam assigned to candidate successfully!',
+      assignment: savedAssignment
+    });
+  } catch (err) {
+    console.error('[Assign hiring exam] Error:', err);
+    return res.status(500).json({ success: false, error: 'Unable to assign hiring exam.' });
+  }
+});
+
+// GET /api/industry/exams/:id/submissions: Retrieve all candidate results for a given exam.
+router.get('/exams/:id/submissions', async (req, res) => {
+  try {
+    const { id: examId } = req.params;
+
+    // Verify exam exists and belongs to authenticated company
+    let exam = null;
+    if (isConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('hiring_exams')
+          .select('*')
+          .eq('id', examId)
+          .single();
+        if (!error && data) {
+          exam = data;
+        }
+      } catch (err) {
+        console.warn('[Get exam for submissions] Supabase warning:', err.message);
+      }
+    }
+    if (!exam) {
+      exam = DB.hiring_exams.find(e => e.id === examId);
+    }
+    if (!exam) {
+      return res.status(404).json({ success: false, error: 'Exam not found.' });
+    }
+
+    const companyId = req.user?.id || 'usr-industry-01';
+    if (exam.companyId !== companyId) {
+      return res.status(403).json({ success: false, error: 'Not authorized to view submissions for this exam.' });
+    }
+
+    // Get questions for this exam
+    let questions = [];
+    if (isConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('hiring_exam_questions')
+          .select('*')
+          .eq('exam_id', examId)
+          .order('created_at', { ascending: true });
+        if (!error && data) {
+          questions = data;
+        }
+      } catch (err) {
+        console.warn('[Get exam questions] Supabase warning:', err.message);
+      }
+    }
+    if (questions.length === 0) {
+      questions = DB.hiring_exam_questions[examId] || [];
+    }
+
+    // Get assignments/submissions for this exam
+    let assignments = [];
+    if (isConfigured && supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('candidate_exam_assignments')
+          .select('*')
+          .eq('exam_id', examId)
+          .order('assigned_at', { ascending: false });
+        if (!error && data) {
+          assignments = data;
+        }
+      } catch (err) {
+        console.warn('[Get exam assignments] Supabase warning:', err.message);
+      }
+    }
+    if (assignments.length === 0) {
+      assignments = DB.candidate_exam_assignments.filter(a => a.examId === examId);
+    }
+
+    // Enhance assignment data with exam details and questions for context
+    const enhancedAssignments = assignments.map(assignment => ({
+      ...assignment,
+      exam: {
+        id: exam.id,
+        title: exam.title,
+        roleTitle: exam.roleTitle,
+        durationMinutes: exam.durationMinutes,
+        passingPercentage: exam.passingPercentage
+      }
+    }));
+
+    return res.json({
+      success: true,
+      exam: {
+        ...exam,
+        questions: questions.map(q => ({
+          id: q.id,
+          questionText: q.question_text,
+          options: q.options,
+          correctIndex: q.correct_index,
+          skillCategory: q.skill_category,
+          difficulty: q.difficulty,
+          explanation: q.explanation
+        }))
+      },
+      submissions: enhancedAssignments
+    });
+  } catch (err) {
+    console.error('[Get exam submissions] Error:', err);
+    return res.status(500).json({ success: false, error: 'Unable to retrieve exam submissions.' });
+  }
+});
+
+module.exports = router;

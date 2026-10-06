@@ -22,10 +22,12 @@ const assessmentRoutes = require('./routes/assessment.routes');
 const companyRoutes = require('./routes/company.routes');
 const todoRoutes = require('./routes/todo.routes');
 const notificationRoutes = require('./routes/notification.routes');
+const studentRoutes = require('./routes/student.routes');
+const mentorshipRoutes = require('./routes/mentorship.routes');
 const { isConfigured } = require('./config/supabase');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
@@ -74,6 +76,9 @@ app.use('/assessment', assessmentRoutes);
 app.use('/api/profile', assessmentRoutes);
 app.use('/profile', assessmentRoutes);
 
+app.use('/api/mentorship', mentorshipRoutes);
+app.use('/mentorship', mentorshipRoutes);
+
 app.use('/api/zulu', zuluRoutes);
 app.use('/zulu', zuluRoutes);
 
@@ -92,6 +97,11 @@ app.use('/industry-api', industryRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/company', companyRoutes);
 app.use('/companies', companyRoutes);
+
+app.use('/api/student', studentRoutes);
+app.use('/student-api', studentRoutes);
+app.use('/api/user', studentRoutes);
+app.use('/user', studentRoutes);
 
 // Security Guard: Prevent direct HTTP access to sensitive project files
 const BLOCKED_PATHS = ['.env', 'backend', 'package.json', 'package-lock.json', 'pyproject.toml', 'requirements.txt', '.git', '.code-review-graph', '.agents'];
@@ -128,9 +138,10 @@ staticDirs.forEach(dir => {
 const portalRoutes = [
   'about', 'pricing',
   'student', 'academy', 'industry', 'auth',
+  'onboarding', 'dashboard',
   'student-roadmap', 'student-internships', 'student-jobs',
   'student-quiz', 'student-resume', 'student-skilltree',
-  'student-portfolio', 'student-zulu', 'student-companies',
+  'student-portfolio', 'student-zulu', 'student-companies', 'student-mentors',
   'industry-candidates', 'industry-calibrator', 'industry-requisitions',
   'industry-mous', 'industry-bootcamps', 'industry-grants', 'industry-post-opportunity',
   'academy-readiness', 'academy-curriculum', 'academy-benchmarking',
@@ -149,6 +160,12 @@ portalRoutes.forEach(route => {
     path.join(ROOT_DIR, 'src', 'academy', `${route}.html`),
     path.join(ROOT_DIR, `${route}.html`)
   ];
+  if (route === 'dashboard') {
+    candidatePaths.unshift(
+      path.join(DIST_DIR, 'student.html'),
+      path.join(ROOT_DIR, 'student.html')
+    );
+  }
   for (const p of candidatePaths) {
     if (fs.existsSync(p)) {
       routeCache.set(route, p);
@@ -186,6 +203,10 @@ app.get('/:page.html', (req, res, next) => {
   }
   next();
 });
+
+// Legacy / convenience route redirects
+app.get('/login', (req, res) => res.redirect('/auth'));
+app.get('/register', (req, res) => res.redirect('/auth'));
 
 // Root route sends index.html
 app.get('/', (req, res) => {

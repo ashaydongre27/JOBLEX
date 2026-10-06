@@ -15,28 +15,7 @@
   <script src="/js/frontend/theme.js"></script>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          fontFamily: {
-            display: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-            sans: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-            serif: ['Newsreader', 'Georgia', 'serif'],
-            mono: ['JetBrains Mono', 'monospace']
-          },
-          colors: {
-            bone: { 50: '#FAF9F6', 100: '#F4F2EC', 200: '#E8E5DC', 300: '#D7D2C5' },
-            obsidian: { 950: '#070709', 900: '#0C0D10', 800: '#111215', 700: '#16181D', 600: '#22252C' },
-            sage: { 50: '#F2F6F3', 100: '#E3EDE6', 500: '#3D7055', 600: '#2D5542', 700: '#1E3C2E', glow: '#4EBA87' },
-            terracotta: { 50: '#FAF4F0', 100: '#F4E7DF', 500: '#B85E2E', 600: '#944C23', glow: '#E07A48' },
-            ochre: { 50: '#FAF6EF', 100: '#F4EBDA', 500: '#A67332', 600: '#855828', glow: '#D4973B' }
-          }
-        }
-      }
-    };
-  </script>
+  <script src="/js/frontend/tailwind-config.js"></script>
   <!-- Custom Styles -->
   <link rel="stylesheet" href="/css/styles.css">
   <!-- html2pdf.js for client-side PDF export -->
@@ -280,6 +259,24 @@
         </div>
       </div>
 
+      <!-- DECISION TREE HERO CTA -->
+      <div class="mb-8 p-6 rounded-3xl bg-gradient-to-r from-purple-900/40 via-indigo-900/30 to-blue-900/20 border border-purple-500/30 backdrop-blur-md shadow-lg flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div class="space-y-2">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono text-[10px] uppercase font-bold border border-purple-500/30">Process Flow: Step 2 & 3</span>
+            <span class="text-xs text-gray-400">• Placement Readiness Engine</span>
+          </div>
+          <h2 class="text-2xl font-black text-white">Find Your Optimal Target Role via Decision Tree</h2>
+          <p class="text-xs text-gray-300 max-w-xl">
+            Not sure which pathway to pursue? Our adaptive decision tree cross-references your current department, verified competencies, and industry demand to synthesize your custom career roadmap.
+          </p>
+        </div>
+        <button onclick="openDecisionTreeModal()" class="shrink-0 px-6 py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md transition transform active:scale-95 flex items-center gap-2">
+          <span class="material-symbols-outlined text-base">account_tree</span>
+          <span>Launch Decision Tree</span>
+        </button>
+      </div>
+
       <!-- SECTOR ROADMAP CARDS GRID -->
       <div id="roadmap-catalog-section">
         <div class="flex items-center justify-between mb-4">
@@ -388,12 +385,146 @@
 
       <!-- PEER BENCHMARKING COMPONENT -->
       <div id="peer-benchmarking-card"></div>
-    
+
     </div>
 
   </main>
 </div>
 
+<!-- DECISION TREE WIZARD MODAL -->
+<div id="decision-tree-modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm">
+  <div class="fixed inset-y-0 right-0 w-full max-w-2xl bg-white dark:bg-[#0c0d12] shadow-2xl border-l border-[#E7E4DC] dark:border-white/10 flex flex-col overflow-hidden animate-slide-in-right" role="dialog" aria-modal="true" aria-labelledby="decision-tree-title">
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between p-4 sm:p-6 border-b border-[#E7E4DC] dark:border-white/10 bg-gradient-to-r from-purple-900/20 to-indigo-900/20">
+      <div class="space-y-1">
+        <h2 id="decision-tree-title" class="text-xl sm:text-2xl font-extrabold text-white">Decision Tree Wizard</h2>
+        <p class="text-xs text-gray-300">5 Steps to Your Personalized Career Path</p>
+      </div>
+      <button onclick="closeDecisionTreeModal()" class="p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/10 transition" aria-label="Close Decision Tree">
+        <span class="material-symbols-outlined text-xl">close</span>
+      </button>
+    </div>
+
+    <!-- Progress Indicator -->
+    <div class="p-4 border-b border-[#E7E4DC] dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02]">
+      <div class="flex items-center justify-between gap-2 mb-3">
+        <div class="flex-1 h-1.5 bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden">
+          <div id="decision-tree-progress-bar" class="h-full bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full transition-all duration-500" style="width: 20%"></div>
+        </div>
+        <span id="decision-tree-step-label" class="text-xs font-mono font-bold text-purple-600 dark:text-purple-400 shrink-0 ml-3">Step 1 of 5</span>
+      </div>
+      <div class="flex items-center justify-between gap-1 text-[10px] font-medium">
+        <span class="flex-1 text-center text-purple-600 dark:text-purple-400" data-step="1" data-step-label="Domain">Domain</span>
+        <span class="flex-1 text-center text-gray-400 dark:text-gray-500" data-step="2" data-step-label="Focus">Focus</span>
+        <span class="flex-1 text-center text-gray-400 dark:text-gray-500" data-step="3" data-step-label="Timeline">Timeline</span>
+        <span class="flex-1 text-center text-gray-400 dark:text-gray-500" data-step="4" data-step-label="Comfort">Comfort</span>
+        <span class="flex-1 text-center text-gray-400 dark:text-gray-500" data-step="5" data-step-label="Goal">Goal</span>
+      </div>
+    </div>
+
+    <!-- Modal Content - Steps -->
+    <div class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
+
+      <!-- STEP 1: Primary Domain Interest -->
+      <div id="dt-step-1" class="decision-tree-step">
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-4">What is your primary domain interest?</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="dt-domain-options">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- STEP 2: Applied Focus / Specialization -->
+      <div id="dt-step-2" class="decision-tree-step hidden">
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-4">What is your applied focus within <span id="dt-step2-context" class="text-purple-600 dark:text-purple-400">this domain</span>?</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="dt-focus-options">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- STEP 3: Timeline & Bandwidth -->
+      <div id="dt-step-3" class="decision-tree-step hidden">
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-4">What is your target timeline to readiness?</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="dt-timeline-options">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- STEP 4: Technical Comfort Level -->
+      <div id="dt-step-4" class="decision-tree-step hidden">
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-4">How would you rate your current technical comfort level?</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="dt-comfort-options">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- STEP 5: Primary Goal -->
+      <div id="dt-step-5" class="decision-tree-step hidden">
+        <h3 class="text-sm font-bold text-slate-900 dark:text-white mb-4">What is your primary goal for this roadmap?</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="dt-goal-options">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- RESULT SCREEN -->
+      <div id="dt-result" class="decision-tree-step hidden">
+        <div class="text-center py-4">
+          <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg">
+            <span class="material-symbols-outlined text-2xl text-white">account_tree</span>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-2">Your Target Role</h3>
+          <p id="dt-result-role-title" class="text-lg font-semibold text-purple-400 mb-1">Loading...</p>
+          <p id="dt-result-compatibility" class="text-sm text-gray-400 mb-6">Compatibility: --%</p>
+        </div>
+
+        <!-- Decision Path Reasoning -->
+        <div class="mb-6 p-4 rounded-xl bg-slate-100 dark:bg-white/5 border border-[#E7E4DC] dark:border-white/10">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-gray-400 mb-3 flex items-center gap-2">
+            <span class="material-symbols-outlined text-base text-purple-500">timeline</span>
+            Decision Path Reasoning
+          </h4>
+          <ol id="dt-decision-path" class="space-y-2 text-sm text-slate-700 dark:text-gray-300">
+            <!-- Populated by JS -->
+          </ol>
+        </div>
+
+        <!-- Skill Gaps -->
+        <div class="mb-6 p-4 rounded-xl bg-slate-100 dark:bg-white/5 border border-[#E7E4DC] dark:border-white/10">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-gray-400 mb-3 flex items-center gap-2">
+            <span class="material-symbols-outlined text-base text-amber-500">warning</span>
+            Primary Skill Gaps to Address
+          </h4>
+          <div id="dt-skill-gaps" class="flex flex-wrap gap-2">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex flex-col sm:flex-row gap-3 pt-4 border-t border-[#E7E4DC] dark:border-white/10">
+          <button onclick="applyDecisionTreeRoadmap()" class="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined">rocket_launch</span>
+            <span>Generate & Apply Roadmap</span>
+          </button>
+          <button onclick="closeDecisionTreeModal()" class="flex-1 px-6 py-3 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-gray-300 font-bold text-sm transition flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined">close</span>
+            <span>Close</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="p-4 border-t border-[#E7E4DC] dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02] flex items-center justify-between">
+      <button id="dt-prev-btn" onclick="decisionTreePrevStep()" class="px-4 py-2 rounded-xl bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-gray-300 text-sm font-semibold transition hidden" disabled>
+        <span class="material-symbols-outlined text-sm">chevron_left</span>
+        <span>Back</span>
+      </button>
+      <button id="dt-next-btn" onclick="decisionTreeNextStep()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-sm shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+        <span>Continue</span>
+        <span class="material-symbols-outlined text-sm">chevron_right</span>
+      </button>
+    </div>
+  </div>
+</div>
 
 <script src="/js/frontend/api-client.js"></script>
 <script src="/js/frontend/notifications.js"></script>

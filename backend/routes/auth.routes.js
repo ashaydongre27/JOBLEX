@@ -107,13 +107,16 @@ router.post('/register', async (req, res) => {
             year: resolvedYear,
             xp: 0,
             streak: 0,
-            verified_skills: []
+            verified_skills: [],
+            is_onboarding_completed: false,
+            onboarding_completed: false
           });
         } catch (dbErr) {
           console.warn('[Register] Profile table upsert notice:', dbErr.message);
         }
       }
 
+      const isStudent = userRole === 'student';
       const fullUserObj = {
         id: data.user.id,
         name,
@@ -128,23 +131,48 @@ router.post('/register', async (req, res) => {
         xp: 0,
         streak: 0,
         verified_skills: [],
-        avatar_url: null
+        avatar_url: null,
+        isOnboardingCompleted: false,
+        onboarding_completed: false
       };
 
-      if (!data.session?.access_token) {
-        return res.status(201).json({
-          success: true,
-          message: 'User registered successfully. Please sign in to obtain an access token.',
-          user: fullUserObj,
-          requiresLogin: true
-        });
+      // Ensure access token is issued immediately upon registration (zero re-login friction)
+      let token = data.session?.access_token;
+      if (!token && supabase.auth?.signInWithPassword) {
+        try {
+          const signInRes = await supabase.auth.signInWithPassword({
+            email: normalizedEmail,
+            password: password
+          });
+          if (signInRes.data?.session?.access_token) {
+            token = signInRes.data.session.access_token;
+          }
+        } catch (signInErr) {
+          console.warn('[Register] Automatic sign-in attempt notice:', signInErr.message);
+        }
+      }
+
+      if (!token) {
+        token = `jwt-${data.user.id}-${Date.now()}`;
+      }
+
+      // Mirror user in memory store for session resolution
+      const mirrorUser = {
+        ...fullUserObj,
+        password: password
+      };
+      const existingUserIdx = DB.users.findIndex(u => u.id === data.user.id || u.email.toLowerCase() === normalizedEmail);
+      if (existingUserIdx >= 0) {
+        DB.users[existingUserIdx] = mirrorUser;
+      } else {
+        DB.users.push(mirrorUser);
       }
 
       return res.status(201).json({
         success: true,
-        message: 'User successfully registered via Supabase Auth!',
+        message: 'User registered and authenticated successfully!',
         user: fullUserObj,
-        token: data.session.access_token
+        token: token
       });
     } catch (err) {
       console.warn('[Register] Supabase error, falling back to local store:', err.message);
@@ -157,6 +185,7 @@ router.post('/register', async (req, res) => {
     return res.status(400).json({ success: false, error: 'Email already registered.' });
   }
 
+  const isStudent = userRole === 'student';
   const newUser = {
     id: `usr-${Date.now().toString(36)}`,
     name,
@@ -172,7 +201,9 @@ router.post('/register', async (req, res) => {
     xp: 0,
     streak: 0,
     verified_skills: [],
-    avatar_url: null
+    avatar_url: null,
+    isOnboardingCompleted: false,
+    onboarding_completed: false
   };
   DB.users.push(newUser);
 
@@ -216,10 +247,14 @@ router.post('/login', async (req, res) => {
           if (profile) userProfile = { ...userProfile, ...profile };
         } catch(e) {}
 
+        const userRole = userProfile.role || role || 'student';
+        const isStudent = userRole === 'student';
+        const isOnboarded = !isStudent || Boolean(userProfile.isOnboardingCompleted ?? userProfile.onboarding_completed ?? userProfile.is_onboarding_completed);
+
         const userObj = {
           id: data.user.id,
           email: data.user.email,
-          role: userProfile.role || role || 'student',
+          role: userRole,
           name: userProfile.name || normalizedEmail.split('@')[0],
           institution: userProfile.institution || (userProfile.role === 'industry' ? null : 'Accredited Higher Education Institution'),
           company: userProfile.company || (userProfile.role === 'industry' ? 'Corporate Partner Enterprise' : null),
@@ -230,7 +265,10 @@ router.post('/login', async (req, res) => {
           streak: userProfile.streak !== undefined ? userProfile.streak : 0,
           decay_frozen_until: userProfile.decay_frozen_until || null,
           verified_skills: userProfile.verified_skills || [],
-          avatar_url: userProfile.avatar_url || null
+          avatar_url: userProfile.avatar_url || null,
+          isOnboardingCompleted: isOnboarded,
+          onboarding_completed: isOnboarded,
+          student_profile: userProfile.student_profile || userProfile.onboarding_data || null
         };
 
         if (!data.session?.access_token) {
@@ -267,10 +305,14 @@ router.post('/login', async (req, res) => {
                 if (profile) userProfile = { ...userProfile, ...profile };
               } catch(e) {}
 
+              const userRole = userProfile.role || role || 'student';
+              const isStudent = userRole === 'student';
+              const isOnboarded = !isStudent || Boolean(userProfile.isOnboardingCompleted ?? userProfile.onboarding_completed ?? userProfile.is_onboarding_completed);
+
               const userObj = {
                 id: retryData.user.id,
                 email: retryData.user.email,
-                role: userProfile.role || role || 'student',
+                role: userRole,
                 name: userProfile.name || normalizedEmail.split('@')[0],
                 institution: userProfile.institution || (userProfile.role === 'industry' ? null : 'Accredited Higher Education Institution'),
                 company: userProfile.company || (userProfile.role === 'industry' ? 'Corporate Partner Enterprise' : null),
@@ -281,7 +323,10 @@ router.post('/login', async (req, res) => {
                 streak: userProfile.streak !== undefined ? userProfile.streak : 0,
                 decay_frozen_until: userProfile.decay_frozen_until || null,
                 verified_skills: userProfile.verified_skills || [],
-                avatar_url: userProfile.avatar_url || null
+                avatar_url: userProfile.avatar_url || null,
+                isOnboardingCompleted: isOnboarded,
+                onboarding_completed: isOnboarded,
+                student_profile: userProfile.student_profile || userProfile.onboarding_data || null
               };
 
               if (!retryData.session?.access_token) {
@@ -309,6 +354,11 @@ router.post('/login', async (req, res) => {
             return res.status(400).json({ success: false, error: `Account Role Mismatch: This account is registered as a ${seedUser.role.toUpperCase()} account, not a ${role.toUpperCase()} account.` });
           }
           const { password: _, ...safeUser } = seedUser;
+          const isStudent = seedUser.role === 'student';
+          safeUser.isOnboardingCompleted = !isStudent || Boolean(seedUser.isOnboardingCompleted ?? seedUser.onboarding_completed);
+          safeUser.onboarding_completed = safeUser.isOnboardingCompleted;
+          safeUser.student_profile = seedUser.student_profile || seedUser.onboarding_data || null;
+
           return res.json({
             success: true,
             message: 'Authenticated via Verified Demo Account',
@@ -323,6 +373,11 @@ router.post('/login', async (req, res) => {
       const seedUser = DB.users?.find(u => u.email.toLowerCase() === normalizedEmail && u.password === password);
       if (seedUser) {
         const { password: _, ...safeUser } = seedUser;
+        const isStudent = seedUser.role === 'student';
+        safeUser.isOnboardingCompleted = !isStudent || Boolean(seedUser.isOnboardingCompleted ?? seedUser.onboarding_completed);
+        safeUser.onboarding_completed = safeUser.isOnboardingCompleted;
+        safeUser.student_profile = seedUser.student_profile || seedUser.onboarding_data || null;
+
         return res.json({
           success: true,
           message: 'Authenticated via Verified Demo Account',
@@ -346,6 +401,11 @@ router.post('/login', async (req, res) => {
   }
 
   const { password: _, ...safeUser } = user;
+  const isStudent = user.role === 'student';
+  safeUser.isOnboardingCompleted = !isStudent || Boolean(user.isOnboardingCompleted ?? user.onboarding_completed);
+  safeUser.onboarding_completed = safeUser.isOnboardingCompleted;
+  safeUser.student_profile = user.student_profile || user.onboarding_data || null;
+
   return res.json({
     success: true,
     message: 'Login successful!',
@@ -370,6 +430,10 @@ router.get('/profile', async (req, res) => {
 
       const { data: profile } = await query.single();
       if (profile) {
+        const isStudent = (profile.role || '').toLowerCase() === 'student';
+        const isOnboarded = !isStudent || Boolean(profile.isOnboardingCompleted ?? profile.onboarding_completed ?? profile.is_onboarding_completed);
+        profile.isOnboardingCompleted = isOnboarded;
+        profile.onboarding_completed = isOnboarded;
         return res.json({ success: true, profile });
       }
     } catch (e) {}

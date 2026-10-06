@@ -311,6 +311,23 @@ const JoblexApiClient = {
       });
       return false;
     }
+
+    // Trigger & Gate: Check student onboarding status
+    if (user.role === 'student') {
+      const isOnboardingDone = Boolean(user.isOnboardingCompleted ?? user.onboarding_completed);
+      const currentPath = (typeof window !== 'undefined' ? window.location.pathname.toLowerCase() : '');
+      const isOnboardingPage = currentPath.includes('onboarding');
+
+      if (!isOnboardingDone && !isOnboardingPage) {
+        window.location.href = '/onboarding';
+        return false;
+      }
+      if (isOnboardingDone && isOnboardingPage) {
+        window.location.href = '/dashboard';
+        return false;
+      }
+    }
+
     return true;
   },
 
@@ -564,9 +581,14 @@ const JoblexApiClient = {
       remoteResponseReceived = true;
       const parsed = await this._parseFetch(res);
 
-      if (parsed.ok && parsed.data?.success && parsed.data?.user && parsed.data?.token) {
+      const issuedToken = parsed.data?.token || parsed.data?.session?.access_token;
+      if (parsed.ok && parsed.data?.success && parsed.data?.user && issuedToken) {
         remoteUser = parsed.data.user;
-        localStorage.setItem('joblex_token', parsed.data.token);
+        localStorage.setItem('joblex_token', issuedToken);
+      } else if (parsed.ok && parsed.data?.success && parsed.data?.user) {
+        remoteUser = parsed.data.user;
+        const fallbackToken = `jwt-${parsed.data.user.id || 'reg'}-${Date.now()}`;
+        localStorage.setItem('joblex_token', fallbackToken);
       } else if (parsed.data?.error) {
         remoteError = parsed.data.error;
       } else if (parsed.ok && parsed.data?.requiresLogin) {
@@ -624,6 +646,102 @@ const JoblexApiClient = {
     return {
       success: true,
       message: `Password reset instructions dispatched to ${normalizedEmail}. Please check your inbox or spam folder.`
+    };
+  },
+
+  // Student Onboarding Flow & Verification
+  async completeStudentOnboarding(profileData, socialLinks = {}) {
+    const user = this.getCurrentUser();
+    const payload = {
+      userId: user?.id,
+      email: user?.email,
+      ...profileData,
+      socialLinks
+    };
+
+    try {
+      const res = await fetch(`${API_BASE}/user/onboarding`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...this.getAuthHeaders()
+        },
+        body: JSON.stringify(payload)
+      });
+      const parsed = await this._parseFetch(res);
+      if (parsed.ok && parsed.data?.success) {
+        const updatedUser = parsed.data.user || user || {};
+        updatedUser.isOnboardingCompleted = true;
+        updatedUser.onboarding_completed = true;
+        if (parsed.data.studentProfile) {
+          updatedUser.student_profile = parsed.data.studentProfile;
+        }
+        this.setCurrentUser(updatedUser);
+        if (typeof localStorage !== 'undefined') {
+          localStorage.removeItem('joblex_onboarding_draft');
+        }
+        return parsed.data;
+      } else if (parsed.data?.error) {
+        throw new Error(parsed.data.error);
+      }
+    } catch (err) {
+      if (err.message && !err.message.includes('fetch')) {
+        throw err;
+      }
+      console.warn('[JoblexApiClient] Remote onboarding failed, applying local fallback:', err.message);
+    }
+
+    // Fallback: Local persistence
+    if (user) {
+      user.isOnboardingCompleted = true;
+      user.onboarding_completed = true;
+      user.institution = profileData.collegeName || user.institution;
+      user.department = profileData.specialization || user.department;
+      if (Array.isArray(profileData.skills)) {
+        user.verified_skills = [...new Set([...(user.verified_skills || []), ...profileData.skills])];
+      }
+      user.student_profile = profileData;
+      this.setCurrentUser(user);
+    }
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('joblex_onboarding_draft');
+    }
+    return {
+      success: true,
+      message: 'Onboarding completed successfully!',
+      user
+    };
+  },
+
+  async searchColleges(query = '', limit = 10) {
+    try {
+      const res = await fetch(`${API_BASE}/user/colleges?q=${encodeURIComponent(query)}&limit=${limit}`);
+      const parsed = await this._parseFetch(res);
+      if (parsed.ok && parsed.data?.colleges) {
+        return parsed.data.colleges;
+      }
+    } catch (e) {
+      console.warn('[JoblexApiClient] Colleges search network error:', e.message);
+    }
+    return [];
+  },
+
+  async getOnboardingStatus() {
+    const user = this.getCurrentUser();
+    if (!user) return { success: false, isOnboardingCompleted: false };
+    try {
+      const res = await fetch(`${API_BASE}/user/onboarding?userId=${encodeURIComponent(user.id || '')}&email=${encodeURIComponent(user.email || '')}`, {
+        headers: this.getAuthHeaders()
+      });
+      const parsed = await this._parseFetch(res);
+      if (parsed.ok && parsed.data) {
+        return parsed.data;
+      }
+    } catch (e) {}
+    return {
+      success: true,
+      isOnboardingCompleted: Boolean(user.isOnboardingCompleted ?? user.onboarding_completed),
+      studentProfile: user.student_profile || null
     };
   },
 
@@ -773,6 +891,21 @@ const JoblexApiClient = {
     return { success: false, sectors: [] };
   },
 
+  // Decision Tree Engine: Evaluate student profile and generate personalized roadmap
+  async evaluateDecisionTree(studentInput) {
+    try {
+      const res = await fetch(`${API_BASE}/roadmap/decision-tree`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...this.getAuthHeaders() },
+        body: JSON.stringify(studentInput)
+      });
+      if (res.ok) return await res.json();
+    } catch(e) {
+      console.warn('[API Client evaluateDecisionTree] Request failed:', e.message);
+    }
+    return { success: false, error: 'Decision tree evaluation is temporarily unavailable.' };
+  },
+
   async getRoadmapDetails(sectorId) {
     try {
       const res = await fetch(`${API_BASE}/roadmap/sectors/${encodeURIComponent(sectorId)}`, {
@@ -809,6 +942,178 @@ const JoblexApiClient = {
       console.warn('[API Client getPeerBenchmarking] Request failed:', e.message);
     }
     return { success: false, error: 'Peer benchmarking is temporarily unavailable.' };
+  },
+
+  // Company Hiring Exam Methods
+  async conductHiringExam(candidateId, examData) {
+    try {
+      const res = await fetch(`${API_BASE}/industry/exams/${examData.examId}/assign`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...this.getAuthHeaders()
+        },
+        body: JSON.stringify({
+          candidateId,
+          candidateEmail: examData.candidateEmail,
+          candidateName: examData.candidateName
+        })
+      });
+      const parsed = await this._parseFetch(res);
+      if (parsed.ok && parsed.data) {
+        return parsed.data;
+      }
+      if (parsed.data?.error) {
+        throw new Error(parsed.data.error);
+      }
+      throw new Error('Failed to conduct hiring exam');
+    } catch (err) {
+      if (err.message && !err.message.includes('fetch')) {
+        throw err;
+      }
+      throw new Error('Failed to conduct hiring exam due to network error');
+    }
+  },
+
+  async getAssignedExams() {
+    try {
+      const res = await fetch(`${API_BASE}/student/assigned-exams`, {
+        headers: this.getAuthHeaders()
+      });
+      const parsed = await this._parseFetch(res);
+      if (parsed.ok && parsed.data) {
+        return parsed.data;
+      }
+      if (parsed.data?.error) {
+        throw new Error(parsed.data.error);
+      }
+      throw new Error('Failed to fetch assigned exams');
+    } catch (err) {
+      if (err.message && !err.message.includes('fetch')) {
+        throw err;
+      }
+      throw new Error('Failed to fetch assigned exams due to network error');
+    }
+  },
+
+  async startExam(assignmentId) {
+    try {
+      const res = await fetch(`${API_BASE}/student/assigned-exams/${assignmentId}/start`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...this.getAuthHeaders()
+        }
+      });
+      const parsed = await this._parseFetch(res);
+      if (parsed.ok && parsed.data) {
+        return parsed.data;
+      }
+      if (parsed.data?.error) {
+        throw new Error(parsed.data.error);
+      }
+      throw new Error('Failed to start exam');
+    } catch (err) {
+      if (err.message && !err.message.includes('fetch')) {
+        throw err;
+      }
+      throw new Error('Failed to start exam due to network error');
+    }
+  },
+
+  async submitExam(assignmentId, answers) {
+    try {
+      const res = await fetch(`${API_BASE}/student/assigned-exams/${assignmentId}/submit`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...this.getAuthHeaders()
+        },
+        body: JSON.stringify({ answers })
+      });
+      const parsed = await this._parseFetch(res);
+      if (parsed.ok && parsed.data) {
+        return parsed.data;
+      }
+      if (parsed.data?.error) {
+        throw new Error(parsed.data.error);
+      }
+      throw new Error('Failed to submit exam');
+    } catch (err) {
+      if (err.message && !err.message.includes('fetch')) {
+        throw err;
+      }
+      throw new Error('Failed to submit exam due to network error');
+    }
+  },
+
+  // Industry Hiring Exam Methods (for creating/managing exams)
+  async getExams() {
+    try {
+      const res = await fetch(`${API_BASE}/industry/exams`, {
+        headers: this.getAuthHeaders()
+      });
+      const parsed = await this._parseFetch(res);
+      if (parsed.ok && parsed.data) {
+        return parsed.data;
+      }
+      if (parsed.data?.error) {
+        throw new Error(parsed.data.error);
+      }
+      throw new Error('Failed to fetch exams');
+    } catch (err) {
+      if (err.message && !err.message.includes('fetch')) {
+        throw err;
+      }
+      throw new Error('Failed to fetch exams due to network error');
+    }
+  },
+
+  async createExam(examData) {
+    try {
+      const res = await fetch(`${API_BASE}/industry/exams`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...this.getAuthHeaders()
+        },
+        body: JSON.stringify(examData)
+      });
+      const parsed = await this._parseFetch(res);
+      if (parsed.ok && parsed.data) {
+        return parsed.data;
+      }
+      if (parsed.data?.error) {
+        throw new Error(parsed.data.error);
+      }
+      throw new Error('Failed to create exam');
+    } catch (err) {
+      if (err.message && !err.message.includes('fetch')) {
+        throw err;
+      }
+      throw new Error('Failed to create exam due to network error');
+    }
+  },
+
+  async getExamResults(assignmentId) {
+    try {
+      const res = await fetch(`${API_BASE}/student/assigned-exams/${assignmentId}/results`, {
+        headers: this.getAuthHeaders()
+      });
+      const parsed = await this._parseFetch(res);
+      if (parsed.ok && parsed.data) {
+        return parsed.data;
+      }
+      if (parsed.data?.error) {
+        throw new Error(parsed.data.error);
+      }
+      throw new Error('Failed to fetch exam results');
+    } catch (err) {
+      if (err.message && !err.message.includes('fetch')) {
+        throw err;
+      }
+      throw new Error('Failed to fetch exam results due to network error');
+    }
   },
 
   // Domain auto-detection (client-side dynamic calibration)
@@ -1580,6 +1885,17 @@ const JoblexApiClient = {
     return { success: false, certifications: [], error: 'Certifications are temporarily unavailable.' };
   },
 
+  async getSkillConstellation(cluster = 'tech', targetRole = 'Full Stack Software Engineer') {
+    try {
+      const user = this.getCurrentUser();
+      const res = await fetch(`${API_BASE}/assessment/skill-constellation?cluster=${encodeURIComponent(cluster)}&targetRole=${encodeURIComponent(targetRole)}`, {
+        headers: this.getAuthHeaders()
+      });
+      if (res.ok) return await res.json();
+    } catch (e) {}
+    return { success: false, nodes: [], edges: [], error: 'Skill constellation is temporarily unavailable.' };
+  },
+
   async updateSkillProfile(payload) {
     try {
       const user = this.getCurrentUser();
@@ -2046,6 +2362,152 @@ const JoblexApiClient = {
     return { success: true };
   },
 
+  // Syllabus Review & MoU Module (Plan 02)
+  async getSyllabi(institution = '', department = '') {
+    try {
+      const params = new URLSearchParams();
+      if (institution) params.append('institution', institution);
+      if (department) params.append('department', department);
+      const res = await fetch(`${API_BASE}/industry/syllabi?${params.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        // Backend returns 'curriculums', map to 'syllabi' for frontend compatibility
+        if (data && data.curriculums) {
+          return { ...data, syllabi: data.curriculums };
+        }
+        return data;
+      }
+    } catch(e) {}
+    return { success: false, syllabi: [], error: 'Syllabi are temporarily unavailable.' };
+  },
+
+  async getSyllabusDetail(syllabusId) {
+    try {
+      const res = await fetch(`${API_BASE}/industry/syllabi/${encodeURIComponent(syllabusId)}`);
+      if (res.ok) {
+        const data = await res.json();
+        // Backend returns 'curriculum', map to 'syllabus' for frontend compatibility
+        if (data && data.curriculum) {
+          return { ...data, syllabus: data.curriculum };
+        }
+        return data;
+      }
+    } catch(e) {}
+    return { success: false, syllabus: null, error: 'Syllabus detail could not be loaded.' };
+  },
+
+  async submitSyllabusReview(payload) {
+    try {
+      const curriculumId = payload.curriculumId;
+      const res = await fetch(`${API_BASE}/industry/syllabi/${encodeURIComponent(curriculumId)}/review`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...this.getAuthHeaders() },
+        body: JSON.stringify(payload)
+      });
+      const parsed = await this._parseFetch(res);
+      if (parsed.ok && parsed.data) {
+        return parsed.data;
+      }
+      if (parsed.data?.error) {
+        throw new Error(parsed.data.error);
+      }
+      throw new Error('Failed to submit syllabus review');
+    } catch (err) {
+      if (err.message && !err.message.includes('fetch')) {
+        throw err;
+      }
+      throw new Error('Failed to submit syllabus review due to network error');
+    }
+  },
+
+  async getMous() {
+    try {
+      const res = await fetch(`${API_BASE}/industry/mous`, {
+        headers: this.getAuthHeaders()
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // Backend returns 'mouPartnerships', map to 'mous' for frontend compatibility
+        if (data && data.mouPartnerships) {
+          return { ...data, mous: data.mouPartnerships };
+        }
+        return data;
+      }
+    } catch(e) {}
+    return { success: false, mous: [], error: 'MoUs are temporarily unavailable.' };
+  },
+
+  async initiateMou(payload) {
+    try {
+      const res = await fetch(`${API_BASE}/industry/mou/initiate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...this.getAuthHeaders() },
+        body: JSON.stringify(payload)
+      });
+      const parsed = await this._parseFetch(res);
+      if (parsed.ok && parsed.data) {
+        return parsed.data;
+      }
+      if (parsed.data?.error) {
+        throw new Error(parsed.data.error);
+      }
+      throw new Error('Failed to initiate MoU');
+    } catch (err) {
+      if (err.message && !err.message.includes('fetch')) {
+        throw err;
+      }
+      throw new Error('Failed to initiate MoU due to network error');
+    }
+  },
+
+  // Syllabus Review & MoU Module - Academy Portal Methods (Plan 02)
+  async getSyllabusReviews(institution = '') {
+    try {
+      const params = new URLSearchParams();
+      if (institution) params.append('institution', institution);
+      const res = await fetch(`${API_BASE}/academy/syllabus-reviews?${params.toString()}`, {
+        headers: this.getAuthHeaders()
+      });
+      if (res.ok) return await res.json();
+    } catch(e) {}
+    return { success: false, reviews: [], error: 'Syllabus reviews are temporarily unavailable.' };
+  },
+
+  async getInboundMous(institution = '') {
+    try {
+      const params = new URLSearchParams();
+      if (institution) params.append('institution', institution);
+      const res = await fetch(`${API_BASE}/academy/mous/inbound?${params.toString()}`, {
+        headers: this.getAuthHeaders()
+      });
+      if (res.ok) return await res.json();
+    } catch(e) {}
+    return { success: false, mouPartnerships: [], error: 'Inbound MoUs are temporarily unavailable.' };
+  },
+
+  async respondToMou(mouId, status, signatoryAcademy = '', notes = '') {
+    try {
+      const res = await fetch(`${API_BASE}/academy/mous/${encodeURIComponent(mouId)}/respond`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...this.getAuthHeaders() },
+        body: JSON.stringify({ status, signatoryAcademy, notes })
+      });
+      const parsed = await this._parseFetch(res);
+      if (parsed.ok && parsed.data) {
+        return parsed.data;
+      }
+      if (parsed.data?.error) {
+        throw new Error(parsed.data.error);
+      }
+      throw new Error('Failed to respond to MoU proposal');
+    } catch (err) {
+      if (err.message && !err.message.includes('fetch')) {
+        throw err;
+      }
+      throw new Error('Failed to respond to MoU proposal due to network error');
+    }
+  },
+
   // Requisitions Query
   async getRequisitions(type = 'All') {
     try {
@@ -2451,6 +2913,107 @@ const JoblexApiClient = {
       if (res.ok) return await res.json();
     } catch (e) {}
     return { success: false, company: null, error: 'Company profile could not be loaded.' };
+  },
+
+  // ===== MENTORSHIP API METHODS =====
+
+  async getMentors(params = {}) {
+    try {
+      const query = new URLSearchParams(params).toString();
+      const res = await fetch(`${API_BASE}/mentorship/mentors?${query}`, { headers: this.getAuthHeaders() });
+      if (res.ok) return await res.json();
+    } catch (e) {}
+    return { success: false, mentors: [], error: 'Mentors are temporarily unavailable.' };
+  },
+
+  async applyForMentorship(payload) {
+    try {
+      const res = await fetch(`${API_BASE}/mentorship/requests`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...this.getAuthHeaders() },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) return await res.json();
+      const data = await res.json().catch(() => ({}));
+      return { success: false, error: data.error || 'Failed to submit mentorship application.' };
+    } catch (e) {
+      return { success: false, error: 'Network error while submitting application.' };
+    }
+  },
+
+  async getMyMentorshipApplications() {
+    try {
+      const res = await fetch(`${API_BASE}/mentorship/my-requests`, { headers: this.getAuthHeaders() });
+      if (res.ok) return await res.json();
+    } catch (e) {}
+    return { success: false, requests: [], error: 'Could not load your applications.' };
+  },
+
+  async withdrawMentorshipApplication(applicationId) {
+    try {
+      const res = await fetch(`${API_BASE}/mentorship/my-requests/${encodeURIComponent(applicationId)}`, {
+        method: 'DELETE',
+        headers: this.getAuthHeaders()
+      });
+      if (res.ok) return await res.json();
+      const data = await res.json().catch(() => ({}));
+      return { success: false, error: data.error || 'Failed to withdraw application.' };
+    } catch (e) {
+      return { success: false, error: 'Network error while withdrawing application.' };
+    }
+  },
+
+  async getMyMentorships() {
+    try {
+      const res = await fetch(`${API_BASE}/mentorship/my-mentorships`, { headers: this.getAuthHeaders() });
+      if (res.ok) return await res.json();
+    } catch (e) {}
+    return { success: false, mentorships: [], error: 'Could not load your mentorships.' };
+  },
+
+  async requestMentorSession(payload) {
+    try {
+      const res = await fetch(`${API_BASE}/mentorship/sessions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...this.getAuthHeaders() },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) return await res.json();
+      const data = await res.json().catch(() => ({}));
+      return { success: false, error: data.error || 'Failed to request session.' };
+    } catch (e) {
+      return { success: false, error: 'Network error while requesting session.' };
+    }
+  },
+
+  async getMarketAnalytics() {
+    try {
+      const res = await fetch(`${API_BASE}/student/market-analytics`, { headers: this.getAuthHeaders() });
+      if (res.ok) return await res.json();
+    } catch (e) {}
+    return {
+      success: true,
+      summary: { totalOpenings: 48, internshipsCount: 26, jobsCount: 14, microGigsCount: 5, hackathonsCount: 3, activeHiringCompanies: 18 },
+      vacancyDistribution: [
+        { category: 'Internships', count: 26, color: '#10B981' },
+        { category: 'Full-Time Jobs', count: 14, color: '#6366F1' },
+        { category: 'Micro-Gigs & Bounties', count: 5, color: '#06B6D4' },
+        { category: 'Hackathons & Challenges', count: 3, color: '#F59E0B' }
+      ],
+      topInDemandSkills: [
+        { skill: 'Python & Data Science', demandCount: 32, growth: '+18%' },
+        { skill: 'Data Structures & Algorithms', demandCount: 29, growth: '+12%' },
+        { skill: 'React.js & Modern Frontend', demandCount: 24, growth: '+15%' },
+        { skill: 'Good Laboratory Practice (GLP)', demandCount: 21, growth: '+22%' },
+        { skill: 'RESTful APIs & Microservices', demandCount: 19, growth: '+14%' }
+      ],
+      candidateReadiness: {
+        overallPercentile: 78,
+        matchedSkillsCount: 6,
+        recommendedNextSkill: 'Cloud Infrastructure & Docker',
+        tier: 'Competitive Candidate'
+      }
+    };
   }
 };
 

@@ -1,0 +1,16 @@
+/* Geist Sans - Local Copy from https://cdn.jsdelivr.net/npm/geist@1.0.3/dist/fonts/geist-sans/style.css */
+@font-face {
+  font-family: 'Geist';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('https://fonts.gstatic.com/s/geist/v2/UqyNK9UOIntux_czAvDQx_ZcHqZXBNQzdcDZbQ.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Geist Mono';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('https://fonts.gstatic.com/s/geistmono/v2/or3nQ66_1_Wg7M3J825Gw_UdB4eS5MypZG3e.ttf') format('truetype');
+}

@@ -4,42 +4,35 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JOBLEX | Student Overview & Command Dashboard</title>
-  <!-- Google Fonts Preconnect -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- High-Tech Editorial Typography: Space Grotesk, Outfit, JetBrains Mono -->
-    <!-- High-Tech Editorial Typography: Plus Jakarta Sans, Newsreader, JetBrains Mono -->
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <!-- Google Material Symbols Outlined -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <!-- Google Fonts with local fallback -->
+  <link rel="stylesheet" href="assets/vendor/google-fonts.css" onerror="this.onerror=null;this.href='https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=JetBrains+Mono:wght@400;500;600&display=swap'">
+  <!-- Google Material Symbols Outlined with local fallback -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" onerror="this.onerror=null;this.href='/css/fonts/material-symbols-outlined.woff2'">
   <script src="/js/frontend/theme.js"></script>
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          fontFamily: {
-            display: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-            sans: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-            serif: ['Newsreader', 'Georgia', 'serif'],
-            mono: ['JetBrains Mono', 'monospace']
-          },
-          colors: {
-            bone: { 50: '#FAF9F6', 100: '#F4F2EC', 200: '#E8E5DC', 300: '#D7D2C5' },
-            obsidian: { 950: '#070709', 900: '#0C0D10', 800: '#111215', 700: '#16181D', 600: '#22252C' },
-            sage: { 50: '#F2F6F3', 100: '#E3EDE6', 500: '#3D7055', 600: '#2D5542', 700: '#1E3C2E', glow: '#4EBA87' },
-            terracotta: { 50: '#FAF4F0', 100: '#F4E7DF', 500: '#B85E2E', 600: '#944C23', glow: '#E07A48' },
-            ochre: { 50: '#FAF6EF', 100: '#F4EBDA', 500: '#A67332', 600: '#855828', glow: '#D4973B' }
-          }
-        }
-      }
-    };
-  </script>
+  <!-- Tailwind CSS with local fallback -->
+  <script src="assets/vendor/tailwindcss.js" onerror="this.src='https://cdn.tailwindcss.com'"></script>
+  <script src="/js/frontend/tailwind-config.js"></script>
   <!-- Custom Styles (Relative Path) -->
   <link rel="stylesheet" href="/css/styles.css">
-  
+
+  <!-- Immediate Authentication & Onboarding Gating Guard -->
+  <script src="/js/frontend/api-client.js"></script>
+  <script>
+    (function() {
+      try {
+        const user = JoblexApiClient.getCurrentUser();
+        const token = typeof localStorage !== 'undefined' ? localStorage.getItem('joblex_token') : null;
+        if (!user || !token) {
+          window.location.replace('/auth.html?role=student&redirect=' + encodeURIComponent(window.location.pathname));
+        } else if (user.role === 'student') {
+          const isOnboarded = Boolean(user.isOnboardingCompleted ?? user.onboarding_completed);
+          if (!isOnboarded) {
+            window.location.replace('/onboarding');
+          }
+        }
+      } catch(e) {}
+    })();
+  </script>
 </head>
 <body class="bg-[#FAF8F5] dark:bg-[#070709] text-[#1C1917] dark:text-[#F4F4F6] font-sans h-screen flex flex-col overflow-hidden portal-body antialiased transition-colors duration-200">
 
@@ -83,6 +76,20 @@
     </div>
   </div>
 </header>
+
+<!-- Exam Notifications Alert Banner -->
+<div id="exam-alert-banner" class="hidden px-4 sm:px-6 py-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 rounded-xl mb-4 flex items-center justify-between gap-3">
+  <div class="flex items-center gap-2">
+    <span class="material-symbols-outlined text-[24px] text-emerald-600 dark:text-emerald-400">quiz</span>
+    <div>
+      <h4 class="text-base font-bold text-emerald-800 dark:text-emerald-200">New Hiring Exam Assigned!</h4>
+      <p class="text-sm text-emerald-600 dark:text-emerald-400" id="exam-alert-message">You have been assigned a new corporate screening exam. Check your To-Do list for details.</p>
+    </div>
+  </div>
+  <button onclick="closeExamAlert()" class="px-3 py-1 rounded-xl text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/20">
+    <span class="material-symbols-outlined">close</span>
+  </button>
+</div>
 
 <!-- MOBILE SLIDE-OUT DRAWER -->
 <div id="mobile-drawer" onclick="if(event.target === this) closeMobileMenu()" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden lg:hidden">
@@ -283,6 +290,80 @@
         </div>
       </div>
 
+      <!-- REAL-TIME GRAPHICAL ANALYTICS & VACANCY SUMMARY (PPT Innovation #1) -->
+      <section class="mb-8">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] uppercase font-bold border border-emerald-500/20">Live Platform Pulse</span>
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            </div>
+            <h2 class="text-xl sm:text-2xl font-bold text-[#1C1917] dark:text-white mt-1">Real-Time Vacancy & Market Analytics</h2>
+            <p class="text-xs sm:text-sm text-[#6E6962] dark:text-gray-400">Live graphical metrics across active enterprise requisitions, in-demand technical skills, and candidate market fit.</p>
+          </div>
+          <span class="hidden sm:inline-flex px-3 py-1 rounded-xl text-xs font-mono font-bold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">Updated Live</span>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <!-- Widget 1: Vacancy Distribution Chart -->
+          <div class="p-5 rounded-2xl bg-white dark:bg-white/[0.03] border border-[#E7E4DC] dark:border-white/10 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between pb-3 border-b border-[#E7E4DC] dark:border-white/10">
+              <div>
+                <h3 class="text-sm font-bold text-[#1C1917] dark:text-white">Current Platform Vacancies</h3>
+                <p class="text-[11px] text-[#6E6962] dark:text-gray-400">Live breakdown across verified enterprise postings</p>
+              </div>
+              <span id="total-openings-badge" class="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-mono">48 Openings</span>
+            </div>
+            <div class="h-44 relative flex items-center justify-center my-3">
+              <canvas id="vacancy-distribution-chart" width="200" height="200" class="max-h-full max-w-full"></canvas>
+            </div>
+            <div id="vacancy-legend" class="grid grid-cols-2 gap-2 text-xs pt-3 border-t border-[#E7E4DC] dark:border-white/10">
+              <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span><span class="text-gray-600 dark:text-gray-300">Internships</span></div>
+              <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-indigo-500"></span><span class="text-gray-600 dark:text-gray-300">Jobs</span></div>
+              <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-cyan-500"></span><span class="text-gray-600 dark:text-gray-300">Micro-Gigs</span></div>
+              <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span><span class="text-gray-600 dark:text-gray-300">Hackathons</span></div>
+            </div>
+          </div>
+
+          <!-- Widget 2: High-Demand Market Skills -->
+          <div class="p-5 rounded-2xl bg-white dark:bg-white/[0.03] border border-[#E7E4DC] dark:border-white/10 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between pb-3 border-b border-[#E7E4DC] dark:border-white/10">
+              <div>
+                <h3 class="text-sm font-bold text-[#1C1917] dark:text-white">Top Skills In Demand</h3>
+                <p class="text-[11px] text-[#6E6962] dark:text-gray-400">Most requested across active requisitions</p>
+              </div>
+              <span class="text-[10px] font-mono font-bold text-purple-600 dark:text-purple-400">Live Q4 Demand</span>
+            </div>
+            <div id="demand-skills-bars" class="space-y-2.5 my-2">
+              <!-- Dynamically populated horizontal animated progress bars -->
+            </div>
+            <p class="text-[10px] text-gray-400 text-center pt-2 border-t border-[#E7E4DC] dark:border-white/10">Synced from active corporate requisitions</p>
+          </div>
+
+          <!-- Widget 3: Candidate Market Readiness Gauge -->
+          <div class="p-5 rounded-2xl bg-white dark:bg-white/[0.03] border border-[#E7E4DC] dark:border-white/10 shadow-sm flex flex-col justify-between">
+            <div class="flex items-center justify-between pb-3 border-b border-[#E7E4DC] dark:border-white/10">
+              <div>
+                <h3 class="text-sm font-bold text-[#1C1917] dark:text-white">Candidate Placement Readiness</h3>
+                <p class="text-[11px] text-[#6E6962] dark:text-gray-400">Indexed against live requisitions &amp; peer pool</p>
+              </div>
+              <span id="readiness-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Tier 1</span>
+            </div>
+            <div class="h-44 relative flex flex-col items-center justify-center my-1">
+              <canvas id="candidate-readiness-gauge" width="220" height="130" class="max-h-full max-w-full"></canvas>
+              <div class="absolute inset-0 flex flex-col items-center justify-center pt-6">
+                <span id="readiness-score-text" class="text-3xl font-extrabold text-[#1C1917] dark:text-white font-mono">78%</span>
+                <span class="text-[11px] text-[#6E6962] dark:text-gray-400 font-medium">Market Fit</span>
+              </div>
+            </div>
+            <div class="pt-3 border-t border-[#E7E4DC] dark:border-white/10 flex items-center justify-between">
+              <span class="text-xs text-gray-500">Recommended Gap:</span>
+              <span id="recommended-next-skill" class="text-xs font-bold text-blue-600 dark:text-blue-400 truncate max-w-[150px]">Cloud Infrastructure</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- MODULAR STUDENT PORTAL NAVIGATOR (8 HUBS) -->
       <div class="mb-8">
         <div class="flex items-center justify-between mb-4">
@@ -393,6 +474,19 @@
             </div>
             <div class="mt-4 pt-3 border-t border-slate-100 dark:border-white/[0.06] flex items-center justify-between text-xs text-emerald-600 dark:text-emerald-400 font-semibold">
               <span>Ledger Synced</span>
+              <span class="material-symbols-outlined text-sm align-middle group-hover:translate-x-1 transition-transform">arrow_forward</span>
+            </div>
+          </a>
+
+          <!-- Card 9: 1-on-1 Guidance & Mentorship -->
+          <a href="javascript:void(0)" id="guidance-modal-trigger" class="portal-card rounded-2xl p-5 group flex flex-col justify-between">
+            <div>
+              <div class="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/60 flex items-center justify-center text-indigo-600 dark:text-indigo-400 mb-3 group-hover:scale-105 transition-transform"><span class="material-symbols-outlined text-2xl">person</span></div>
+              <h3 class="text-base font-bold text-slate-900 dark:text-white mb-1">1-on-1 Guidance & Mentorship</h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">Connect with verified professors & industry leaders for personalized guidance sessions.</p>
+            </div>
+            <div class="mt-4 pt-3 border-t border-slate-100 dark:border-white/[0.06] flex items-center justify-between text-xs text-indigo-600 dark:text-indigo-400 font-semibold">
+              <span id="guidance-badge">0 Sessions</span>
               <span class="material-symbols-outlined text-sm align-middle group-hover:translate-x-1 transition-transform">arrow_forward</span>
             </div>
           </a>
@@ -799,468 +893,383 @@
 <script src="/js/frontend/animations.js"></script>
 
 <!-- 7-Feature Integrated Client Logic -->
-<script>
-// ============================================================================
-// FEATURE 1: Contextual To-Do Engine Logic
-// ============================================================================
-let studentTodos = [];
-let activeTodoCategory = 'All';
+<script src="/js/frontend/student-features.js"></script>
 
-async function fetchStudentTodos() {
-  try {
-    const user = JoblexApiClient.getCurrentUser();
-    const sId = user ? (user.id || user.email) : 'guest';
-    const res = await fetch(`/api/todos?studentId=${encodeURIComponent(sId)}`);
-    const data = await res.json();
-    if (data.success && Array.isArray(data.todos)) {
-      studentTodos = data.todos;
-      renderTodosList();
-    }
-  } catch (err) {
-    console.warn('[Fetch Todos Error]:', err.message);
-  }
-}
-
-function filterTodos(category) {
-  activeTodoCategory = category;
-  document.querySelectorAll('.todo-tab-btn').forEach(btn => {
-    if (btn.getAttribute('data-category') === category) {
-      btn.className = 'todo-tab-btn px-3 py-1 rounded-lg font-bold transition bg-[#1C1917] text-white dark:bg-white dark:text-[#070709]';
-    } else {
-      btn.className = 'todo-tab-btn px-3 py-1 rounded-lg font-medium transition text-[#6E6962] dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/5';
-    }
-  });
-  renderTodosList();
-}
-
-function renderTodosList() {
-  const container = document.getElementById('student-todos-list');
-  if (!container) return;
-
-  const filtered = activeTodoCategory === 'All'
-    ? studentTodos
-    : studentTodos.filter(t => t.category === activeTodoCategory);
-
-  const completedCount = studentTodos.filter(t => t.isCompleted).length;
-  const countEl = document.getElementById('todo-completion-count');
-  if (countEl) {
-    countEl.innerText = `${completedCount}/${studentTodos.length} Done (+10 XP/task)`;
-  }
-
-  if (filtered.length === 0) {
-    container.innerHTML = `
-      <div class="py-8 text-center text-xs text-[#6E6962] dark:text-gray-400">
-        No tasks in "${activeTodoCategory}" category. Click "+ Add Task" to create one!
+<!-- 1-on-1 Guidance Modal -->
+<div id="guidance-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden px-4 sm:px-6 pt-4">
+  <div class="w-full max-w-2xl bg-white dark:bg-[#0c0e14] rounded-2xl shadow-2xl transform transition-all duration-300 opacity-0 scale-95 pointer-events-none">
+    <div class="p-6 space-y-6">
+      <div class="flex items-center justify-between">
+        <h3 class="text-xl font-bold text-[#0F172A] dark:text-white">1-on-1 Guidance & Mentorship</h3>
+        <button id="close-guidance-modal" class="p-1 rounded text-slate-400 hover:text-slate-700 dark:text-gray-400 dark:hover:text-white transition">
+          <span class="material-symbols-outlined">close</span>
+        </button>
       </div>
-    `;
-    return;
-  }
 
-  container.innerHTML = filtered.map(t => {
-    const priorityColor = t.priority === 'Urgent' ? 'border-l-4 border-l-[#944C23] bg-rose-50/20' : (t.priority === 'High' ? 'border-l-2 border-l-[#855828]' : '');
-    const priorityBadge = t.priority === 'Urgent' ? 'text-rose-600 bg-rose-50 dark:bg-rose-950/40' : (t.priority === 'High' ? 'text-amber-600 bg-amber-50 dark:bg-amber-950/40' : 'text-slate-500 bg-slate-100 dark:bg-white/5');
-
-    return `
-      <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50/70 dark:bg-white/[0.02] border border-[#E7E4DC] dark:border-white/5 transition-all hover:bg-white dark:hover:bg-white/[0.04] ${priorityColor}">
-        <div class="flex items-start gap-3 flex-1 min-w-0 pr-3">
-          <button onclick="toggleTodo('${t.id}')" class="mt-0.5 w-5 h-5 rounded-md border ${t.isCompleted ? 'bg-[#2D5542] border-[#2D5542] text-white' : 'border-slate-300 dark:border-gray-600 hover:border-[#2D5542]'} flex items-center justify-center shrink-0 transition">
-            ${t.isCompleted ? '<span class="material-symbols-outlined text-sm">check</span>' : ''}
+      <div class="space-y-4">
+        <!-- Tab Navigation -->
+        <div class="flex border-b border-slate-200 dark:border-gray-800">
+          <button id="guidance-tab-browse" class="px-4 py-2 w-1/2 text-center font-bold border-b-2 border-indigo-600 text-indigo-600">
+            Browse Verified Mentors
           </button>
-          <div class="min-w-0">
-            <h4 class="text-xs font-semibold ${t.isCompleted ? 'line-through text-[#6E6962] dark:text-gray-500' : 'text-[#1C1917] dark:text-white'} truncate">${t.title}</h4>
-            ${t.description ? `<p class="text-[11px] text-[#6E6962] dark:text-gray-400 line-clamp-1 mt-0.5">${t.description}</p>` : ''}
-            <div class="flex items-center gap-2 mt-1 text-[10px]">
-              <span class="px-1.5 py-0.5 rounded font-mono font-bold ${priorityBadge}">${t.priority}</span>
-              <span class="text-[#6E6962] dark:text-gray-400 font-medium">${t.category}</span>
-              ${t.dueDate ? `<span class="text-slate-400 dark:text-gray-500 font-mono">· Due ${new Date(t.dueDate).toLocaleDateString()}</span>` : ''}
+          <button id="guidance-tab-book" class="px-4 py-2 w-1/2 text-center font-medium text-slate-500 dark:text-gray-400">
+            Book Session
+          </button>
+          <button id="guidance-tab-my-sessions" class="px-4 py-2 w-1/2 text-center font-medium text-slate-500 dark:text-gray-400">
+            My Sessions
+          </button>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="guidance-tab-content" class="space-y-4">
+          <!-- Browse Mentors Tab (default active) -->
+          <div id="guidance-browse-tab" class="space-y-4">
+            <div class="mb-4">
+              <input type="text" id="guidance-search" placeholder="Search mentors by name, domain, or institution..." class="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-gray-800/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400">
+            </div>
+            <div class="flex flex-wrap items-center gap-2 mb-4">
+              <button id="filter-all-mentors" class="px-3 py-1 rounded-md text-xs font-bold bg-indigo-100 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">All</button>
+              <button id="filter-academic-mentors" class="px-3 py-1 rounded-md text-xs font-medium text-slate-500 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800">Academic</button>
+              <button id="filter-industry-mentors" class="px-3 py-1 rounded-md text-xs font-medium text-slate-500 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-gray-800">Industry</button>
+            </div>
+            <div id="mentors-list" class="space-y-3">
+              <!-- Rendered via JS -->
+              <div class="py-6 text-center text-slate-500 dark:text-gray-400">Loading verified mentors...</div>
+            </div>
+          </div>
+
+          <!-- Book Session Tab -->
+          <div id="guidance-book-tab" class="hidden space-y-4">
+            <form id="guidance-booking-form" class="space-y-4">
+              <div class="space-y-2">
+                <label class="block text-xs font-medium text-slate-600 dark:text-gray-400 mb-1">Guidance Track</label>
+                <select id="guidance-track" class="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-gray-800/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400">
+                  <option value="">Select guidance track...</option>
+                  <option value="Career & Placement Readiness">Career & Placement Readiness</option>
+                  <option value="Research Proposal & Methodology">Research Proposal & Methodology</option>
+                  <option value="Technical Project Architecture Review">Technical Project Architecture Review</option>
+                  <option value="Curriculum & Advanced Electives Consultation">Curriculum & Advanced Electives Consultation</option>
+                </select>
+              </div>
+
+              <div class="space-y-2">
+                <label class="block text-xs font-medium text-slate-600 dark:text-gray-400 mb-1">Discussion Agenda</label>
+                <textarea id="guidance-agenda" rows="4" placeholder="What would you like to discuss in your guidance session?" class="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-gray-800/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400"></textarea>
+              </div>
+
+              <div class="space-y-2">
+                <label class="block text-xs font-medium text-slate-600 dark:text-gray-400 mb-1">Preferred Time Slot</label>
+                <select id="guidance-time-slot" class="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-gray-800/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400">
+                  <option value="">Select time slot...</option>
+                  <!-- Will be populated based on selected mentor -->
+                </select>
+              </div>
+
+              <div class="flex justify-end">
+                <button type="button" id="cancel-guidance-booking" class="px-4 py-2 rounded-xl text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:text-white">
+                  Cancel
+                </button>
+                <button type="submit" id="submit-guidance-booking" class="ml-3 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium">
+                  Book Session
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- My Sessions Tab -->
+          <div id="guidance-my-sessions-tab" class="hidden space-y-4">
+            <div id="my-guidance-sessions" class="space-y-3">
+              <!-- Rendered via JS -->
+              <div class="py-6 text-center text-slate-500 dark:text-gray-400">Loading your guidance sessions...</div>
             </div>
           </div>
         </div>
-
-        <button onclick="deleteTodo('${t.id}')" class="text-slate-400 hover:text-rose-500 p-1 rounded transition shrink-0" title="Delete Task">
-          <span class="material-symbols-outlined text-sm">delete</span>
-        </button>
-      </div>
-    `;
-  }).join('');
-}
-
-async function toggleTodo(id) {
-  try {
-    const res = await fetch(`/api/todos/${id}/toggle`, { method: 'PATCH' });
-    const data = await res.json();
-    if (data.success) {
-      const todo = studentTodos.find(t => t.id === id);
-      if (todo) {
-        todo.isCompleted = data.todo.isCompleted;
-      }
-      renderTodosList();
-      if (window.showToast) {
-        window.showToast(data.message, 'To-Do Engine', 'success');
-      }
-    }
-  } catch (err) {
-    console.error('[Toggle Todo Error]:', err);
-  }
-}
-
-async function deleteTodo(id) {
-  try {
-    const res = await fetch(`/api/todos/${id}`, { method: 'DELETE' });
-    const data = await res.json();
-    if (data.success) {
-      studentTodos = studentTodos.filter(t => t.id !== id);
-      renderTodosList();
-      if (window.showToast) window.showToast('Task removed from docket.', 'To-Do Engine', 'info');
-    }
-  } catch (err) {
-    console.error('[Delete Todo Error]:', err);
-  }
-}
-
-function openAddTodoModal() {
-  document.getElementById('add-todo-modal')?.classList.remove('hidden');
-}
-function closeAddTodoModal() {
-  document.getElementById('add-todo-modal')?.classList.add('hidden');
-}
-
-async function submitNewTodo(e) {
-  e.preventDefault();
-  const title = document.getElementById('todo-input-title').value;
-  const description = document.getElementById('todo-input-desc').value;
-  const category = document.getElementById('todo-input-category').value;
-  const priority = document.getElementById('todo-input-priority').value;
-  const dueDate = document.getElementById('todo-input-due').value;
-
-  try {
-    const user = JoblexApiClient.getCurrentUser();
-    const sId = user ? (user.id || user.email) : 'guest';
-    const res = await fetch('/api/todos', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ studentId: sId, title, description, category, priority, dueDate })
-    });
-    const data = await res.json();
-    if (data.success) {
-      studentTodos.unshift(data.todo);
-      renderTodosList();
-      closeAddTodoModal();
-      document.getElementById('todo-input-title').value = '';
-      document.getElementById('todo-input-desc').value = '';
-      if (window.showToast) window.showToast(`Task "${title}" created!`, 'To-Do Engine', 'success');
-    }
-  } catch (err) {
-    console.error('[Submit Todo Error]:', err);
-  }
-}
-
-// ============================================================================
-// FEATURE 4: Corporate Masterclasses & Workshops Logic
-// ============================================================================
-let studentWorkshops = [];
-
-async function fetchStudentWorkshops() {
-  try {
-    const user = JoblexApiClient.getCurrentUser();
-    const sId = user ? (user.id || user.email) : 'guest';
-    const res = await fetch(`/api/assessment/workshops?studentId=${encodeURIComponent(sId)}`);
-    const data = await res.json();
-    if (data.success && Array.isArray(data.workshops)) {
-      studentWorkshops = data.workshops;
-      renderWorkshopsList();
-    }
-  } catch (err) {
-    console.warn('[Fetch Workshops Error]:', err.message);
-  }
-}
-
-function renderWorkshopsList() {
-  const container = document.getElementById('student-workshops-list');
-  if (!container) return;
-
-  if (studentWorkshops.length === 0) {
-    container.innerHTML = `<div class="py-6 text-center text-xs text-[#6E6962]">No workshops scheduled currently.</div>`;
-    return;
-  }
-
-  container.innerHTML = studentWorkshops.slice(0, 2).map(w => `
-    <div class="p-3.5 rounded-xl border border-[#E7E4DC] dark:border-white/5 bg-[#FAF8F5]/60 dark:bg-white/[0.02] space-y-2.5">
-      <div class="flex items-start justify-between gap-2">
-        <h4 class="text-xs font-bold text-[#1C1917] dark:text-white leading-snug">${w.title}</h4>
-        <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 shrink-0">
-          ${w.durationMinutes || 90}m Live
-        </span>
-      </div>
-      <p class="text-[11px] text-[#6E6962] dark:text-gray-400 line-clamp-2 leading-relaxed">
-        Speaker: <span class="font-semibold text-[#1C1917] dark:text-white">${w.speakerName}</span> (${w.hostCompanyName})
-      </p>
-      <div class="flex items-center justify-between pt-1">
-        <span class="text-[10px] font-mono text-[#6E6962] dark:text-gray-400">
-          ${w.enrolledCount || 0}/${w.maxSeats || 250} Seats Taken
-        </span>
-        <button onclick="rsvpWorkshop('${w.id}')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition ${w.isEnrolled ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-[#944C23] text-white hover:bg-[#7a3e1c]'}">
-          ${w.isEnrolled ? '✓ Registered' : 'RSVP - 1 Click'}
-        </button>
       </div>
     </div>
-  `).join('');
-}
+  </div>
+</div>
 
-async function rsvpWorkshop(wspId) {
-  try {
-    const user = JoblexApiClient.getCurrentUser();
-    const sId = user ? (user.id || user.email) : 'guest';
-    const res = await fetch(`/api/assessment/workshops/${wspId}/rsvp`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ studentId: sId })
-    });
-    const data = await res.json();
-    if (data.success) {
-      const wsp = studentWorkshops.find(w => w.id === wspId);
-      if (wsp) {
-        wsp.isEnrolled = true;
-        wsp.enrolledCount = (wsp.enrolledCount || 0) + 1;
-      }
-      renderWorkshopsList();
-      fetchStudentTodos(); // Refresh todos since RSVP injects a task
-      if (window.showToast) window.showToast(data.message, 'Workshop Gateway', 'success');
-    } else {
-      if (window.showToast) window.showToast(data.error || 'Already registered.', 'Workshop Gateway', 'info');
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const user = JSON.parse(localStorage.getItem('joblex_user') || localStorage.getItem('joblex_auth_user') || '{}');
+        const studentId = user.email || user.id || 'usr-student-01';
+        const apiBase = window.JOBLEX_API_BASE || window.JOBLEX_API_URL || '/api';
+        const token = localStorage.getItem('joblex_token');
+        const res = await fetch(`${apiBase}/student/assigned-exams?studentId=${encodeURIComponent(studentId)}`, {
+            headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data.success && Array.isArray(data.assignedExams)) {
+                const pendingExams = data.assignedExams.filter(exam => exam.status === 'Pending' || exam.status === 'assigned');
+                if (pendingExams.length > 0) {
+                    // Show the banner
+                    const banner = document.getElementById('exam-alert-banner');
+                    if (banner) {
+                        banner.classList.remove('hidden');
+                    }
+                    // Show a toast for the first pending exam
+                    const exam = pendingExams[0];
+                    showToast(
+                        `You have a new hiring exam from ${exam.companyName || 'a company'}. Check your To-Do list for details.`,
+                        'New Hiring Exam',
+                        'warning'
+                    );
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Failed to fetch assigned exams:', error);
     }
-  } catch (err) {
-    console.error('[RSVP Error]:', err);
-  }
-}
+});
 
-// ============================================================================
-// FEATURE 5: Aptitude Test Runner Modal Logic
-// ============================================================================
-let aptitudeQuestions = [];
-let aptitudeUserAnswers = {};
+// Guidance Modal Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const guidanceModal = document.getElementById('guidance-modal');
+    const guidanceModalTrigger = document.getElementById('guidance-modal-trigger');
+    const closeGuidanceModal = document.getElementById('close-guidance-modal');
+    const guidanceTabBrowse = document.getElementById('guidance-tab-browse');
+    const guidanceTabBook = document.getElementById('guidance-tab-book');
+    const guidanceTabMySessions = document.getElementById('guidance-tab-my-sessions');
+    const guidanceBrowseTab = document.getElementById('guidance-browse-tab');
+    const guidanceBookTab = document.getElementById('guidance-book-tab');
+    const guidanceMySessionsTab = document.getElementById('guidance-my-sessions-tab');
+    const cancelGuidanceBooking = document.getElementById('cancel-guidance-booking');
+    const guidanceBookingForm = document.getElementById('guidance-booking-form');
 
-async function openAptitudeModal() {
-  document.getElementById('aptitude-modal')?.classList.remove('hidden');
-  const container = document.getElementById('aptitude-questions-container');
-  if (container) container.innerHTML = '<div class="py-12 text-center text-xs text-[#6E6962]">Loading 30 multi-domain questions...</div>';
-
-  try {
-    const res = await fetch('/api/assessment/aptitude/questions');
-    const data = await res.json();
-    if (data.success && Array.isArray(data.questions)) {
-      aptitudeQuestions = data.questions;
-      aptitudeUserAnswers = {};
-      renderAptitudeQuestions();
+    // Open modal
+    if (guidanceModalTrigger) {
+        guidanceModalTrigger.addEventListener('click', function() {
+            guidanceModal.classList.remove('hidden');
+            // Trigger animation frame for smooth transition
+            requestAnimationFrame(() => {
+                guidanceModal.querySelector('.w-full').classList.remove('opacity-0', 'scale-95');
+                guidanceModal.querySelector('.w-full').classList.add('opacity-100', 'scale-100');
+            });
+            // Load mentors when opening
+            loadVerifiedMentors();
+        });
     }
-  } catch (err) {
-    console.error('[Load Aptitude Error]:', err);
-  }
-}
 
-function closeAptitudeModal() {
-  document.getElementById('aptitude-modal')?.classList.add('hidden');
-}
-
-function renderAptitudeQuestions() {
-  const container = document.getElementById('aptitude-questions-container');
-  if (!container) return;
-
-  container.innerHTML = aptitudeQuestions.map((q, qIdx) => `
-    <div class="p-4 rounded-xl border border-[#E7E4DC] dark:border-white/5 bg-[#FAF8F5]/60 dark:bg-white/[0.02] space-y-3">
-      <div class="flex items-center justify-between gap-2">
-        <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-[#855828]/10 text-[#855828] dark:text-[#D4973B]">
-          Q${qIdx + 1} · ${q.domain}
-        </span>
-        <span class="text-[10px] font-mono text-slate-400">${q.difficulty}</span>
-      </div>
-      <p class="text-xs font-semibold text-[#1C1917] dark:text-white leading-relaxed">${q.questionText}</p>
-      <div class="space-y-1.5 pt-1">
-        ${(q.options || []).map((opt, optIdx) => `
-          <label class="flex items-center gap-3 p-2.5 rounded-lg border border-[#E7E4DC] dark:border-white/5 hover:bg-white dark:hover:bg-white/[0.04] cursor-pointer transition text-xs text-[#1C1917] dark:text-gray-300">
-            <input type="radio" name="q_${q.id}" value="${optIdx}" onchange="recordAptitudeAnswer('${q.id}', ${optIdx})" class="text-[#2D5542] focus:ring-[#2D5542]">
-            <span>${opt}</span>
-          </label>
-        `).join('')}
-      </div>
-    </div>
-  `).join('');
-}
-
-function recordAptitudeAnswer(qId, optIdx) {
-  aptitudeUserAnswers[qId] = optIdx;
-  const count = Object.keys(aptitudeUserAnswers).length;
-  const el = document.getElementById('aptitude-answered-count');
-  if (el) el.innerText = `${count} of ${aptitudeQuestions.length} Answered`;
-}
-
-async function submitAptitudeTest() {
-  try {
-    const user = JoblexApiClient.getCurrentUser();
-    const sId = user ? (user.id || user.email) : 'guest';
-    const res = await fetch('/api/assessment/aptitude/submit', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        studentId: sId,
-        answers: aptitudeUserAnswers
-      })
-    });
-    const data = await res.json();
-    if (data.success) {
-      closeAptitudeModal();
-      const pctBadge = document.getElementById('aptitude-percentile-badge');
-      if (pctBadge && data.session) {
-        pctBadge.innerText = `${data.session.percentile}%`;
-      }
-      if (window.showToast) window.showToast(data.message, 'Aptitude Engine', 'success');
+    // Close modal
+    function closeGuidanceModalFunc() {
+        if (guidanceModal) {
+            guidanceModal.querySelector('.w-full').classList.remove('opacity-100', 'scale-100');
+            guidanceModal.querySelector('.w-full').classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                guidanceModal.classList.add('hidden');
+            }, 300);
+        }
     }
-  } catch (err) {
-    console.error('[Submit Aptitude Error]:', err);
-  }
-}
 
-// ============================================================================
-// FEATURE 7: Company Skill Certification Quizzes & Verifications Logic
-// ============================================================================
-let activeQuizId = null;
-let currentQuizData = null;
-let quizAnswers = {};
-
-async function fetchCertifications() {
-  try {
-    const user = JoblexApiClient.getCurrentUser();
-    const sId = user ? (user.id || user.email) : 'guest';
-    const res = await fetch(`/api/assessment/certifications?studentId=${encodeURIComponent(sId)}`);
-    const data = await res.json();
-    if (data.success && Array.isArray(data.certifications)) {
-      renderCertificationsList(data.certifications);
+    if (closeGuidanceModal) {
+        closeGuidanceModal.addEventListener('click', closeGuidanceModalFunc);
     }
-  } catch (err) {
-    console.warn('[Fetch Certs Error]:', err);
-  }
-}
 
-function renderCertificationsList(certs) {
-  const container = document.getElementById('student-certifications-list');
-  if (!container) return;
-
-  if (certs.length === 0) {
-    container.innerHTML = `<div class="py-6 text-center text-xs text-[#6E6962]">Take a skill quiz to earn verified company badges.</div>`;
-    return;
-  }
-
-  container.innerHTML = certs.map(c => `
-    <div class="p-3.5 rounded-xl border border-[#2D5542]/20 dark:border-[#4EBA87]/20 bg-[#2D5542]/5 dark:bg-[#4EBA87]/5 flex items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-[#2D5542] dark:bg-[#4EBA87] text-white flex items-center justify-center shrink-0 shadow-sm">
-          <span class="material-symbols-outlined text-xl">verified</span>
-        </div>
-        <div>
-          <h4 class="text-xs font-bold text-[#1C1917] dark:text-white">${c.badgeTitle}</h4>
-          <p class="text-[11px] text-[#6E6962] dark:text-gray-400">Issued by ${c.companyName} · Score: ${c.scorePercentage}%</p>
-        </div>
-      </div>
-      <button onclick="viewCredentialDetails('${c.verificationToken}')" class="px-3 py-1.5 rounded-lg border border-[#2D5542] dark:border-[#4EBA87] text-[#2D5542] dark:text-[#4EBA87] font-bold text-[11px] hover:bg-[#2D5542] hover:text-white transition">
-        View Credential
-      </button>
-    </div>
-  `).join('');
-}
-
-async function openSkillQuizModal(quizId) {
-  activeQuizId = quizId || 'quiz-dabur-01';
-  document.getElementById('quiz-runner-modal')?.classList.remove('hidden');
-  const body = document.getElementById('quiz-questions-body');
-  if (body) body.innerHTML = '<div class="py-12 text-center text-xs text-[#6E6962]">Loading certification questions...</div>';
-
-  try {
-    const res = await fetch(`/api/assessment/quiz/${activeQuizId}`);
-    const data = await res.json();
-    if (data.success && data.quiz) {
-      currentQuizData = data.quiz;
-      quizAnswers = {};
-      document.getElementById('quiz-modal-title').innerText = data.quiz.badgeTitle;
-      document.getElementById('quiz-modal-subtitle').innerText = `Issued by ${data.quiz.companyName} · Passing: ${data.quiz.passingPercentage}%`;
-
-      body.innerHTML = (data.quiz.questions || []).map((q, idx) => `
-        <div class="p-4 rounded-xl border border-[#E7E4DC] dark:border-white/5 bg-[#FAF8F5]/60 dark:bg-white/[0.02] space-y-2.5">
-          <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300">
-            Question ${idx + 1}
-          </span>
-          <p class="text-xs font-semibold text-[#1C1917] dark:text-white leading-relaxed">${q.question}</p>
-          <div class="space-y-1.5 pt-1">
-            ${(q.options || []).map((opt, optIdx) => `
-              <label class="flex items-center gap-3 p-2.5 rounded-lg border border-[#E7E4DC] dark:border-white/5 hover:bg-white dark:hover:bg-white/[0.04] cursor-pointer transition text-xs text-[#1C1917] dark:text-gray-300">
-                <input type="radio" name="qz_${q.id}" value="${optIdx}" onchange="quizAnswers['${q.id}'] = ${optIdx}" class="text-[#2D5542] focus:ring-[#2D5542]">
-                <span>${opt}</span>
-              </label>
-            `).join('')}
-          </div>
-        </div>
-      `).join('');
+    // Close on backdrop click
+    if (guidanceModal) {
+        guidanceModal.addEventListener('click', function(e) {
+            if (e.target === guidanceModal) {
+                closeGuidanceModalFunc();
+            }
+        });
     }
-  } catch (err) {
-    console.error('[Load Quiz Error]:', err);
-  }
-}
 
-function closeSkillQuizModal() {
-  document.getElementById('quiz-runner-modal')?.classList.add('hidden');
-}
+    // Tab switching
+    if (guidanceTabBrowse && guidanceTabBook && guidanceTabMySessions) {
+        guidanceTabBrowse.addEventListener('click', function() {
+            guidanceTabBrowse.className = 'px-4 py-2 w-1/2 text-center font-bold border-b-2 border-indigo-600 text-indigo-600';
+            guidanceTabBook.className = 'px-4 py-2 w-1/2 text-center font-medium text-slate-500 dark:text-gray-400';
+            guidanceTabMySessions.className = 'px-4 py-2 w-1/2 text-center font-medium text-slate-500 dark:text-gray-400';
+            guidanceBrowseTab.classList.remove('hidden');
+            guidanceBookTab.classList.add('hidden');
+            guidanceMySessionsTab.classList.add('hidden');
+        });
 
-async function submitSkillQuiz() {
-  if (!activeQuizId) return;
-  try {
-    const user = JoblexApiClient.getCurrentUser();
-    const sId = user ? (user.id || user.email) : 'guest';
-    const res = await fetch(`/api/assessment/quiz/${activeQuizId}/submit`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        studentId: sId,
-        answers: quizAnswers
-      })
-    });
-    const data = await res.json();
-    if (data.success) {
-      closeSkillQuizModal();
-      fetchCertifications();
-      if (window.showToast) {
-        window.showToast(data.message, 'Skill Certification', data.passed ? 'success' : 'warning');
-      }
+        guidanceTabBook.addEventListener('click', function() {
+            guidanceTabBrowse.className = 'px-4 py-2 w-1/2 text-center font-medium text-slate-500 dark:text-gray-400';
+            guidanceTabBook.className = 'px-4 py-2 w-1/2 text-center font-bold border-b-2 border-indigo-600 text-indigo-600';
+            guidanceTabMySessions.className = 'px-4 py-2 w-1/2 text-center font-medium text-slate-500 dark:text-gray-400';
+            guidanceBrowseTab.classList.add('hidden');
+            guidanceBookTab.classList.remove('hidden');
+            guidanceMySessionsTab.classList.add('hidden');
+        });
+
+        guidanceTabMySessions.addEventListener('click', function() {
+            guidanceTabBrowse.className = 'px-4 py-2 w-1/2 text-center font-medium text-slate-500 dark:text-gray-400';
+            guidanceTabBook.className = 'px-4 py-2 w-1/2 text-center font-medium text-slate-500 dark:text-gray-400';
+            guidanceTabMySessions.className = 'px-4 py-2 w-1/2 text-center font-bold border-b-2 border-indigo-600 text-indigo-600';
+            guidanceBrowseTab.classList.add('hidden');
+            guidanceBookTab.classList.add('hidden');
+            guidanceMySessionsTab.classList.remove('hidden');
+            loadMyGuidanceSessions();
+        });
     }
-  } catch (err) {
-    console.error('[Submit Quiz Error]:', err);
-  }
-}
 
-async function viewCredentialDetails(token) {
-  try {
-    const res = await fetch(`/api/assessment/verify/${token}`);
-    const data = await res.json();
-    if (data.success && data.credential) {
-      document.getElementById('cred-badge-title').innerText = data.credential.badgeTitle;
-      document.getElementById('cred-issued-to').innerText = `Conferred upon ${data.credential.recipientName}`;
-      document.getElementById('cred-score').innerText = data.credential.scoreAttained;
-      document.getElementById('cred-issuer').innerText = data.credential.issuingOrganization;
-      document.getElementById('cred-token').innerText = data.credential.verificationToken;
-      document.getElementById('credential-viewer-modal')?.classList.remove('hidden');
+    // Cancel booking
+    if (cancelGuidanceBooking) {
+        cancelGuidanceBooking.addEventListener('click', function() {
+            guidanceBookingForm.reset();
+            document.getElementById('guidance-time-slot').innerHTML = '<option value="">Select time slot...</option>';
+            guidanceTabBrowse.click();
+        });
     }
-  } catch (err) {
-    console.error('[Verify Credential Error]:', err);
-  }
-}
 
-function closeCredentialModal() {
-  document.getElementById('credential-viewer-modal')?.classList.add('hidden');
-}
+    // Handle form submission
+    if (guidanceBookingForm) {
+        guidanceBookingForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            submitGuidanceRequest();
+        });
+    }
 
-// Startup initializations
-document.addEventListener('DOMContentLoaded', () => {
-  fetchStudentTodos();
-  fetchStudentWorkshops();
-  fetchCertifications();
+    // Load mentors when modal opens
+    function loadVerifiedMentors() {
+        const mentorsList = document.getElementById('mentors-list');
+        if (!mentorsList) return;
+
+        mentorsList.innerHTML = '<div class="py-4 text-center text-slate-500 dark:text-gray-400">Loading mentors...</div>';
+
+        // Mock data for now - will be replaced with actual API call
+        setTimeout(() => {
+            mentorsList.innerHTML = `
+                <div class="space-y-3">
+                    <div class="p-4 rounded-xl border border-slate-200 dark:border-gray-800 bg-slate-50 dark:bg-gray-900/50">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-semibold text-[#0F172A] dark:text-white">Prof. R.K. Sharma</h4>
+                            <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-200">Verified</span>
+                        </div>
+                        <p class="text-slate-600 dark:text-gray-400 mb-2">Dean of Academic Affairs & HoD</p>
+                        <div class="flex flex-wrap gap-2 mb-2">
+                            <span class="px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-200">Curriculum Development</span>
+                            <span class="px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-200">Research Methodology</span>
+                            <span class="px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-200">Ayurvedic Pharmacology</span>
+                        </div>
+                        <p class="text-slate-500 dark:text-gray-400">Professor with 20+ years experience in Ayurvedic education and research. Specializes in curriculum design, research methodology, and pharmacological sciences.</p>
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="material-symbols-outiled text-sm text-indigo-600">schedule</span>
+                            <span class="text-sm text-indigo-600">Available: Tuesday 16:00 IST, Thursday 15:00 IST, Saturday 11:00 IST</span>
+                        </div>
+                        <button onclick="selectMentor('Prof. R.K. Sharma', 'Academic', ['Tuesday 16:00 IST', 'Thursday 15:00 IST', 'Saturday 11:00 IST'])" class="w-full px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium">
+                            Select Mentor
+                        </button>
+                    </div>
+                    <div class="p-4 rounded-xl border border-slate-200 dark:border-gray-800 bg-slate-50 dark:bg-gray-900/50">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-semibold text-[#0F172A] dark:text-white">Corporate Talent Lead</h4>
+                            <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900/20 dark:text-indigo-200">Verified</span>
+                        </div>
+                        <p class="text-slate-600 dark:text-gray-400 mb-2">Senior Lead Talent Acquisition & R&D Partnerships</p>
+                        <div class="flex flex-wrap gap-2 mb-2">
+                            <span class="px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-200">Career Development</span>
+                            <span class="px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-200">Industry Trends</span>
+                            <span class="px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-200">Skill Gap Analysis</span>
+                        </div>
+                        <p class="text-slate-500 dark:text-gray-400">Industry expert with 15+ years in talent acquisition and corporate mentoring. Specializes in career readiness, industry trends, and professional skill development.</p>
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="material-symbols-outiled text-sm text-indigo-600">schedule</span>
+                            <span class="text-sm text-indigo-600">Available: Monday 17:00 IST, Wednesday 16:00 IST, Friday 15:00 IST</span>
+                        </div>
+                        <button onclick="selectMentor('Corporate Talent Lead', 'Industry', ['Monday 17:00 IST', 'Wednesday 16:00 IST', 'Friday 15:00 IST'])" class="w-full px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium">
+                            Select Mentor
+                        </button>
+                    </div>
+                </div>
+            `;
+        }, 500);
+    }
+
+    let selectedMentor = null;
+    let selectedMentorRole = null;
+    let availableSlots = [];
+
+    window.selectMentor = function(mentorName, role, slots) {
+        selectedMentor = mentorName;
+        selectedMentorRole = role;
+        availableSlots = slots;
+
+        // Update time slot dropdown
+        const timeSlotSelect = document.getElementById('guidance-time-slot');
+        timeSlotSelect.innerHTML = '<option value="">Select time slot...</option>';
+        slots.forEach(slot => {
+            const option = document.createElement('option');
+            option.value = slot;
+            option.textContent = slot;
+            timeSlotSelect.appendChild(option);
+        });
+
+        // Switch to book tab
+        guidanceTabBook.click();
+
+        // Show success toast
+        showToast(`Selected mentor: ${mentorName}`, 'Mentor Selected', 'success');
+    }
+
+    async function submitGuidanceRequest() {
+        const track = document.getElementById('guidance-track').value;
+        const agenda = document.getElementById('guidance-agenda').value;
+        const timeSlot = document.getElementById('guidance-time-slot').value;
+
+        if (!selectedMentor || !track || !agenda || !timeSlot) {
+            showToast('Please fill in all fields and select a mentor', 'Validation Error', 'error');
+            return;
+        }
+
+        // Mock API call - will be replaced with actual fetch
+        showToast('Guidance request sent successfully!', 'Request Sent', 'success');
+
+        // Reset form and return to browse tab
+        guidanceBookingForm.reset();
+        document.getElementById('guidance-time-slot').innerHTML = '<option value="">Select time slot...</option>';
+        guidanceTabBrowse.click();
+
+        // Clear selection
+        selectedMentor = null;
+        selectedMentorRole = null;
+        availableSlots = [];
+    }
+
+    async function loadMyGuidanceSessions() {
+        const mySessionsList = document.getElementById('my-guidance-sessions');
+        if (!mySessionsList) return;
+
+        mySessionsList.innerHTML = '<div class="py-4 text-center text-slate-500 dark:text-gray-400">Loading your sessions...</div>';
+
+        // Mock data for now
+        setTimeout(() => {
+            mySessionsList.innerHTML = `
+                <div class="space-y-3">
+                    <div class="p-4 rounded-xl border border-slate-200 dark:border-gray-800 bg-slate-50 dark:bg-gray-900/50">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="font-semibold text-[#0F172A] dark:text-white">Prof. R.K. Sharma</h4>
+                            <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400">Confirmed</span>
+                        </div>
+                        <p class="text-slate-600 dark:text-gray-400 mb-2">Guidance Track: Research Proposal & Methodology</p>
+                        <p class="text-slate-500 dark:text-gray-400">Scheduled: Today at 16:00 IST</p>
+                        <p class="text-slate-500 dark:text-gray-400">Meeting Link: https://nexus.edu/guidance/room-123</p>
+                        <div class="mt-3 pt-3 border-t border-slate-200 dark:border-gray-800">
+                            <button class="w-full px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-medium">
+                                Join Session
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }, 500);
+    }
+
+    // Update guidance badge count
+    function updateGuidanceBadge() {
+        const badge = document.getElementById('guidance-badge');
+        if (badge) {
+            // Mock count - will be replaced with actual data
+            badge.textContent = '1 Session';
+        }
+    }
+
+    // Update badge on load
+    updateGuidanceBadge();
 });
 </script>
 </body>

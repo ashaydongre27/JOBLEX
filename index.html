@@ -7,49 +7,19 @@
   <meta name="description" content="Academia-Industry Collaboration & Placement Portal with AI competency vector matching, dynamic syllabus modernization, and verified placement dossiers.">
   <meta property="og:title" content="JOBLEX">
   <meta property="og:description" content="Academia-Industry Collaboration & Placement Portal with AI competency vector matching, dynamic syllabus modernization, and verified placement dossiers.">
-  <!-- Google Fonts Preconnect -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- High-Tech Editorial Typography: Geist, Plus Jakarta Sans, Newsreader, Space Mono, JetBrains Mono -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/geist@1.0.3/dist/fonts/geist-sans/style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-  <!-- Google Material Symbols Outlined -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-  
+  <!-- Google Fonts with local fallback -->
+  <link rel="stylesheet" href="assets/vendor/google-fonts.css" onerror="this.onerror=null;this.href='https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=JetBrains+Mono:wght@400;500;600&display=swap'">
+  <!-- Geist CDN with local fallback -->
+  <link rel="stylesheet" href="assets/vendor/geist-sans.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/geist@1.0.3/dist/fonts/geist-sans/style.css'">
+  <!-- Google Material Symbols Outlined with local fallback -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" onerror="this.onerror=null;this.href='/css/fonts/material-symbols-outlined.woff2'">
+
   <!-- Theme Handler -->
   <script src="js/frontend/theme.js"></script>
-  
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          fontFamily: {
-            display: ['Geist', 'Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-            sans: ['Plus Jakarta Sans', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
-            serif: ['Newsreader', 'Georgia', 'serif'],
-            mono: ['Space Mono', 'JetBrains Mono', 'monospace'],
-            editorial: ['Newsreader', 'Georgia', 'serif'],
-            geist: ['Geist', 'sans-serif'],
-            newsreader: ['Newsreader', 'serif'],
-            'space-mono': ['Space Mono', 'monospace']
-          },
-          colors: {
-            bone: { 50: '#FAF9F6', 100: '#F4F2EC', 200: '#E8E5DC', 300: '#D7D2C5' },
-            obsidian: { 950: '#030303', 900: '#070709', 800: '#0C0D10', 700: '#111215', 600: '#16181D' },
-            sage: { 50: '#F2F6F3', 100: '#E3EDE6', 500: '#3D7055', 600: '#2D5542', 700: '#1E3C2E', glow: '#4EBA87' },
-            terracotta: { 50: '#FAF4F0', 100: '#F4E7DF', 500: '#B85E2E', 600: '#944C23', glow: '#E07A48' },
-            ochre: { 50: '#FAF6EF', 100: '#F4EBDA', 500: '#A67332', 600: '#855828', glow: '#D4973B' },
-            techblue: '#A8C7FA',
-            techgold: '#E2D3B6',
-            techrose: '#F1C6D4'
-          }
-        }
-      }
-    };
-  </script>
+
+  <!-- Tailwind CSS with local fallback -->
+  <script src="assets/vendor/tailwindcss.js" onerror="this.src='https://cdn.tailwindcss.com'"></script>
+  <script src="/js/frontend/tailwind-config.js"></script>
   
   <!-- Custom Stylesheet -->
   <link rel="stylesheet" href="css/styles.css">

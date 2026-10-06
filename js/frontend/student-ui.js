@@ -1062,6 +1062,550 @@ async function exportCurrentRoadmapToPdf() {
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// DECISION TREE WIZARD MODULE
+// ─────────────────────────────────────────────────────────────
+let decisionTreeState = {
+  currentStep: 1,
+  selections: {
+    domain: null,
+    focus: null,
+    timeline: null,
+    comfort: null,
+    goal: null
+  },
+  result: null
+};
+
+const DECISION_TREE_DATA = {
+  domains: [
+    {
+      id: 'software-web',
+      label: 'Software & Web Engineering',
+      icon: 'code',
+      color: 'from-blue-600 to-cyan-500',
+      description: 'Full-stack development, web architectures, API design'
+    },
+    {
+      id: 'ai-data',
+      label: 'Artificial Intelligence & Data Science',
+      icon: 'psychology',
+      color: 'from-purple-600 to-indigo-600',
+      description: 'Machine learning, deep learning, data analytics, LLMs'
+    },
+    {
+      id: 'cloud-infra',
+      label: 'Cloud Infrastructure & DevOps',
+      icon: 'cloud_done',
+      color: 'from-emerald-600 to-teal-500',
+      description: 'Kubernetes, CI/CD, cloud architecture, SRE practices'
+    },
+    {
+      id: 'security',
+      label: 'Cybersecurity & Information Security',
+      icon: 'security',
+      color: 'from-rose-600 to-red-500',
+      description: 'Penetration testing, cryptography, SOC operations, compliance'
+    },
+    {
+      id: 'health-biotech',
+      label: 'Health-Tech, Bioinformatics & Pharma',
+      icon: 'biotech',
+      color: 'from-amber-600 to-orange-500',
+      description: 'Clinical informatics, computational biology, regulatory tech'
+    },
+    {
+      id: 'fintech',
+      label: 'FinTech, Quant Systems & Blockchain',
+      icon: 'account_balance',
+      color: 'from-yellow-600 to-amber-500',
+      description: 'Algorithmic trading, risk modeling, smart contracts, DeFi'
+    }
+  ],
+  focusMap: {
+    'software-web': [
+      { id: 'fullstack', label: 'Full-Stack Application Development', icon: 'developer_board', desc: 'End-to-end web & mobile apps, React/Next.js, Node.js, databases' },
+      { id: 'backend-systems', label: 'Backend & Distributed Systems', icon: 'dns', desc: 'Microservices, event-driven architecture, high-performance APIs' },
+      { id: 'frontend-ux', label: 'Frontend Engineering & UX', icon: 'palette', desc: 'Modern frontend frameworks, state management, accessibility, design systems' },
+      { id: 'mobile', label: 'Mobile & Cross-Platform Development', icon: 'phone_android', desc: 'React Native, Flutter, native iOS/Android, app store optimization' }
+    ],
+    'ai-data': [
+      { id: 'ml-engineering', label: 'ML Engineering & MLOps', icon: 'memory', desc: 'Model training pipelines, feature stores, model serving, monitoring' },
+      { id: 'data-science', label: 'Data Science & Analytics', icon: 'analytics', desc: 'Statistical modeling, experimentation, BI, business insights' },
+      { id: 'llm-agents', label: 'LLM Applications & AI Agents', icon: 'smart_toy', desc: 'RAG systems, LangGraph, multi-agent workflows, prompt engineering' },
+      { id: 'cv-nlp', label: 'Computer Vision & NLP', icon: 'visibility', desc: 'Transformers, diffusion models, biomedical NLP, document understanding' }
+    ],
+    'cloud-infra': [
+      { id: 'devops-sre', label: 'DevOps & Site Reliability Engineering', icon: 'build', desc: 'CI/CD pipelines, GitOps, observability, incident response' },
+      { id: 'cloud-arch', label: 'Cloud Architecture & Solutions', icon: 'cloud_queue', desc: 'AWS/Azure/GCP, infrastructure as code, cost optimization, migration' },
+      { id: 'platform-eng', label: 'Platform Engineering', icon: 'developer_mode', desc: 'Internal developer platforms, Kubernetes operators, self-service infra' },
+      { id: 'data-eng', label: 'Data Engineering & Streaming', icon: 'stream', desc: 'Kafka, Spark, Airflow, data lakes, real-time pipelines' }
+    ],
+    'security': [
+      { id: 'appsec', label: 'Application Security', icon: 'shield', desc: 'SAST/DAST, secure code review, supply chain security, DevSecOps' },
+      { id: 'offensive', label: 'Offensive Security & Red Teaming', icon: 'bug_report', desc: 'Penetration testing, vulnerability research, exploit development' },
+      { id: 'cloudsec', label: 'Cloud & Infrastructure Security', icon: 'cloud_off', desc: 'CSPM, CWPP, identity management, zero trust architecture' },
+      { id: 'governance', label: 'Security Governance & Compliance', icon: 'gavel', desc: 'SOC 2, ISO 27001, risk management, privacy engineering' }
+    ],
+    'health-biotech': [
+      { id: 'bio-nlp', label: 'Bio-NLP & Health Informatics', icon: 'science', desc: 'Biomedical NER, clinical text mining, PubMed analysis, FHIR' },
+      { id: 'comp-bio', label: 'Computational Biology & Drug Discovery', icon: 'biotech', desc: 'Molecular docking, protein folding, genomics, cheminformatics' },
+      { id: 'clinical-data', label: 'Clinical Data & Regulatory Tech', icon: 'assignment', desc: 'CDISC standards, clinical trial analytics, regulatory submissions' },
+      { id: 'digital-health', label: 'Digital Health & Telemedicine', icon: 'favorite', desc: 'HIPAA-compliant apps, remote monitoring, FDA SaMD pathway' }
+    ],
+    'fintech': [
+      { id: 'quant-dev', label: 'Quantitative Development', icon: 'trending_up', desc: 'High-frequency trading, risk models, derivative pricing, C++/Python' },
+      { id: 'blockchain', label: 'Blockchain & Smart Contracts', icon: 'integration_instructions', desc: 'Solidity, Rust, DeFi protocols, zero-knowledge proofs, L2s' },
+      { id: 'risk-analytics', label: 'Risk Analytics & Compliance', icon: 'analytics', desc: 'Credit risk, fraud detection, AML/KYC, regulatory reporting' },
+      { id: 'payments', label: 'Payments & Banking Infrastructure', icon: 'payment', desc: 'Core banking, payment rails, ledger systems, open banking APIs' }
+    ]
+  },
+  timelines: [
+    { id: '3months', label: '3 Months Intensive', weeks: 12, desc: 'Accelerated bootcamp pace, 20+ hrs/week', icon: 'flash_on' },
+    { id: '6months', label: '6 Months Comprehensive', weeks: 24, desc: 'Balanced learning, 12-15 hrs/week', icon: 'schedule' },
+    { id: '9months', label: '9 Months Deep Mastery', weeks: 36, desc: 'Thorough coverage, 8-10 hrs/week', icon: 'school' }
+  ],
+  comfortLevels: [
+    { id: 'beginner', label: 'Beginner / New to Field', desc: 'Need fundamentals first, guided learning path', icon: 'school', color: 'emerald' },
+    { id: 'intermediate', label: 'Intermediate / Some Experience', desc: 'Comfortable with basics, ready for applied projects', icon: 'build', color: 'blue' },
+    { id: 'advanced', label: 'Advanced / Production Experience', desc: 'Shipped real systems, want specialization & leadership', icon: 'rocket_launch', color: 'purple' }
+  ],
+  goals: [
+    { id: 'internship', label: 'Industry Internship', desc: 'Build portfolio for summer/off-cycle internship applications', icon: 'work_outline' },
+    { id: 'job', label: 'Full-Time Job Placement', desc: 'Target corporate roles with competitive compensation packages', icon: 'work' },
+    { id: 'research', label: 'Research & Graduate School', desc: 'Prepare for MS/PhD, publications, academic research roles', icon: 'school' },
+    { id: 'freelance', label: 'Freelance & Contract Work', desc: 'Build independent consulting practice or agency', icon: 'laptop_mac' },
+    { id: 'startup', label: 'Startup Founder / CTO Track', desc: 'Technical co-founder path, MVP to scale engineering', icon: 'lightbulb' }
+  ],
+  roleBenchmarks: {
+    'fullstack': { roleId: 'fullstack-web', title: 'Full Stack Software Engineer', sector: 'Technology & Software' },
+    'backend-systems': { roleId: 'backend-systems', title: 'Backend & Distributed Systems Engineer', sector: 'Technology & Software' },
+    'frontend-ux': { roleId: 'frontend-ux', title: 'Frontend & UX Engineer', sector: 'Technology & Software' },
+    'mobile': { roleId: 'mobile', title: 'Mobile Application Engineer', sector: 'Technology & Software' },
+    'ml-engineering': { roleId: 'ml-engineering', title: 'ML Engineer & MLOps Specialist', sector: 'Artificial Intelligence & Data' },
+    'data-science': { roleId: 'data-science', title: 'Data Scientist & Analytics Lead', sector: 'Artificial Intelligence & Data' },
+    'llm-agents': { roleId: 'llm-agents', title: 'LLM Application & AI Agent Engineer', sector: 'Artificial Intelligence & Data' },
+    'cv-nlp': { roleId: 'cv-nlp', title: 'Computer Vision & NLP Specialist', sector: 'Artificial Intelligence & Data' },
+    'devops-sre': { roleId: 'devops-sre', title: 'DevOps & Site Reliability Engineer', sector: 'Infrastructure & Cloud' },
+    'cloud-arch': { roleId: 'cloud-arch', title: 'Cloud Solutions Architect', sector: 'Infrastructure & Cloud' },
+    'platform-eng': { roleId: 'platform-eng', title: 'Platform Engineer', sector: 'Infrastructure & Cloud' },
+    'data-eng': { roleId: 'data-eng', title: 'Data Engineer', sector: 'Infrastructure & Cloud' },
+    'appsec': { roleId: 'appsec', title: 'Application Security Engineer', sector: 'Information Security' },
+    'offensive': { roleId: 'offensive', title: 'Offensive Security Engineer / Red Teamer', sector: 'Information Security' },
+    'cloudsec': { roleId: 'cloudsec', title: 'Cloud Security Engineer', sector: 'Information Security' },
+    'governance': { roleId: 'governance', title: 'Security Governance & Compliance Analyst', sector: 'Information Security' },
+    'bio-nlp': { roleId: 'bio-nlp', title: 'Bio-NLP & Health Informatics Specialist', sector: 'Healthcare & Life Sciences' },
+    'comp-bio': { roleId: 'comp-bio', title: 'Computational Biologist / Drug Discovery Scientist', sector: 'Healthcare & Life Sciences' },
+    'clinical-data': { roleId: 'clinical-data', title: 'Clinical Data & Regulatory Affairs Analyst', sector: 'Healthcare & Life Sciences' },
+    'digital-health': { roleId: 'digital-health', title: 'Digital Health Product Engineer', sector: 'Healthcare & Life Sciences' },
+    'quant-dev': { roleId: 'quant-dev', title: 'Quantitative Developer', sector: 'Financial Technology' },
+    'blockchain': { roleId: 'blockchain', title: 'Blockchain & Smart Contract Engineer', sector: 'Financial Technology' },
+    'risk-analytics': { roleId: 'risk-analytics', title: 'Risk Analytics & Compliance Engineer', sector: 'Financial Technology' },
+    'payments': { roleId: 'payments', title: 'Payments & Banking Infrastructure Engineer', sector: 'Financial Technology' }
+  }
+};
+
+function openDecisionTreeModal() {
+  const modal = document.getElementById('decision-tree-modal');
+  if (!modal) return;
+
+  // Reset state
+  decisionTreeState = {
+    currentStep: 1,
+    selections: { domain: null, focus: null, timeline: null, comfort: null, goal: null },
+    result: null
+  };
+
+  // Show modal
+  modal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+
+  // Render Step 1 options
+  renderDecisionTreeStep(1);
+}
+
+function closeDecisionTreeModal() {
+  const modal = document.getElementById('decision-tree-modal');
+  if (!modal) return;
+
+  modal.classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+function renderDecisionTreeStep(step) {
+  // Hide all steps
+  document.querySelectorAll('.decision-tree-step').forEach(el => el.classList.add('hidden'));
+
+  // Update progress
+  const progressPercent = (step / 5) * 100;
+  const progressBar = document.getElementById('decision-tree-progress-bar');
+  const stepLabel = document.getElementById('decision-tree-step-label');
+  if (progressBar) progressBar.style.width = `${progressPercent}%`;
+  if (stepLabel) stepLabel.innerText = `Step ${step} of 5`;
+
+  // Update step indicator pills
+  document.querySelectorAll('[data-step]').forEach((el, idx) => {
+    const stepNum = idx + 1;
+    if (stepNum < step) {
+      el.className = 'flex-1 text-center text-[10px] font-bold text-emerald-600 dark:text-emerald-400';
+      el.innerHTML = '✓ ' + el.getAttribute('data-step-label');
+    } else if (stepNum === step) {
+      el.className = 'flex-1 text-center text-[10px] font-bold text-purple-600 dark:text-purple-400';
+    } else {
+      el.className = 'flex-1 text-center text-[10px] font-medium text-gray-400 dark:text-gray-500';
+    }
+  });
+
+  // Show current step
+  const stepEl = document.getElementById(`dt-step-${step}`);
+  if (stepEl) stepEl.classList.remove('hidden');
+
+  // Show/hide result step
+  const resultEl = document.getElementById('dt-result');
+  if (step === 6 && resultEl) resultEl.classList.remove('hidden');
+
+  // Populate options based on step
+  switch(step) {
+    case 1:
+      populateDomainOptions();
+      break;
+    case 2:
+      populateFocusOptions();
+      break;
+    case 3:
+      populateTimelineOptions();
+      break;
+    case 4:
+      populateComfortOptions();
+      break;
+    case 5:
+      populateGoalOptions();
+      break;
+    case 6:
+      renderDecisionTreeResult();
+      break;
+  }
+
+  // Update nav buttons
+  const prevBtn = document.getElementById('dt-prev-btn');
+  const nextBtn = document.getElementById('dt-next-btn');
+  if (prevBtn) {
+    prevBtn.classList.toggle('hidden', step === 1);
+    prevBtn.disabled = step === 1;
+  }
+  if (nextBtn) {
+    if (step === 5) {
+      nextBtn.innerHTML = '<span>See Results</span><span class="material-symbols-outlined text-sm">check_circle</span>';
+    } else if (step === 6) {
+      nextBtn.classList.add('hidden');
+    } else {
+      nextBtn.innerHTML = '<span>Continue</span><span class="material-symbols-outlined text-sm">chevron_right</span>';
+      nextBtn.classList.remove('hidden');
+    }
+    nextBtn.disabled = !decisionTreeState.selections[getSelectionKey(step)];
+  }
+}
+
+function getSelectionKey(step) {
+  const keys = ['domain', 'focus', 'timeline', 'comfort', 'goal'];
+  return keys[step - 1];
+}
+
+function populateDomainOptions() {
+  const container = document.getElementById('dt-domain-options');
+  if (!container) return;
+
+  container.innerHTML = DECISION_TREE_DATA.domains.map(d => `
+    <button onclick="selectDecisionTreeOption('domain', '${d.id}')"
+      class="dt-option p-4 rounded-2xl border-2 border-[#E7E4DC] dark:border-white/10 hover:border-purple-500/50 dark:hover:border-purple-500/50 transition-all hover:shadow-lg text-left group ${decisionTreeState.selections.domain === d.id ? 'border-purple-500 bg-purple-50/50 dark:bg-purple-950/30' : ''}"
+      data-option="${d.id}">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br ${d.color} text-white flex items-center justify-center shrink-0 shadow-md">
+          <span class="material-symbols-outlined text-lg">${d.icon}</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h4 class="font-bold text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">${d.label}</h4>
+          <p class="text-xs text-slate-500 dark:text-gray-400 mt-0.5">${d.description}</p>
+        </div>
+        ${decisionTreeState.selections.domain === d.id ? '<span class="material-symbols-outlined text-purple-500 shrink-0">check_circle</span>' : ''}
+      </div>
+    </button>
+  `).join('');
+}
+
+function populateFocusOptions() {
+  const container = document.getElementById('dt-focus-options');
+  const contextEl = document.getElementById('dt-step2-context');
+  if (!container) return;
+
+  const domain = decisionTreeState.selections.domain;
+  const options = DECISION_TREE_DATA.focusMap[domain] || [];
+
+  if (contextEl) {
+    const domainData = DECISION_TREE_DATA.domains.find(d => d.id === domain);
+    contextEl.innerText = domainData?.label || 'this domain';
+  }
+
+  container.innerHTML = options.map(o => `
+    <button onclick="selectDecisionTreeOption('focus', '${o.id}')"
+      class="dt-option p-4 rounded-2xl border-2 border-[#E7E4DC] dark:border-white/10 hover:border-purple-500/50 dark:hover:border-purple-500/50 transition-all hover:shadow-lg text-left group ${decisionTreeState.selections.focus === o.id ? 'border-purple-500 bg-purple-50/50 dark:bg-purple-950/30' : ''}"
+      data-option="${o.id}">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-lg">${o.icon}</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h4 class="font-bold text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">${o.label}</h4>
+          <p class="text-xs text-slate-500 dark:text-gray-400 mt-0.5">${o.desc}</p>
+        </div>
+        ${decisionTreeState.selections.focus === o.id ? '<span class="material-symbols-outlined text-purple-500 shrink-0">check_circle</span>' : ''}
+      </div>
+    </button>
+  `).join('');
+}
+
+function populateTimelineOptions() {
+  const container = document.getElementById('dt-timeline-options');
+  if (!container) return;
+
+  container.innerHTML = DECISION_TREE_DATA.timelines.map(t => `
+    <button onclick="selectDecisionTreeOption('timeline', '${t.id}')"
+      class="dt-option p-4 rounded-2xl border-2 border-[#E7E4DC] dark:border-white/10 hover:border-purple-500/50 dark:hover:border-purple-500/50 transition-all hover:shadow-lg text-left group ${decisionTreeState.selections.timeline === t.id ? 'border-purple-500 bg-purple-50/50 dark:bg-purple-950/30' : ''}"
+      data-option="${t.id}">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-lg">${t.icon}</span>
+        </div>
+        <div class="flex-1">
+          <h4 class="font-bold text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">${t.label}</h4>
+          <p class="text-xs text-slate-500 dark:text-gray-400 mt-0.5">${t.desc}</p>
+        </div>
+        ${decisionTreeState.selections.timeline === t.id ? '<span class="material-symbols-outlined text-purple-500 shrink-0">check_circle</span>' : ''}
+      </div>
+    </button>
+  `).join('');
+}
+
+function populateComfortOptions() {
+  const container = document.getElementById('dt-comfort-options');
+  if (!container) return;
+
+  container.innerHTML = DECISION_TREE_DATA.comfortLevels.map(c => `
+    <button onclick="selectDecisionTreeOption('comfort', '${c.id}')"
+      class="dt-option p-4 rounded-2xl border-2 border-[#E7E4DC] dark:border-white/10 hover:border-purple-500/50 dark:hover:border-purple-500/50 transition-all hover:shadow-lg text-left group ${decisionTreeState.selections.comfort === c.id ? 'border-purple-500 bg-purple-50/50 dark:bg-purple-950/30' : ''}"
+      data-option="${c.id}">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-${c.color}-100 dark:bg-${c.color}-950/40 text-${c.color}-600 dark:text-${c.color}-400 flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-lg">${c.icon}</span>
+        </div>
+        <div class="flex-1">
+          <h4 class="font-bold text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">${c.label}</h4>
+          <p class="text-xs text-slate-500 dark:text-gray-400 mt-0.5">${c.desc}</p>
+        </div>
+        ${decisionTreeState.selections.comfort === c.id ? '<span class="material-symbols-outlined text-purple-500 shrink-0">check_circle</span>' : ''}
+      </div>
+    </button>
+  `).join('');
+}
+
+function populateGoalOptions() {
+  const container = document.getElementById('dt-goal-options');
+  if (!container) return;
+
+  container.innerHTML = DECISION_TREE_DATA.goals.map(g => `
+    <button onclick="selectDecisionTreeOption('goal', '${g.id}')"
+      class="dt-option p-4 rounded-2xl border-2 border-[#E7E4DC] dark:border-white/10 hover:border-purple-500/50 dark:hover:border-purple-500/50 transition-all hover:shadow-lg text-left group ${decisionTreeState.selections.goal === g.id ? 'border-purple-500 bg-purple-50/50 dark:bg-purple-950/30' : ''}"
+      data-option="${g.id}">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-lg">${g.icon}</span>
+        </div>
+        <div class="flex-1">
+          <h4 class="font-bold text-slate-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">${g.label}</h4>
+          <p class="text-xs text-slate-500 dark:text-gray-400 mt-0.5">${g.desc}</p>
+        </div>
+        ${decisionTreeState.selections.goal === g.id ? '<span class="material-symbols-outlined text-purple-500 shrink-0">check_circle</span>' : ''}
+      </div>
+    </button>
+  `).join('');
+}
+
+function selectDecisionTreeOption(key, value) {
+  decisionTreeState.selections[key] = value;
+
+  // Update UI
+  document.querySelectorAll(`#dt-step-${decisionTreeState.currentStep} .dt-option`).forEach(btn => {
+    const isSelected = btn.getAttribute('data-option') === value;
+    if (isSelected) {
+      btn.classList.add('border-purple-500', 'bg-purple-50/50', 'dark:bg-purple-950/30');
+      btn.classList.remove('border-[#E7E4DC]', 'dark:border-white/10');
+    } else {
+      btn.classList.remove('border-purple-500', 'bg-purple-50/50', 'dark:bg-purple-950/30');
+      btn.classList.add('border-[#E7E4DC]', 'dark:border-white/10');
+    }
+  });
+
+  // Enable next button
+  const nextBtn = document.getElementById('dt-next-btn');
+  if (nextBtn) nextBtn.disabled = false;
+}
+
+function decisionTreeNextStep() {
+  if (decisionTreeState.currentStep < 5) {
+    decisionTreeState.currentStep++;
+    renderDecisionTreeStep(decisionTreeState.currentStep);
+  } else if (decisionTreeState.currentStep === 5) {
+    // Show result
+    decisionTreeState.currentStep = 6;
+    renderDecisionTreeStep(6);
+  }
+}
+
+function decisionTreePrevStep() {
+  if (decisionTreeState.currentStep > 1) {
+    decisionTreeState.currentStep--;
+    renderDecisionTreeStep(decisionTreeState.currentStep);
+  }
+}
+
+function renderDecisionTreeResult() {
+  // Determine target role based on selections
+  const { domain, focus } = decisionTreeState.selections;
+  const roleKey = focus;
+  const roleData = DECISION_TREE_DATA.roleBenchmarks[roleKey] || DECISION_TREE_DATA.roleBenchmarks.fullstack;
+
+  // Generate decision path
+  const domainData = DECISION_TREE_DATA.domains.find(d => d.id === domain);
+  const focusData = DECISION_TREE_DATA.focusMap[domain]?.find(f => f.id === focus);
+  const timelineData = DECISION_TREE_DATA.timelines.find(t => t.id === decisionTreeState.selections.timeline);
+  const comfortData = DECISION_TREE_DATA.comfortLevels.find(c => c.id === decisionTreeState.selections.comfort);
+  const goalData = DECISION_TREE_DATA.goals.find(g => g.id === decisionTreeState.selections.goal);
+
+  const decisionPath = [
+    `Domain: ${domainData?.label || 'Software & Web Engineering'}`,
+    `Specialization: ${focusData?.label || 'Full-Stack Development'}`,
+    `Timeline: ${timelineData?.label || '6 Months Comprehensive'}`,
+    `Comfort Level: ${comfortData?.label || 'Intermediate'}`,
+    `Goal: ${goalData?.label || 'Full-Time Job Placement'}`
+  ];
+
+  // Mock skill gaps based on role
+  const skillGapsMap = {
+    'fullstack': ['React/Next.js Advanced Patterns', 'System Design', 'Database Optimization', 'Testing Strategies'],
+    'ml-engineering': ['MLOps & Model Serving', 'Feature Engineering', 'Distributed Training', 'Model Monitoring'],
+    'devops-sre': ['Kubernetes Advanced', 'GitOps & ArgoCD', 'Observability Stack', 'Chaos Engineering'],
+    'bio-nlp': ['Biomedical NER', 'Clinical Text Mining', 'FHIR Standards', 'PubMed API Integration'],
+    'blockchain': ['Smart Contract Security', 'DeFi Protocols', 'Zero-Knowledge Proofs', 'L2 Scaling'],
+    'quant-dev': ['C++ HFT Systems', 'Derivative Pricing Models', 'Risk Management', 'Exchange Connectivity']
+  };
+
+  const skillGaps = skillGapsMap[focus] || skillGapsMap.fullstack;
+
+  // Update result UI
+  const roleTitleEl = document.getElementById('dt-result-role-title');
+  const compatEl = document.getElementById('dt-result-compatibility');
+  const pathEl = document.getElementById('dt-decision-path');
+  const gapsEl = document.getElementById('dt-skill-gaps');
+
+  if (roleTitleEl) roleTitleEl.innerText = roleData.title;
+  if (compatEl) compatEl.innerText = `Compatibility: ${Math.floor(Math.random() * 20) + 70}%`;
+
+  if (pathEl) {
+    pathEl.innerHTML = decisionPath.map((step, idx) => `
+      <li class="flex items-start gap-3 p-3 rounded-xl bg-white dark:bg-white/[0.03] border border-[#E7E4DC] dark:border-white/10">
+        <span class="w-6 h-6 rounded-full bg-gradient-to-br from-purple-600 to-indigo-600 text-white flex items-center justify-center shrink-0 text-xs font-bold">${idx + 1}</span>
+        <span class="text-sm text-slate-700 dark:text-gray-300 mt-0.5">${step}</span>
+      </li>
+    `).join('');
+  }
+
+  if (gapsEl) {
+    gapsEl.innerHTML = skillGaps.map(gap => `
+      <span class="px-3 py-1 rounded-full text-xs font-medium bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60">
+        <span class="material-symbols-outlined text-[12px] align-middle mr-1">info</span>${gap}
+      </span>
+    `).join('');
+  }
+
+  // Store result for application
+  decisionTreeState.result = {
+    role: roleData,
+    decisionPath,
+    skillGaps,
+    timeline: decisionTreeState.selections.timeline,
+    comfort: decisionTreeState.selections.comfort,
+    goal: decisionTreeState.selections.goal
+  };
+}
+
+async function applyDecisionTreeRoadmap() {
+  if (!decisionTreeState.result) return;
+
+  const btn = event.target.closest('button');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span><span>Generating Roadmap...</span>';
+  }
+
+  try {
+    const user = JoblexApiClient.getCurrentUser();
+    const studentInput = {
+      academicDepartment: user?.department || 'Computer Science Engineering',
+      careerAmbition: decisionTreeState.result.role.title,
+      technicalComfortLevel: decisionTreeState.selections.comfort === 'beginner' ? 'Beginner' :
+                            decisionTreeState.selections.comfort === 'advanced' ? 'Advanced' : 'Intermediate',
+      preferredPaceMonths: decisionTreeState.selections.timeline === '3months' ? 3 :
+                          decisionTreeState.selections.timeline === '9months' ? 9 : 6,
+      existingSkills: user?.verified_skills || [],
+      primaryGoal: decisionTreeState.selections.goal === 'internship' ? 'Industry Internship' :
+                   decisionTreeState.selections.goal === 'job' ? 'Full-Time Job Placement' :
+                   decisionTreeState.selections.goal === 'research' ? 'Research & Graduate School' :
+                   decisionTreeState.selections.goal === 'freelance' ? 'Freelance & Contract Work' : 'Startup Founder / CTO Track'
+    };
+
+    const res = await JoblexApiClient.evaluateDecisionTree(studentInput);
+
+    if (res && res.success) {
+      showToast(
+        `Your personalized "${res.targetRole?.title || decisionTreeState.result.role.title}" roadmap has been generated with ${res.personalizedRoadmap?.phases?.length || 4} phases and ${res.matchingOpportunities?.length || 0} matching opportunities!`,
+        'Roadmap Generated',
+        'success'
+      );
+
+      closeDecisionTreeModal();
+
+      // Refresh the roadmap view
+      if (typeof initSectorRoadmaps === 'function') {
+        await initSectorRoadmaps();
+      }
+
+      // Scroll to roadmap catalog
+      const catalog = document.getElementById('roadmap-catalog-section');
+      if (catalog) {
+        catalog.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    } else {
+      showToast(res?.error || 'Failed to generate roadmap. Please try again.', 'Error', 'error');
+    }
+  } catch (err) {
+    console.error('[Decision Tree Apply Error]:', err);
+    showToast('Failed to connect to decision tree engine. Please check backend server.', 'Error', 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<span class="material-symbols-outlined">rocket_launch</span><span>Generate & Apply Roadmap</span>';
+    }
+  }
+}
+
+// Global window bindings for decision tree
+window.openDecisionTreeModal = openDecisionTreeModal;
+window.closeDecisionTreeModal = closeDecisionTreeModal;
+window.decisionTreeNextStep = decisionTreeNextStep;
+window.decisionTreePrevStep = decisionTreePrevStep;
+window.selectDecisionTreeOption = selectDecisionTreeOption;
+window.applyDecisionTreeRoadmap = applyDecisionTreeRoadmap;
+
 // Backward compatibility helper
 function escapeHtml(str) {
   if (!str) return '';
@@ -3758,72 +4302,16 @@ function renderPeerBenchmarking() {
 }
 
 // ─────────────────────────────────────────────────────────────
-// 2D SKILL TREE CONSTELLATION
+// SKILL CONSTELLATION GRAPH — Dynamic Multi-Cluster Competency Visualization
 // ─────────────────────────────────────────────────────────────
 function initSkillTree() {
-  window.addEventListener('resize', drawSkillTree);
-  setTimeout(drawSkillTree, 50);
+  // Delegate to the new dynamic constellation system
+  initSkillConstellation();
 }
 
+// Legacy draw function kept for backward compatibility (no-op)
 function drawSkillTree() {
-  const canvas = document.getElementById('skill-tree-canvas');
-  if (!canvas) return;
-
-  const ctx = canvas.getContext('2d');
-  canvas.width = canvas.parentElement.clientWidth;
-  canvas.height = canvas.parentElement.clientHeight;
-
-  const w = canvas.width;
-  const h = canvas.height;
-
-  ctx.clearRect(0, 0, w, h);
-
-  const currentUser = JoblexApiClient.getCurrentUser();
-  const hasProgress = currentUser && ((currentUser.xp && currentUser.xp > 0) || (currentUser.verified_skills && currentUser.verified_skills.length > 0));
-
-  const nodes = [
-    { name: 'Core Foundations', x: w * 0.2, y: h * 0.5, acquired: !!hasProgress },
-    { name: 'Domain Methodology', x: w * 0.4, y: h * 0.35, acquired: !!hasProgress },
-    { name: 'Applied Analytics', x: w * 0.4, y: h * 0.65, acquired: !!hasProgress },
-    { name: 'Industry Protocols', x: w * 0.65, y: h * 0.35, acquired: false },
-    { name: 'Data & Systems Tech', x: w * 0.65, y: h * 0.65, acquired: !!hasProgress },
-    { name: 'Advanced R&D Modeling', x: w * 0.85, y: h * 0.5, acquired: false }
-  ];
-
-  const edges = [
-    [0, 1], [0, 2], [1, 3], [2, 4], [3, 5], [4, 5]
-  ];
-
-  const isDark = document.documentElement.classList.contains('dark');
-
-  // Draw Edges
-  edges.forEach(([from, to]) => {
-    ctx.beginPath();
-    ctx.moveTo(nodes[from].x, nodes[from].y);
-    ctx.lineTo(nodes[to].x, nodes[to].y);
-    ctx.strokeStyle = isDark ? '#4b5563' : '#cbd5e1';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-  });
-
-  // Draw Nodes
-  nodes.forEach(n => {
-    ctx.beginPath();
-    ctx.arc(n.x, n.y, 14, 0, Math.PI * 2);
-    ctx.fillStyle = n.acquired ? '#8b5cf6' : (isDark ? '#374151' : '#e2e8f0');
-    ctx.fill();
-    ctx.strokeStyle = n.acquired ? '#a78bfa' : (isDark ? '#6b7280' : '#94a3b8');
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
-    // Node Text
-    ctx.fillStyle = n.acquired 
-      ? (isDark ? '#ffffff' : '#4c1d95') 
-      : (isDark ? '#9ca3af' : '#64748b');
-    ctx.font = 'bold 11px Inter, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(n.name, n.x, n.y + 28);
-  });
+  // Handled by constellation animation loop
 }
 
 // Global Aliases & Handlers for Student Sub-Pages
@@ -3922,7 +4410,7 @@ async function renderScreeningExams() {
                     Start Exam
                   </button>
                 ` : exam.status === 'completed' ? `
-                  <button onclick="viewScreeningExamResults(${exam.id})" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition">
+                  <button onclick="viewScreeningExamResults(${exam.assignmentId || exam.id})" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition">
                     View Results
                   </button>
                 ` : `
@@ -3969,11 +4457,11 @@ async function startScreeningExam(examId) {
 }
 
 // View screening exam results
-async function viewScreeningExamResults(examId) {
+async function viewScreeningExamResults(assignmentId) {
   try {
-    const result = await JoblexApiClient.getExamResults(examId);
+    const result = await JoblexApiClient.getExamResults(assignmentId);
     if (result.success) {
-      showExamResultsModal(result.results);
+      showExamResultsModal(result);
     } else {
       showToast(result.error || 'Failed to load results', 'Results Error', 'error');
     }
@@ -4096,6 +4584,10 @@ function hideExamAlertBanner() {
   }
 }
 
+function closeExamAlert() {
+  hideExamAlertBanner();
+}
+
 async function checkAndShowExamAlert() {
   try {
     const user = JSON.parse(localStorage.getItem('joblex_user') || localStorage.getItem('joblex_auth_user') || '{}');
@@ -4166,4 +4658,1500 @@ function initQuizTabs() {
 
 // Call init when DOM is loaded
 document.addEventListener('DOMContentLoaded', initQuizTabs);
+
+
+// ═══════════════════════════════════════════════════════════════════════════
+// SKILL CONSTELLATION GRAPH — Dynamic Multi-Cluster Competency Visualization
+// ═══════════════════════════════════════════════════════════════════════════
+
+let constellationState = {
+  nodes: [],
+  edges: [],
+  cluster: 'tech',
+  targetRole: 'Full Stack Software Engineer',
+  zoom: 1,
+  panX: 0,
+  panY: 0,
+  selectedNode: null,
+  animationFrame: null,
+  isDragging: false,
+  dragStartX: 0,
+  dragStartY: 0,
+  panStartX: 0,
+  panStartY: 0,
+  hoveredNode: null,
+  particleTime: 0
+};
+
+// Cluster to category mapping
+const CLUSTER_CATEGORIES = {
+  tech: ['Software Engineering', 'Database & Cloud'],
+  ai: ['Data Science & AI', 'Health-Tech & Bio-Informatics'],
+  ayush: ['Ayush Pharmacology', 'Soft Skills & Professionalism', 'Aptitude & Reasoning']
+};
+
+const CLUSTER_DISPLAY_NAMES = {
+  tech: 'Software & Cloud Architecture',
+  ai: 'AI & Data Science',
+  ayush: 'Ayush Informatics'
+};
+
+const STATUS_STYLES = {
+  acquired: {
+    fill: '#10B981',
+    stroke: '#059669',
+    glow: '#10B981',
+    labelColor: '#064E3B',
+    darkLabelColor: '#D1FAE5',
+    darkGlow: '#34D399',
+    pulse: false
+  },
+  in_progress: {
+    fill: '#F59E0B',
+    stroke: '#D97706',
+    glow: '#F59E0B',
+    labelColor: '#78350F',
+    darkLabelColor: '#FEF3C7',
+    darkGlow: '#FBBF24',
+    pulse: true
+  },
+  target_gap: {
+    fill: '#EF4444',
+    stroke: '#DC2626',
+    glow: '#EF4444',
+    labelColor: '#7F1D1D',
+    darkLabelColor: '#FEE2E2',
+    darkGlow: '#F87171',
+    pulse: true
+  },
+  locked: {
+    fill: '#6B7280',
+    stroke: '#4B5563',
+    glow: '#9CA3AF',
+    labelColor: '#374151',
+    darkLabelColor: '#E5E7EB',
+    darkGlow: '#9CA3AF',
+    pulse: false
+  }
+};
+
+async function initSkillConstellation() {
+  const canvas = document.getElementById('skill-tree-canvas');
+  if (!canvas) return;
+
+  // Setup canvas
+  setupCanvas(canvas);
+
+  // Load initial constellation
+  await loadConstellation('tech');
+
+  // Start animation loop
+  startConstellationAnimation();
+
+  // Setup event listeners
+  setupConstellationEventListeners(canvas);
+
+  // Update node count badge
+  updateNodeCountBadge();
+}
+
+function setupCanvas(canvas) {
+  const container = canvas.parentElement;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = container.clientWidth * dpr;
+  canvas.height = container.clientHeight * dpr;
+  canvas.style.width = container.clientWidth + 'px';
+  canvas.style.height = container.clientHeight + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+}
+
+async function loadConstellation(cluster) {
+  const loadingEl = document.getElementById('constellation-loading');
+  if (loadingEl) loadingEl.style.display = 'flex';
+
+  constellationState.cluster = cluster;
+
+  // Get target role from user profile or roadmap
+  const user = JoblexApiClient.getCurrentUser();
+  if (user) {
+    const roadmapRes = await JoblexApiClient.getRoadmap(user.id || user.email);
+    if (roadmapRes && roadmapRes.success && roadmapRes.roadmap?.targetRole) {
+      constellationState.targetRole = roadmapRes.roadmap.targetRole;
+    }
+  }
+
+  try {
+    const response = await JoblexApiClient.getSkillConstellation(cluster, constellationState.targetRole);
+
+    if (response.success && response.nodes) {
+      constellationState.nodes = response.nodes;
+      constellationState.edges = response.edges || [];
+
+      // Calculate initial positions using force-directed layout
+      computeForceLayout();
+
+      updateClusterTabs();
+      updateNodeCountBadge();
+    }
+  } catch (err) {
+    console.error('[Skill Constellation] Load error:', err);
+  } finally {
+    if (loadingEl) loadingEl.style.display = 'none';
+  }
+}
+
+function computeForceLayout() {
+  const canvas = document.getElementById('skill-tree-canvas');
+  if (!canvas) return;
+
+  const container = canvas.parentElement;
+  const width = container.clientWidth;
+  const height = container.clientHeight;
+  const centerX = width / 2;
+  const centerY = height / 2;
+
+  // Group nodes by tier
+  const tiers = {};
+  constellationState.nodes.forEach(node => {
+    if (!tiers[node.tier]) tiers[node.tier] = [];
+    tiers[node.tier].push(node);
+  });
+
+  const tierKeys = Object.keys(tiers).sort((a, b) => a - b);
+  const tierCount = tierKeys.length;
+
+  // Assign positions based on tier (concentric circles)
+  tierKeys.forEach((tierKey, tierIndex) => {
+    const tierNodes = tiers[tierKey];
+    const radius = 80 + tierIndex * 100;
+    const angleStep = (Math.PI * 2) / tierNodes.length;
+
+    tierNodes.forEach((node, nodeIndex) => {
+      const angle = nodeIndex * angleStep - Math.PI / 2;
+      node.targetX = centerX + Math.cos(angle) * radius;
+      node.targetY = centerY + Math.sin(angle) * radius;
+      // Initialize current position if not set
+      if (node.x === undefined) node.x = node.targetX;
+      if (node.y === undefined) node.y = node.targetY;
+    });
+  });
+
+  // Apply force-directed refinement for better spacing
+  refineLayout();
+}
+
+function refineLayout() {
+  const iterations = 50;
+  const repulsionStrength = 5000;
+  const attractionStrength = 0.05;
+  const damping = 0.8;
+
+  for (let iter = 0; iter < iterations; iter++) {
+    // Repulsion between all nodes
+    for (let i = 0; i < constellationState.nodes.length; i++) {
+      const a = constellationState.nodes[i];
+      let fx = 0, fy = 0;
+
+      for (let j = 0; j < constellationState.nodes.length; j++) {
+        if (i === j) continue;
+        const b = constellationState.nodes[j];
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        const force = repulsionStrength / (dist * dist);
+        fx += (dx / dist) * force;
+        fy += (dy / dist) * force;
+      }
+
+      a.vx = (a.vx || 0) * damping + fx * 0.01;
+      a.vy = (a.vy || 0) * damping + fy * 0.01;
+    }
+
+    // Attraction along edges
+    constellationState.edges.forEach(edge => {
+      const from = constellationState.nodes.find(n => n.id === edge.from);
+      const to = constellationState.nodes.find(n => n.id === edge.to);
+      if (!from || !to) return;
+
+      const dx = to.x - from.x;
+      const dy = to.y - from.y;
+      const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      const force = attractionStrength * dist;
+
+      from.vx = (from.vx || 0) + (dx / dist) * force;
+      from.vy = (from.vy || 0) + (dy / dist) * force;
+      to.vx = (to.vx || 0) - (dx / dist) * force;
+      to.vy = (to.vy || 0) - (dy / dist) * force;
+    });
+
+    // Apply velocities
+    constellationState.nodes.forEach(node => {
+      node.x += node.vx || 0;
+      node.y += node.vy || 0;
+    });
+  }
+
+  // Copy to target for smooth animation
+  constellationState.nodes.forEach(node => {
+    node.targetX = node.x;
+    node.targetY = node.y;
+  });
+}
+
+function startConstellationAnimation() {
+  function animate() {
+    drawConstellation();
+    constellationState.animationFrame = requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+function drawConstellation() {
+  const canvas = document.getElementById('skill-tree-canvas');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  const container = canvas.parentElement;
+  const width = container.clientWidth;
+  const height = container.clientHeight;
+  const isDark = document.documentElement.classList.contains('dark');
+
+  // Clear canvas
+  ctx.clearRect(0, 0, width, height);
+
+  // Apply transform
+  ctx.save();
+  ctx.translate(constellationState.panX, constellationState.panY);
+  ctx.scale(constellationState.zoom, constellationState.zoom);
+
+  // Draw particle background
+  drawParticles(ctx, width, height, isDark);
+
+  // Draw edges
+  drawEdges(ctx, isDark);
+
+  // Draw nodes
+  drawNodes(ctx, isDark);
+
+  // Draw hovered node highlight
+  if (constellationState.hoveredNode) {
+    drawNodeHighlight(ctx, constellationState.hoveredNode, isDark);
+  }
+
+  ctx.restore();
+
+  // Update zoom indicator
+  updateZoomIndicator();
+}
+
+function drawParticles(ctx, width, height, isDark) {
+  constellationState.particleTime += 0.01;
+  const particleCount = 30;
+
+  for (let i = 0; i < particleCount; i++) {
+    const angle = constellationState.particleTime * 0.5 + i * (Math.PI * 2 / particleCount);
+    const radius = 100 + Math.sin(constellationState.particleTime + i) * 50;
+    const x = width / 2 + Math.cos(angle) * radius;
+    const y = height / 2 + Math.sin(angle) * radius;
+
+    ctx.beginPath();
+    ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+    ctx.fillStyle = isDark ? 'rgba(139, 92, 246, 0.3)' : 'rgba(139, 92, 246, 0.15)';
+    ctx.fill();
+  }
+}
+
+function drawEdges(ctx, isDark) {
+  constellationState.edges.forEach(edge => {
+    const from = constellationState.nodes.find(n => n.id === edge.from);
+    const to = constellationState.nodes.find(n => n.id === edge.to);
+    if (!from || !to) return;
+
+    const fromStyle = STATUS_STYLES[from.status];
+    const toStyle = STATUS_STYLES[to.status];
+
+    // Draw curved line
+    ctx.beginPath();
+    ctx.moveTo(from.x, from.y);
+
+    // Quadratic curve through midpoint
+    const midX = (from.x + to.x) / 2;
+    const midY = (from.y + to.y) / 2;
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const perpX = -dy / dist * 30;
+    const perpY = dx / dist * 30;
+
+    ctx.quadraticCurveTo(midX + perpX, midY + perpY, to.x, to.y);
+
+    // Gradient based on statuses
+    const gradient = ctx.createLinearGradient(from.x, from.y, to.x, to.y);
+    gradient.addColorStop(0, fromStyle.glow + '80');
+    gradient.addColorStop(0.5, isDark ? 'rgba(139, 92, 246, 0.4)' : 'rgba(139, 92, 246, 0.2)');
+    gradient.addColorStop(1, toStyle.glow + '80');
+
+    ctx.strokeStyle = gradient;
+    ctx.lineWidth = edge.type === 'prerequisite' ? 2.5 : 1.5;
+    ctx.setLineDash(edge.type === 'prerequisite' ? [] : [5, 5]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  });
+}
+
+function drawNodes(ctx, isDark) {
+  constellationState.nodes.forEach(node => {
+    const style = STATUS_STYLES[node.status];
+    const radius = 18;
+
+    // Animate position toward target
+    node.x += (node.targetX - node.x) * 0.1;
+    node.y += (node.targetY - node.y) * 0.1;
+
+    // Pulse animation for in_progress and target_gap
+    let pulseScale = 1;
+    if (style.pulse) {
+      pulseScale = 1 + Math.sin(Date.now() * 0.005) * 0.1;
+    }
+    const currentRadius = radius * pulseScale * constellationState.zoom;
+
+    // Glow effect
+    if (node.status !== 'locked') {
+      const glowRadius = currentRadius + 8;
+      const gradient = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, glowRadius);
+      const glowColor = isDark ? style.darkGlow : style.glow;
+      gradient.addColorStop(0, glowColor + '60');
+      gradient.addColorStop(1, glowColor + '00');
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, glowRadius, 0, Math.PI * 2);
+      ctx.fillStyle = gradient;
+      ctx.fill();
+    }
+
+    // Node circle
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, currentRadius, 0, Math.PI * 2);
+    ctx.fillStyle = style.fill;
+    ctx.fill();
+    ctx.strokeStyle = style.stroke;
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Status indicator ring for acquired
+    if (node.status === 'acquired') {
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, currentRadius + 4, 0, Math.PI * 2);
+      ctx.strokeStyle = style.glow;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // Progress ring for in_progress
+    if (node.status === 'in_progress') {
+      const progress = node.progress || 0;
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, currentRadius + 6, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * progress);
+      ctx.strokeStyle = style.glow;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
+
+    // Lock icon for locked
+    if (node.status === 'locked') {
+      ctx.fillStyle = isDark ? '#9CA3AF' : '#6B7280';
+      ctx.font = 'bold 14px Material Symbols Outlined';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('', node.x, node.y + 1); // lock icon
+    } else if (node.status === 'acquired') {
+      // Checkmark for acquired
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 14px Material Symbols Outlined';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('', node.x, node.y + 1); // check_circle
+    }
+
+    // Node label
+    ctx.fillStyle = isDark ? style.darkLabelColor : style.labelColor;
+    ctx.font = '500 11px "Plus Jakarta Sans", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+
+    // Wrap long labels
+    const words = node.label.split(' ');
+    let line = '';
+    const lines = [];
+    words.forEach(word => {
+      const testLine = line + word + ' ';
+      const metrics = ctx.measureText(testLine);
+      if (metrics.width > 100 && line !== '') {
+        lines.push(line.trim());
+        line = word + ' ';
+      } else {
+        line = testLine;
+      }
+    });
+    lines.push(line.trim());
+
+    const lineHeight = 14;
+    const startY = node.y + currentRadius + 8;
+    lines.forEach((l, i) => {
+      ctx.fillText(l, node.x, startY + i * lineHeight);
+    });
+  });
+}
+
+function drawNodeHighlight(ctx, node, isDark) {
+  const style = STATUS_STYLES[node.status];
+  const radius = 22;
+
+  ctx.beginPath();
+  ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
+  ctx.strokeStyle = isDark ? style.darkGlow : style.glow;
+  ctx.lineWidth = 4;
+  ctx.stroke();
+}
+
+function setupConstellationEventListeners(canvas) {
+  // Mouse move for hover
+  canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left - constellationState.panX) / constellationState.zoom;
+    const y = (e.clientY - rect.top - constellationState.panY) / constellationState.zoom;
+
+    let found = null;
+    for (const node of constellationState.nodes) {
+      const dx = node.x - x;
+      const dy = node.y - y;
+      if (dx * dx + dy * dy <= 400) { // 20px radius
+        found = node;
+        break;
+      }
+    }
+
+    if (found !== constellationState.hoveredNode) {
+      constellationState.hoveredNode = found;
+      canvas.style.cursor = found ? 'pointer' : 'grab';
+    }
+  });
+
+  // Mouse leave
+  canvas.addEventListener('mouseleave', () => {
+    constellationState.hoveredNode = null;
+    canvas.style.cursor = 'grab';
+  });
+
+  // Click for node selection
+  canvas.addEventListener('click', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left - constellationState.panX) / constellationState.zoom;
+    const y = (e.clientY - rect.top - constellationState.panY) / constellationState.zoom;
+
+    for (const node of constellationState.nodes) {
+      const dx = node.x - x;
+      const dy = node.y - y;
+      if (dx * dx + dy * dy <= 400) {
+        openSkillDrawer(node);
+        return;
+      }
+    }
+
+    // Click on empty space closes drawer
+    closeSkillDrawer();
+  });
+
+  // Pan drag
+  canvas.addEventListener('mousedown', (e) => {
+    if (e.button === 0 && !constellationState.hoveredNode) {
+      constellationState.isDragging = true;
+      constellationState.dragStartX = e.clientX;
+      constellationState.dragStartY = e.clientY;
+      constellationState.panStartX = constellationState.panX;
+      constellationState.panStartY = constellationState.panY;
+      canvas.style.cursor = 'grabbing';
+    }
+  });
+
+  window.addEventListener('mousemove', (e) => {
+    if (constellationState.isDragging) {
+      constellationState.panX = constellationState.panStartX + (e.clientX - constellationState.dragStartX);
+      constellationState.panY = constellationState.panStartY + (e.clientY - constellationState.dragStartY);
+    }
+  });
+
+  window.addEventListener('mouseup', () => {
+    constellationState.isDragging = false;
+    canvas.style.cursor = constellationState.hoveredNode ? 'pointer' : 'grab';
+  });
+
+  // Wheel zoom
+  canvas.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+    const newZoom = Math.max(0.3, Math.min(3, constellationState.zoom * zoomFactor));
+
+    // Zoom toward mouse position
+    constellationState.panX = mouseX - (mouseX - constellationState.panX) * (newZoom / constellationState.zoom);
+    constellationState.panY = mouseY - (mouseY - constellationState.panY) * (newZoom / constellationState.zoom);
+    constellationState.zoom = newZoom;
+  }, { passive: false });
+
+  // Touch support for mobile
+  let lastTouchDist = 0;
+  canvas.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 1) {
+      constellationState.isDragging = true;
+      constellationState.dragStartX = e.touches[0].clientX;
+      constellationState.dragStartY = e.touches[0].clientY;
+      constellationState.panStartX = constellationState.panX;
+      constellationState.panStartY = constellationState.panY;
+    } else if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      lastTouchDist = Math.sqrt(dx * dx + dy * dy);
+    }
+  }, { passive: true });
+
+  canvas.addEventListener('touchmove', (e) => {
+    if (e.touches.length === 1 && constellationState.isDragging) {
+      constellationState.panX = constellationState.panStartX + (e.touches[0].clientX - constellationState.dragStartX);
+      constellationState.panY = constellationState.panStartY + (e.touches[0].clientY - constellationState.dragStartY);
+    } else if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const zoomFactor = dist / lastTouchDist;
+      const newZoom = Math.max(0.3, Math.min(3, constellationState.zoom * zoomFactor));
+      constellationState.zoom = newZoom;
+      lastTouchDist = dist;
+    }
+  }, { passive: true });
+
+  canvas.addEventListener('touchend', () => {
+    constellationState.isDragging = false;
+  });
+
+  // Keyboard support
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeSkillDrawer();
+    }
+  });
+}
+
+async function setConstellationCluster(cluster) {
+  if (cluster === constellationState.cluster) return;
+
+  // Update tab UI
+  document.querySelectorAll('[id^="cluster-"]').forEach(btn => {
+    btn.classList.remove('bg-[#0F172A]', 'text-white', 'dark:bg-white/10', 'dark:text-white');
+    btn.classList.add('text-gray-400', 'bg-slate-100', 'dark:bg-gray-800');
+  });
+  const activeBtn = document.getElementById(`cluster-${cluster}`);
+  if (activeBtn) {
+    activeBtn.classList.add('bg-[#0F172A]', 'text-white', 'dark:bg-white/10', 'dark:text-white');
+    activeBtn.classList.remove('text-gray-400', 'bg-slate-100', 'dark:bg-gray-800');
+  }
+
+  // Reset view
+  constellationState.zoom = 1;
+  constellationState.panX = 0;
+  constellationState.panY = 0;
+
+  await loadConstellation(cluster);
+}
+
+function updateClusterTabs() {
+  document.querySelectorAll('[id^="cluster-"]').forEach(btn => {
+    btn.classList.remove('bg-[#0F172A]', 'text-white', 'dark:bg-white/10', 'dark:text-white');
+    btn.classList.add('text-gray-400', 'bg-slate-100', 'dark:bg-gray-800');
+  });
+  const activeBtn = document.getElementById(`cluster-${constellationState.cluster}`);
+  if (activeBtn) {
+    activeBtn.classList.add('bg-[#0F172A]', 'text-white', 'dark:bg-white/10', 'dark:text-white');
+    activeBtn.classList.remove('text-gray-400', 'bg-slate-100', 'dark:bg-gray-800');
+  }
+}
+
+function zoomConstellation(factor) {
+  const canvas = document.getElementById('skill-tree-canvas');
+  if (!canvas) return;
+
+  const rect = canvas.getBoundingClientRect();
+  const centerX = rect.width / 2;
+  const centerY = rect.height / 2;
+
+  const newZoom = Math.max(0.3, Math.min(3, constellationState.zoom * factor));
+
+  constellationState.panX = centerX - (centerX - constellationState.panX) * (newZoom / constellationState.zoom);
+  constellationState.panY = centerY - (centerY - constellationState.panY) * (newZoom / constellationState.zoom);
+  constellationState.zoom = newZoom;
+}
+
+function resetConstellationView() {
+  constellationState.zoom = 1;
+  constellationState.panX = 0;
+  constellationState.panY = 0;
+}
+
+function updateZoomIndicator() {
+  const indicator = document.getElementById('zoom-level-indicator');
+  if (indicator) {
+    indicator.textContent = Math.round(constellationState.zoom * 100) + '%';
+  }
+}
+
+function updateNodeCountBadge() {
+  const badge = document.getElementById('constellation-node-count');
+  if (badge) {
+    const acquired = constellationState.nodes.filter(n => n.status === 'acquired').length;
+    const inProgress = constellationState.nodes.filter(n => n.status === 'in_progress').length;
+    const targetGap = constellationState.nodes.filter(n => n.status === 'target_gap').length;
+    const locked = constellationState.nodes.filter(n => n.status === 'locked').length;
+    badge.textContent = `${constellationState.nodes.length} nodes (${acquired}✓ ${inProgress}⟳ ${targetGap}⚠ ${locked}🔒)`;
+  }
+}
+
+function openSkillDrawer(node) {
+  constellationState.selectedNode = node;
+
+  const drawer = document.getElementById('skill-drawer');
+  const backdrop = document.getElementById('drawer-backdrop');
+  const title = document.getElementById('drawer-title');
+  const content = document.getElementById('drawer-content');
+
+  if (!drawer || !content) return;
+
+  title.textContent = node.label;
+
+  const style = STATUS_STYLES[node.status];
+  const statusLabels = {
+    acquired: 'Acquired & Verified',
+    in_progress: 'In Progress',
+    target_gap: 'Target Role Gap',
+    locked: 'Locked / Future Elective'
+  };
+
+  const prerequisites = node.prerequisites || [];
+  const prereqNodes = constellationState.nodes.filter(n => prerequisites.includes(n.id));
+
+  content.innerHTML = `
+    <div class="space-y-4">
+      <!-- Skill Status Badge -->
+      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold ${
+        node.status === 'acquired' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300' :
+        node.status === 'in_progress' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300' :
+        node.status === 'target_gap' ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300' :
+        'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+      }">
+        <span class="material-symbols-outlined text-sm">${
+          node.status === 'acquired' ? 'verified' :
+          node.status === 'in_progress' ? 'schedule' :
+          node.status === 'target_gap' ? 'warning' : 'lock'
+        }</span>
+        ${statusLabels[node.status]}
+      </div>
+
+      <!-- Skill Info -->
+      <div class="space-y-2 text-sm">
+        <div class="flex justify-between">
+          <span class="text-gray-500 dark:text-gray-400">Category</span>
+          <span class="font-medium">${node.category}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500 dark:text-gray-400">Tier</span>
+          <span class="font-medium">Level ${node.tier}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500 dark:text-gray-400">Industry Demand</span>
+          <span class="font-medium">${node.industryDemand || 'N/A'}</span>
+        </div>
+        ${node.xpAwarded ? `
+        <div class="flex justify-between">
+          <span class="text-gray-500 dark:text-gray-400">XP Awarded</span>
+          <span class="font-medium text-purple-600 dark:text-purple-400">+${node.xpAwarded} XP</span>
+        </div>
+        ` : ''}
+        ${node.minProficiency ? `
+        <div class="flex justify-between">
+          <span class="text-gray-500 dark:text-gray-400">Target Proficiency</span>
+          <span class="font-medium">${node.minProficiency}%</span>
+        </div>
+        ` : ''}
+      </div>
+
+      <!-- Prerequisites -->
+      ${prereqNodes.length > 0 ? `
+      <div class="pt-2 border-t border-gray-200 dark:border-gray-800">
+        <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Prerequisites</h4>
+        <div class="space-y-1.5">
+          ${prereqNodes.map(p => `
+            <div class="flex items-center gap-2 text-sm">
+              <span class="material-symbols-outlined text-${p.status === 'acquired' ? 'emerald' : p.status === 'in_progress' ? 'amber' : 'rose'}-500 text-base">
+                ${p.status === 'acquired' ? 'check_circle' : p.status === 'in_progress' ? 'schedule' : 'radio_button_unchecked'}
+              </span>
+              <span class="${p.status === 'acquired' ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}">${p.label}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      ` : ''}
+
+      <!-- Actions -->
+      <div class="pt-4 border-t border-gray-200 dark:border-gray-800 space-y-2">
+        <button onclick="window.openQuizForSkill('${node.id}')" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-medium text-sm transition">
+          <span class="material-symbols-outlined">quiz</span>
+          Test Competency in Quiz Arena
+        </button>
+        <button onclick="window.addSkillToRoadmap('${node.id}')" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-sm transition">
+          <span class="material-symbols-outlined">add_circle</span>
+          Add Milestone to Roadmap
+        </button>
+        <button onclick="window.viewJobsForSkill('${node.label}')" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 font-medium text-sm transition">
+          <span class="material-symbols-outlined">work_outline</span>
+          View Matching Jobs
+        </button>
+      </div>
+    </div>
+  `;
+
+  drawer.style.transform = 'translateX(0)';
+  backdrop.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSkillDrawer() {
+  const drawer = document.getElementById('skill-drawer');
+  const backdrop = document.getElementById('drawer-backdrop');
+
+  if (drawer) {
+    drawer.style.transform = 'translateX(100%)';
+  }
+  if (backdrop) {
+    backdrop.classList.add('hidden');
+  }
+  document.body.style.overflow = '';
+  constellationState.selectedNode = null;
+}
+
+// Global actions
+window.openQuizForSkill = async function(skillId) {
+  closeSkillDrawer();
+  const skill = constellationState.nodes.find(n => n.id === skillId);
+  if (!skill) return;
+
+  // Navigate to quiz page with skill focus
+  window.location.href = `/src/students/student-quiz.html?focus=${encodeURIComponent(skill.label)}`;
+};
+
+window.addSkillToRoadmap = async function(skillId) {
+  closeSkillDrawer();
+  const skill = constellationState.nodes.find(n => n.id === skillId);
+  if (!skill) return;
+
+  JoblexApiClient.showToast(`Added "${skill.label}" to your roadmap`, 'Roadmap Updated', 'success');
+
+  // TODO: Call API to add to roadmap
+  // await JoblexApiClient.addRoadmapMilestone({ skillId, skillName: skill.label });
+};
+
+window.viewJobsForSkill = function(skillLabel) {
+  closeSkillDrawer();
+  window.location.href = `/src/students/student-jobs.html?skill=${encodeURIComponent(skillLabel)}`;
+};
+
+// Expose globals
+window.setConstellationCluster = setConstellationCluster;
+window.zoomConstellation = zoomConstellation;
+window.resetConstellationView = resetConstellationView;
+window.closeSkillDrawer = closeSkillDrawer;
+
+// Initialize on DOM ready for skilltree page
+if (document.getElementById('skill-tree-canvas')) {
+  document.addEventListener('DOMContentLoaded', initSkillConstellation);
+}
+
+// ============================================
+// MENTORSHIP MODULE (student-mentors.html)
+// ============================================
+
+let mentorshipState = {
+  mentors: [],
+  filteredMentors: [],
+  currentMentorForApplication: null,
+  applications: [],
+  activeMentorships: [],
+  completedMentorships: [],
+  searchDebounceTimer: null
+};
+
+async function initMentorshipModule() {
+  const user = JoblexApiClient.getCurrentUser();
+  if (!user) return;
+
+  // Load mentors
+  await loadMentors();
+
+  // Load my applications and mentorships
+  await loadMyApplications();
+  await loadMyMentorships();
+
+  // Set up search debounce
+  const searchInput = document.getElementById('mentor-search-input');
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      clearTimeout(mentorshipState.searchDebounceTimer);
+      mentorshipState.searchDebounceTimer = setTimeout(applyMentorFilters, 300);
+    });
+  }
+
+  // Update character count for personal statement
+  const statementInput = document.getElementById('modal-personal-statement');
+  if (statementInput) {
+    statementInput.addEventListener('input', () => {
+      const count = statementInput.value.length;
+      const countEl = document.getElementById('personal-statement-char-count');
+      if (countEl) {
+        countEl.textContent = `${count}/50 minimum`;
+        countEl.className = count >= 50 ? 'mt-1 text-xs text-emerald-500 dark:text-emerald-400' : 'mt-1 text-xs text-slate-500 dark:text-gray-400';
+      }
+    });
+  }
+}
+
+async function loadMentors() {
+  try {
+    const res = await JoblexApiClient.getMentors();
+    mentorshipState.mentors = res.mentors || [];
+    applyMentorFilters();
+  } catch (error) {
+    console.error('[Mentorship] Failed to load mentors:', error);
+    JoblexApiClient.showToast('Failed to load mentors', 'Error', 'error');
+  }
+}
+
+function applyMentorFilters() {
+  const search = document.getElementById('mentor-search-input')?.value?.toLowerCase() || '';
+  const type = document.getElementById('filter-mentor-type')?.value || 'all';
+  const domain = document.getElementById('filter-mentor-domain')?.value || 'all';
+  const institution = document.getElementById('filter-mentor-institution')?.value || 'all';
+  const minRating = parseFloat(document.getElementById('filter-mentor-rating')?.value || '0');
+  const acceptingOnly = document.getElementById('filter-mentor-accepting')?.checked ?? true;
+
+  let filtered = mentorshipState.mentors.filter(mentor => {
+    // Search filter
+    if (search) {
+      const searchText = `${mentor.name} ${mentor.domains?.join(' ')} ${mentor.institution_or_company} ${mentor.bio}`.toLowerCase();
+      if (!searchText.includes(search)) return false;
+    }
+
+    // Type filter
+    if (type !== 'all' && mentor.role !== type) return false;
+
+    // Domain filter
+    if (domain !== 'all' && mentor.domains && !mentor.domains.some(d => d.toLowerCase().includes(domain.toLowerCase()))) {
+      return false;
+    }
+
+    // Institution filter
+    if (institution !== 'all' && mentor.institution_or_company !== institution) return false;
+
+    // Rating filter
+    if (minRating > 0 && (mentor.rating || 0) < minRating) return false;
+
+    // Accepting filter
+    if (acceptingOnly && !mentor.accepting_new_mentees) return false;
+
+    return true;
+  });
+
+  mentorshipState.filteredMentors = filtered;
+  renderMentorCards();
+  updateMentorCount();
+}
+
+function updateMentorCount() {
+  const countEl = document.getElementById('mentor-results-count');
+  const badgeEl = document.getElementById('mentor-count-badge');
+  const count = mentorshipState.filteredMentors.length;
+  if (countEl) countEl.textContent = `${count} mentor${count !== 1 ? 's' : ''} found`;
+  if (badgeEl) badgeEl.textContent = mentorshipState.mentors.length;
+}
+
+function renderMentorCards() {
+  const grid = document.getElementById('mentor-cards-grid');
+  const noResults = document.getElementById('mentor-no-results');
+
+  if (!grid) return;
+
+  if (mentorshipState.filteredMentors.length === 0) {
+    grid.innerHTML = '';
+    if (noResults) noResults.classList.remove('hidden');
+    return;
+  }
+
+  if (noResults) noResults.classList.add('hidden');
+
+  grid.innerHTML = mentorshipState.filteredMentors.map(mentor => {
+    const roleBadge = mentor.role === 'academy'
+      ? '<span class="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">Academician</span>'
+      : '<span class="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-[10px] font-bold">Industry Leader</span>';
+
+    const acceptingBadge = mentor.accepting_new_mentees
+      ? '<span class="flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Accepting Mentees</span>'
+      : '<span class="flex items-center gap-1 text-[10px] font-bold text-slate-500 dark:text-gray-400"><span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>Not Accepting</span>';
+
+    const domains = mentor.domains || [];
+    const domainTags = domains.slice(0, 3).map(d => `<span class="px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 text-[10px] font-medium border border-purple-200 dark:border-purple-800/60">${d}</span>`).join('');
+    const moreDomains = domains.length > 3 ? `<span class="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-gray-400 text-[10px] font-medium">+${domains.length - 3} more</span>` : '';
+
+    const capacity = `${mentor.current_mentee_count || 0}/${mentor.max_mentees || 5}`;
+
+    return `
+      <div class="rounded-2xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-white/[0.03] p-5 shadow-sm hover:shadow-md transition-shadow">
+        <div class="flex items-start gap-4 mb-4">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center text-white font-bold text-lg shrink-0">
+            ${mentor.name?.charAt(0) || 'M'}
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="font-bold text-slate-900 dark:text-white truncate">${mentor.name}</h3>
+            <p class="text-xs text-slate-500 dark:text-gray-400 truncate">${mentor.designation}</p>
+            <p class="text-xs text-slate-500 dark:text-gray-400 truncate mt-0.5">${mentor.institution_or_company}</p>
+          </div>
+          ${roleBadge}
+        </div>
+
+        <div class="flex flex-wrap gap-1.5 mb-3">
+          ${domainTags}
+          ${moreDomains}
+        </div>
+
+        <div class="flex items-center justify-between text-xs mb-3">
+          <span class="flex items-center gap-1 text-slate-600 dark:text-gray-400">
+            <span class="material-symbols-outlined text-[14px] text-amber-500">star</span>
+            <span class="font-mono font-bold">${mentor.rating || 5.0}</span>
+            <span class="text-slate-400 dark:text-gray-500">(${mentor.total_ratings || 0} reviews)</span>
+          </span>
+          <span class="text-slate-500 dark:text-gray-400 font-mono">${mentor.total_sessions_completed || 0} sessions</span>
+        </div>
+
+        <div class="flex items-center justify-between pt-3 border-t border-[#E7E4DC] dark:border-white/10">
+          <div class="flex items-center gap-2 text-[10px]">
+            <span class="material-symbols-outlined text-[14px] text-slate-400 dark:text-gray-500">people</span>
+            <span class="font-mono font-medium text-slate-700 dark:text-gray-300">${capacity} mentees</span>
+          </div>
+          ${acceptingBadge}
+        </div>
+
+        <button
+          onclick="openMentorApplicationModal('${mentor.id}')"
+          ${!mentor.accepting_new_mentees ? 'disabled' : ''}
+          class="w-full mt-3 px-4 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 ${mentor.accepting_new_mentees
+            ? 'bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white shadow-md'
+            : 'bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-gray-500 cursor-not-allowed'}"
+        >
+          <span class="material-symbols-outlined text-[14px]">send</span>
+          <span>Apply for Mentorship</span>
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+
+function openMentorApplicationModal(mentorId) {
+  const mentor = mentorshipState.mentors.find(m => m.id === mentorId);
+  if (!mentor) return;
+
+  mentorshipState.currentMentorForApplication = mentor;
+
+  // Populate mentor info
+  const infoEl = document.getElementById('modal-mentor-info');
+  if (infoEl) {
+    infoEl.innerHTML = `
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center text-white font-bold">
+          ${mentor.name?.charAt(0) || 'M'}
+        </div>
+        <div>
+          <p class="font-bold text-slate-900 dark:text-white">${mentor.name}</p>
+          <p class="text-xs text-slate-500 dark:text-gray-400">${mentor.designation} • ${mentor.institution_or_company}</p>
+        </div>
+      </div>
+    `;
+  }
+
+  document.getElementById('modal-mentor-name').textContent = mentor.name;
+
+  // Reset form
+  document.getElementById('modal-guidance-track').value = '';
+  document.getElementById('modal-personal-statement').value = '';
+  document.getElementById('modal-goals').value = '';
+  document.getElementById('modal-preferred-slot').value = '';
+  document.getElementById('personal-statement-char-count').textContent = '0/50 minimum';
+  document.getElementById('personal-statement-char-count').className = 'mt-1 text-xs text-slate-500 dark:text-gray-400';
+
+  // Populate student skills
+  const user = JoblexApiClient.getCurrentUser();
+  const skillsEl = document.getElementById('modal-student-skills');
+  if (skillsEl && user?.verified_skills) {
+    skillsEl.innerHTML = user.verified_skills.slice(0, 8).map(s =>
+      `<span class="px-2 py-0.5 rounded-full bg-purple-50 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 text-[10px] font-medium border border-purple-200 dark:border-purple-800/60">${s}</span>`
+    ).join('');
+  }
+
+  document.getElementById('mentor-application-modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeMentorApplicationModal() {
+  document.getElementById('mentor-application-modal').classList.add('hidden');
+  document.body.style.overflow = '';
+  mentorshipState.currentMentorForApplication = null;
+}
+
+async function submitMentorApplication() {
+  const mentor = mentorshipState.currentMentorForApplication;
+  if (!mentor) return;
+
+  const guidanceTrack = document.getElementById('modal-guidance-track').value;
+  const personalStatement = document.getElementById('modal-personal-statement').value;
+  const goals = document.getElementById('modal-goals').value;
+  const preferredSlot = document.getElementById('modal-preferred-slot').value;
+
+  if (!guidanceTrack || !personalStatement || !goals || !preferredSlot) {
+    JoblexApiClient.showToast('Please fill all required fields', 'Missing Fields', 'error');
+    return;
+  }
+
+  if (personalStatement.length < 50) {
+    JoblexApiClient.showToast('Personal statement must be at least 50 characters', 'Too Short', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('modal-submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span><span>Submitting...</span>';
+
+  try {
+    const user = JoblexApiClient.getCurrentUser();
+    const res = await JoblexApiClient.applyForMentorship({
+      mentorId: mentor.id,
+      guidanceTrack,
+      personalStatement,
+      goals,
+      preferredTimeSlot: preferredSlot,
+      studentId: user?.id || 'usr-student-01',
+      studentName: user?.name || 'Aarav Sharma',
+      studentEmail: user?.email || 'aarav.sharma@aiia.gov.in',
+      studentDepartment: user?.department || 'Ayush Health Informatics & Phytopharmacology',
+      studentSkills: user?.verified_skills || []
+    });
+
+    if (res.success) {
+      JoblexApiClient.showToast('Mentorship application sent successfully!', 'Application Sent', 'success');
+      closeMentorApplicationModal();
+      await loadMyApplications();
+      openMyMentorshipsModal();
+    } else {
+      JoblexApiClient.showToast(res.error || 'Failed to send application', 'Error', 'error');
+    }
+  } catch (error) {
+    console.error('[Mentorship] Apply error:', error);
+    JoblexApiClient.showToast('Failed to send application', 'Error', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<span class="material-symbols-outlined">send</span><span>Submit Application</span>';
+  }
+}
+
+function openMyMentorshipsModal() {
+  document.getElementById('my-mentorships-modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  switchMentorshipTab('pending');
+}
+
+function closeMyMentorshipsModal() {
+  document.getElementById('my-mentorships-modal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+function switchMentorshipTab(tab) {
+  // Update tab buttons
+  document.querySelectorAll('.mentorship-tab').forEach(btn => {
+    btn.classList.remove('text-orange-600', 'dark:text-orange-400', 'border-orange-500', 'dark:border-orange-500');
+    btn.classList.add('text-slate-500', 'dark:text-gray-400', 'border-transparent');
+  });
+  document.querySelectorAll('.mentorship-tab-content').forEach(content => content.classList.add('hidden'));
+
+  const activeTab = document.getElementById(`tab-${tab}`);
+  const activeContent = document.getElementById(`mentorship-tab-${tab}`);
+  if (activeTab) {
+    activeTab.classList.remove('text-slate-500', 'dark:text-gray-400', 'border-transparent');
+    activeTab.classList.add('text-orange-600', 'dark:text-orange-400', 'border-orange-500', 'dark:border-orange-500');
+  }
+  if (activeContent) activeContent.classList.remove('hidden');
+}
+
+async function loadMyApplications() {
+  try {
+    const res = await JoblexApiClient.getMyMentorshipApplications();
+    mentorshipState.applications = res.requests || [];
+    renderPendingApplications();
+  } catch (error) {
+    console.error('[Mentorship] Failed to load applications:', error);
+  }
+}
+
+async function loadMyMentorships() {
+  try {
+    const res = await JoblexApiClient.getMyMentorships();
+    // The API might return both active and completed
+    const all = res.mentorships || [];
+    mentorshipState.activeMentorships = all.filter(m => m.status === 'active');
+    mentorshipState.completedMentorships = all.filter(m => m.status === 'completed');
+    renderActiveMentorships();
+    renderCompletedMentorships();
+  } catch (error) {
+    console.error('[Mentorship] Failed to load mentorships:', error);
+  }
+}
+
+function renderPendingApplications() {
+  const list = document.getElementById('pending-applications-list');
+  const empty = document.getElementById('pending-empty-state');
+
+  if (!list) return;
+
+  const pending = mentorshipState.applications.filter(a => a.status === 'Pending Review');
+
+  if (pending.length === 0) {
+    list.innerHTML = '';
+    if (empty) empty.classList.remove('hidden');
+    return;
+  }
+
+  if (empty) empty.classList.add('hidden');
+
+  list.innerHTML = pending.map(app => `
+    <div class="p-4 rounded-xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-white/[0.03]">
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-medium text-slate-900 dark:text-white">${app.mentorName}</span>
+            <span class="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 text-[10px] font-bold">${app.status}</span>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-gray-400">${app.guidanceTrack}</p>
+          <p class="text-xs text-slate-500 dark:text-gray-400 mt-1">${new Date(app.createdAt).toLocaleDateString()}</p>
+        </div>
+        <button onclick="withdrawApplication('${app.id}')" class="px-3 py-1.5 rounded-lg text-[10px] font-medium bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/40 transition shrink-0">
+          <span class="material-symbols-outlined text-[12px] mr-1">cancel</span>Withdraw
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderActiveMentorships() {
+  const list = document.getElementById('active-mentorships-list');
+  const empty = document.getElementById('active-empty-state');
+
+  if (!list) return;
+
+  if (mentorshipState.activeMentorships.length === 0) {
+    list.innerHTML = '';
+    if (empty) empty.classList.remove('hidden');
+    return;
+  }
+
+  if (empty) empty.classList.add('hidden');
+
+  list.innerHTML = mentorshipState.activeMentorships.map(m => `
+    <div class="p-4 rounded-xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-white/[0.03]">
+      <div class="flex items-start justify-between gap-3 mb-3">
+        <div>
+          <p class="font-medium text-slate-900 dark:text-white">${m.mentorName}</p>
+          <p class="text-xs text-slate-500 dark:text-gray-400">${m.guidanceTrack}</p>
+          <p class="text-xs text-slate-500 dark:text-gray-400 mt-1">${m.sessions_completed || 0} sessions completed</p>
+        </div>
+        <span class="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold shrink-0">Active</span>
+      </div>
+      <button onclick="requestMentorSession('${m.id}')" class="w-full px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-md transition flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-[14px]">event</span>
+        <span>Request Session</span>
+      </button>
+    </div>
+  `).join('');
+}
+
+function renderCompletedMentorships() {
+  const list = document.getElementById('completed-mentorships-list');
+  const empty = document.getElementById('completed-empty-state');
+
+  if (!list) return;
+
+  if (mentorshipState.completedMentorships.length === 0) {
+    list.innerHTML = '';
+    if (empty) empty.classList.remove('hidden');
+    return;
+  }
+
+  if (empty) empty.classList.add('hidden');
+
+  list.innerHTML = mentorshipState.completedMentorships.map(m => `
+    <div class="p-4 rounded-xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-white/[0.03]">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <p class="font-medium text-slate-900 dark:text-white">${m.mentorName}</p>
+          <p class="text-xs text-slate-500 dark:text-gray-400">${m.guidanceTrack}</p>
+          <p class="text-xs text-slate-500 dark:text-gray-400 mt-1">${m.sessions_completed || 0} sessions • Completed ${new Date(m.ended_at).toLocaleDateString()}</p>
+        </div>
+        <span class="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-gray-400 text-[10px] font-bold shrink-0">Completed</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function withdrawApplication(applicationId) {
+  if (!confirm('Are you sure you want to withdraw this application?')) return;
+
+  try {
+    const res = await JoblexApiClient.withdrawMentorshipApplication(applicationId);
+    if (res.success) {
+      JoblexApiClient.showToast('Application withdrawn', 'Withdrawn', 'success');
+      await loadMyApplications();
+    } else {
+      JoblexApiClient.showToast(res.error || 'Failed to withdraw', 'Error', 'error');
+    }
+  } catch (error) {
+    console.error('[Mentorship] Withdraw error:', error);
+    JoblexApiClient.showToast('Failed to withdraw application', 'Error', 'error');
+  }
+}
+
+async function requestMentorSession(mentorshipId) {
+  // For now, show a simple prompt - could be enhanced with a modal
+  const agenda = prompt('What would you like to discuss in this session?');
+  if (!agenda) return;
+
+  const preferredSlot = prompt('Preferred time slot (e.g., "Tuesday 16:00 IST")');
+  if (!preferredSlot) return;
+
+  try {
+    const res = await JoblexApiClient.requestMentorSession({
+      mentorshipId,
+      agenda,
+      preferredSlot
+    });
+    if (res.success) {
+      JoblexApiClient.showToast('Session requested! Your mentor will confirm a time.', 'Session Requested', 'success');
+    } else {
+      JoblexApiClient.showToast(res.error || 'Failed to request session', 'Error', 'error');
+    }
+  } catch (error) {
+    console.error('[Mentorship] Request session error:', error);
+    JoblexApiClient.showToast('Failed to request session', 'Error', 'error');
+  }
+}
+
+function debounceSearchMentors() {
+  clearTimeout(mentorshipState.searchDebounceTimer);
+  mentorshipState.searchDebounceTimer = setTimeout(applyMentorFilters, 300);
+}
+
+// Expose globals
+window.openMentorApplicationModal = openMentorApplicationModal;
+window.closeMentorApplicationModal = closeMentorApplicationModal;
+window.submitMentorApplication = submitMentorApplication;
+window.openMyMentorshipsModal = openMyMentorshipsModal;
+window.closeMyMentorshipsModal = closeMyMentorshipsModal;
+window.switchMentorshipTab = switchMentorshipTab;
+window.withdrawApplication = withdrawApplication;
+window.requestMentorSession = requestMentorSession;
+window.applyMentorFilters = applyMentorFilters;
+
+// Initialize on DOM ready for mentors page
+if (document.getElementById('mentor-cards-grid')) {
+  document.addEventListener('DOMContentLoaded', initMentorshipModule);
+}
+
+/* ==========================================================================
+   PPT INNOVATION FEATURE #1: REAL-TIME GRAPHICAL ANALYTICS (Plan 04)
+   ========================================================================== */
+
+async function initMarketAnalyticsModule() {
+  const vacancyCanvas = document.getElementById('vacancy-distribution-chart');
+  const skillsContainer = document.getElementById('demand-skills-bars');
+  const readinessCanvas = document.getElementById('candidate-readiness-gauge');
+
+  if (!vacancyCanvas && !skillsContainer && !readinessCanvas) return;
+
+  try {
+    const data = await JoblexApiClient.getMarketAnalytics();
+    if (!data || !data.success) return;
+
+    // 1. Render Vacancy Donut Chart
+    if (vacancyCanvas && Array.isArray(data.vacancyDistribution)) {
+      renderVacancyDonutChart(vacancyCanvas, data.vacancyDistribution, data.summary?.totalOpenings || 48);
+    }
+
+    // Update total openings badge
+    const openingsBadge = document.getElementById('total-openings-badge');
+    if (openingsBadge && data.summary?.totalOpenings) {
+      openingsBadge.textContent = `${data.summary.totalOpenings} Openings`;
+    }
+
+    // 2. Render Top In-Demand Skills Progress Bars
+    if (skillsContainer && Array.isArray(data.topInDemandSkills)) {
+      renderDemandSkillsBars(skillsContainer, data.topInDemandSkills);
+    }
+
+    // 3. Render Candidate Placement Readiness Gauge
+    if (readinessCanvas && data.candidateReadiness) {
+      renderReadinessGauge(readinessCanvas, data.candidateReadiness);
+    }
+  } catch (err) {
+    console.error('[Market Analytics Init Error]:', err);
+  }
+}
+
+function renderVacancyDonutChart(canvas, distribution, totalOpenings) {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  const width = canvas.width || 200;
+  const height = canvas.height || 200;
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const outerRadius = Math.min(width, height) / 2 - 10;
+  const innerRadius = outerRadius * 0.62;
+
+  ctx.clearRect(0, 0, width, height);
+
+  const total = distribution.reduce((sum, item) => sum + (item.count || 0), 0) || 1;
+  let startAngle = -Math.PI / 2;
+
+  distribution.forEach(item => {
+    const sliceAngle = ((item.count || 0) / total) * Math.PI * 2;
+    const endAngle = startAngle + sliceAngle;
+
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, outerRadius, startAngle, endAngle);
+    ctx.arc(centerX, centerY, innerRadius, endAngle, startAngle, true);
+    ctx.closePath();
+
+    ctx.fillStyle = item.color || '#6366F1';
+    ctx.fill();
+
+    startAngle = endAngle;
+  });
+
+  // Center Text (Total count)
+  const isDark = document.documentElement.classList.contains('dark');
+  ctx.fillStyle = isDark ? '#FFFFFF' : '#1C1917';
+  ctx.font = 'bold 22px monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(String(totalOpenings), centerX, centerY - 6);
+
+  ctx.fillStyle = isDark ? '#9CA3AF' : '#6E6962';
+  ctx.font = '10px sans-serif';
+  ctx.fillText('LIVE VACANCIES', centerX, centerY + 14);
+}
+
+function renderDemandSkillsBars(container, topSkills) {
+  const maxDemand = Math.max(...topSkills.map(s => s.demandCount || 0), 1);
+
+  container.innerHTML = topSkills.map(item => {
+    const percent = Math.round(((item.demandCount || 0) / maxDemand) * 100);
+    return `
+      <div class="space-y-1">
+        <div class="flex items-center justify-between text-xs">
+          <span class="font-bold text-[#1C1917] dark:text-white truncate max-w-[170px]">${item.skill}</span>
+          <div class="flex items-center gap-1.5 font-mono text-[11px]">
+            <span class="text-purple-600 dark:text-purple-400 font-bold">${item.demandCount} reqs</span>
+            <span class="px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-500 font-bold text-[9px]">${item.growth}</span>
+          </div>
+        </div>
+        <div class="w-full h-2 rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden">
+          <div class="h-full rounded-full bg-gradient-to-r from-purple-600 to-indigo-500 transition-all duration-500" style="width: ${percent}%"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderReadinessGauge(canvas, readiness) {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  const width = canvas.width || 220;
+  const height = canvas.height || 130;
+  const centerX = width / 2;
+  const centerY = height - 15;
+  const radius = Math.min(width / 2, height) - 15;
+
+  ctx.clearRect(0, 0, width, height);
+
+  const startAngle = Math.PI;
+  const endAngle = 2 * Math.PI;
+
+  // Background Arc Track
+  const isDark = document.documentElement.classList.contains('dark');
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+  ctx.lineWidth = 14;
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
+  ctx.stroke();
+
+  // Score Fill Arc
+  const scorePercent = Math.min(100, Math.max(0, readiness.overallPercentile || 78)) / 100;
+  const scoreAngle = startAngle + (scorePercent * Math.PI);
+
+  const gradient = ctx.createLinearGradient(0, 0, width, 0);
+  gradient.addColorStop(0, '#10B981'); // Emerald
+  gradient.addColorStop(0.5, '#6366F1'); // Indigo
+  gradient.addColorStop(1, '#8B5CF6'); // Purple
+
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, startAngle, scoreAngle);
+  ctx.lineWidth = 14;
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = gradient;
+  ctx.stroke();
+
+  // Update DOM text elements
+  const scoreEl = document.getElementById('readiness-score-text');
+  if (scoreEl) scoreEl.textContent = `${readiness.overallPercentile || 78}%`;
+
+  const statIndex = document.getElementById('stat-readiness-index');
+  if (statIndex) statIndex.textContent = `${readiness.overallPercentile || 78}%`;
+
+  const statSub = document.getElementById('stat-readiness-sub');
+  if (statSub) statSub.textContent = `${readiness.tier || 'Competitive Candidate'}`;
+
+  const badgeEl = document.getElementById('readiness-badge');
+  if (badgeEl) badgeEl.textContent = readiness.tier || 'Tier 1';
+
+  const nextSkillEl = document.getElementById('recommended-next-skill');
+  if (nextSkillEl && readiness.recommendedNextSkill) {
+    nextSkillEl.textContent = readiness.recommendedNextSkill;
+  }
+}
+
+// Auto-initialize on DOM Ready
+if (typeof document !== 'undefined') {
+  document.addEventListener('DOMContentLoaded', initMarketAnalyticsModule);
+}
+
+window.initMarketAnalyticsModule = initMarketAnalyticsModule;
+
 

@@ -63,26 +63,63 @@ function getNvidiaApiKey() {
   return key.trim();
 }
 
+// Circuit Breaker Store for NVIDIA models: model -> { failureCount, firstFailure, trippedUntil }
+const NVIDIA_CIRCUIT_BREAKER = new Map();
+
+function isModelTripped(model) {
+  const entry = NVIDIA_CIRCUIT_BREAKER.get(model);
+  if (!entry) return false;
+  if (Date.now() < entry.trippedUntil) return true;
+  NVIDIA_CIRCUIT_BREAKER.delete(model);
+  return false;
+}
+
+function recordModelFailure(model) {
+  const now = Date.now();
+  const entry = NVIDIA_CIRCUIT_BREAKER.get(model) || { failureCount: 0, firstFailure: now, trippedUntil: 0 };
+  if (now - entry.firstFailure > 60000) {
+    entry.failureCount = 1;
+    entry.firstFailure = now;
+  } else {
+    entry.failureCount += 1;
+  }
+  if (entry.failureCount >= 3) {
+    entry.trippedUntil = now + (5 * 60 * 1000);
+    console.warn(`[NVIDIA Circuit Breaker]: Tripped OPEN for ${model} until ${new Date(entry.trippedUntil).toISOString()}`);
+  }
+  NVIDIA_CIRCUIT_BREAKER.set(model, entry);
+}
+
+function recordModelSuccess(model) {
+  NVIDIA_CIRCUIT_BREAKER.delete(model);
+}
+
 /**
- * Call NVIDIA NIM API with model fallback
- * Restricted strictly to:
- * 1. openai/gpt-oss-20b
- * 2. nvidia/nemotron-3-ultra-550b-a55b (Nemo Ultra)
- * 3. nvidia/nemotron-3-super-120b-a12b (Nemo Super)
- * 4. moonshotai/kimi-k3 (Kimi K3)
+ * 12-Model NVIDIA NIM Fallback Cascade
+ * Ordered by reasoning accuracy, schema compliance, latency, and availability
  */
-async function callNvidiaModel({ prompt, systemInstruction = '', history = [], temperature = 0.7, maxTokens = 2048, enableThinking = false, timeoutMs = 1800 }) {
+const NVIDIA_CASCADE_MODELS = [
+  'meta/llama-3.3-70b-instruct',
+  'meta/llama-3.1-70b-instruct',
+  'mistralai/mistral-large-2-instruct',
+  'qwen/qwen2.5-72b-instruct',
+  'nvidia/llama-3.1-nemotron-70b-instruct',
+  'deepseek-ai/deepseek-r1',
+  'mistralai/mixtral-8x22b-instruct-v0.1',
+  'meta/llama-3.1-405b-instruct',
+  'google/gemma-2-27b-it',
+  'meta/llama-3.2-11b-vision-instruct',
+  'meta/llama-3.1-8b-instruct',
+  'mistralai/mistral-7b-instruct-v0.3',
+  'nvidia/nemotron-3-super-120b-a12b',
+  'openai/gpt-oss-20b',
+  'nvidia/nemotron-3-ultra-550b-a55b',
+  'moonshotai/kimi-k3'
+];
+
+async function callNvidiaModel({ prompt, systemInstruction = '', history = [], temperature = 0.7, maxTokens = 2048, enableThinking = false, timeoutMs = 6000, jsonMode = false }) {
   const apiKey = getNvidiaApiKey();
   if (!apiKey) return null;
-
-  // STRICT USER DIRECTIVE: Only gpt-oss-20b, nemo ultra, nemo super, kimi k3. Nothing else.
-  // We place nemotron-3-super first as it responds most reliably under current NIM quotas
-  const candidateModels = [
-    'nvidia/nemotron-3-super-120b-a12b',
-    'openai/gpt-oss-20b',
-    'nvidia/nemotron-3-ultra-550b-a55b',
-    'moonshotai/kimi-k3'
-  ];
 
   const endpoint = 'https://integrate.api.nvidia.com/v1/chat/completions';
 
@@ -100,7 +137,11 @@ async function callNvidiaModel({ prompt, systemInstruction = '', history = [], t
   }
   messages.push({ role: 'user', content: prompt });
 
-  for (const model of candidateModels) {
+  for (const model of NVIDIA_CASCADE_MODELS) {
+    if (isModelTripped(model)) {
+      continue;
+    }
+
     try {
       const payload = {
         model,
@@ -108,6 +149,9 @@ async function callNvidiaModel({ prompt, systemInstruction = '', history = [], t
         temperature,
         max_tokens: maxTokens
       };
+      if (jsonMode) {
+        payload.response_format = { type: 'json_object' };
+      }
       if (enableThinking && model.includes('nemotron')) {
         payload.chat_template_kwargs = { enable_thinking: true };
       }
@@ -123,8 +167,7 @@ async function callNvidiaModel({ prompt, systemInstruction = '', history = [], t
       });
 
       if (!res.ok) {
-        const errText = await res.text();
-        console.warn(`[NVIDIA ${model}] returned HTTP ${res.status}:`, errText.substring(0, 160));
+        recordModelFailure(model);
         continue;
       }
 
@@ -133,15 +176,18 @@ async function callNvidiaModel({ prompt, systemInstruction = '', history = [], t
       const text = choice?.content || choice?.reasoning || choice?.reasoning_content;
 
       if (text && text.trim()) {
+        recordModelSuccess(model);
         return {
           text: text.trim(),
           reasoning: choice?.reasoning_content || choice?.reasoning || null,
           provider: model,
           keyType: 'nvidia-nim'
         };
+      } else {
+        recordModelFailure(model);
       }
     } catch (err) {
-      console.warn(`[NVIDIA ${model} Error]:`, err.message);
+      recordModelFailure(model);
     }
   }
 
@@ -149,127 +195,72 @@ async function callNvidiaModel({ prompt, systemInstruction = '', history = [], t
 }
 
 /**
+ * Sliding Window Rate-Limit Guard for Google AI Studio Free Tier
+ * Free tier project limit: 15 Requests Per Minute (RPM) & 1,500 Requests Per Day (RPD).
+ * We enforce a local ceiling of 14 RPM to prevent HTTP 429 RESOURCE_EXHAUSTED errors.
+ */
+const GOOGLE_REQUEST_TIMESTAMPS = [];
+const GOOGLE_MAX_RPM = 14;
+
+function canMakeGoogleRequest() {
+  const now = Date.now();
+  while (GOOGLE_REQUEST_TIMESTAMPS.length > 0 && now - GOOGLE_REQUEST_TIMESTAMPS[0] > 60000) {
+    GOOGLE_REQUEST_TIMESTAMPS.shift();
+  }
+  return GOOGLE_REQUEST_TIMESTAMPS.length < GOOGLE_MAX_RPM;
+}
+
+function recordGoogleRequest() {
+  GOOGLE_REQUEST_TIMESTAMPS.push(Date.now());
+}
+
+/**
  * Supported active Gemini models on Google AI Studio
+ * Prioritizes high-throughput Flash models (15 RPM / 1M TPM / 1500 RPD)
  */
 const GOOGLE_CANDIDATE_MODELS = [
-  'gemini-2.5-flash',
-  'gemini-2.0-flash',
-  'gemini-1.5-flash',
-  'gemini-2.5-pro',
+  'gemini-3.6-flash',
+  'gemini-3.5-flash',
+  'gemini-3.8-flash',
   'gemini-flash-latest'
 ];
+
+const DEPRECATED_GOOGLE_MODELS = new Set();
+const INVALID_GOOGLE_KEYS = new Set();
+const GOOGLE_QUOTA_COOLDOWNS = new Map();
+
+function isGoogleModelInCooldown(model) {
+  const until = GOOGLE_QUOTA_COOLDOWNS.get(model);
+  if (!until) return false;
+  if (Date.now() < until) return true;
+  GOOGLE_QUOTA_COOLDOWNS.delete(model);
+  return false;
+}
+
+function recordGoogleModelCooldown(model, durationSec = 30) {
+  GOOGLE_QUOTA_COOLDOWNS.set(model, Date.now() + (durationSec * 1000));
+}
 
 /**
  * Low-level Google generator using SDK -> LangChain -> REST fallback for a specific API key
  */
 async function callGoogleModelWithKey(apiKey, { prompt, systemInstruction, history = [], temperature = 0.7, jsonMode = false }) {
-  if (!apiKey) return null;
+  if (!apiKey || INVALID_GOOGLE_KEYS.has(apiKey)) return null;
 
-  // 1. Direct High-Speed Google Generative AI SDK
-  if (GoogleGenerativeAI) {
-    for (const modelName of GOOGLE_CANDIDATE_MODELS) {
-      try {
-        const genAI = new GoogleGenerativeAI(apiKey);
-        const modelConfig = {
-          model: modelName,
-          generationConfig: {
-            temperature: temperature,
-            responseMimeType: jsonMode ? 'application/json' : undefined
-          }
-        };
-        if (systemInstruction) {
-          modelConfig.systemInstruction = { parts: [{ text: systemInstruction }] };
-        }
-        const model = genAI.getGenerativeModel(modelConfig);
-
-        let responseText = null;
-        let timerId;
-        const timeoutPromise = new Promise((_, r) => {
-          timerId = setTimeout(() => r(new Error(`SDK timeout on ${modelName}`)), 4500);
-        });
-
-        try {
-          let opPromise;
-          if (Array.isArray(history) && history.length > 0) {
-            const formattedHistory = history
-              .filter(h => h.role && (h.text || h.content))
-              .map(h => ({
-                role: h.role === 'user' ? 'user' : 'model',
-                parts: [{ text: h.text || h.content }]
-              }));
-
-            const chat = model.startChat({ history: formattedHistory });
-            opPromise = chat.sendMessage(prompt);
-          } else {
-            opPromise = model.generateContent(prompt);
-          }
-
-          const result = await Promise.race([opPromise, timeoutPromise]);
-          responseText = result.response.text();
-        } finally {
-          clearTimeout(timerId);
-        }
-
-        if (responseText && responseText.trim()) {
-          return { text: responseText.trim(), model: modelName };
-        }
-      } catch (sdkErr) {
-        console.warn(`[Google SDK ${modelName}]:`, sdkErr.message);
-      }
-    }
+  if (!canMakeGoogleRequest()) {
+    console.warn('[Google AI Studio Free Tier Guard]: 14 RPM window reached. Throttling Google request.');
+    return null;
   }
+  recordGoogleRequest();
 
-  // 2. LangChain ChatGoogleGenerativeAI
-  if (ChatGoogleGenerativeAI && HumanMessage) {
-    for (const modelName of GOOGLE_CANDIDATE_MODELS) {
-      try {
-        const chat = new ChatGoogleGenerativeAI({
-          apiKey: apiKey,
-          model: modelName,
-          temperature: temperature,
-          maxRetries: 0
-        });
-
-        const messages = [];
-        if (systemInstruction && SystemMessage) {
-          messages.push(new SystemMessage(systemInstruction));
-        }
-        if (Array.isArray(history) && history.length > 0) {
-          history.forEach(h => {
-            const textContent = h.text || h.content;
-            if (!textContent) return;
-            if (h.role === 'user') messages.push(new HumanMessage(textContent));
-            else if (AIMessage) messages.push(new AIMessage(textContent));
-          });
-        }
-        messages.push(new HumanMessage(prompt));
-
-        let lcTimerId;
-        const lcTimeout = new Promise((_, reject) => {
-          lcTimerId = setTimeout(() => reject(new Error(`LangChain ${modelName} timeout`)), 10000);
-        });
-
-        try {
-          const response = await Promise.race([chat.invoke(messages), lcTimeout]);
-          const text = typeof response.content === 'string' ? response.content : JSON.stringify(response.content);
-          if (text && text.trim()) {
-            return { text: text.trim(), model: `langchain-${modelName}` };
-          }
-        } finally {
-          clearTimeout(lcTimerId);
-        }
-      } catch (lcErr) {
-        console.warn(`[LangChain ${modelName}]:`, lcErr.message);
-      }
-    }
-  }
-
-  // 3. Direct REST Fallback
+  // 1. Direct REST (Fastest, zero SDK overhead, supports Gemini 3.6 Flash natively)
   for (const modelName of GOOGLE_CANDIDATE_MODELS) {
+    if (DEPRECATED_GOOGLE_MODELS.has(modelName) || isGoogleModelInCooldown(modelName)) continue;
+
     try {
       const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
       const ctrl = new AbortController();
-      const timeoutId = setTimeout(() => ctrl.abort(), 10000);
+      const timeoutId = setTimeout(() => ctrl.abort(), 12000);
 
       const contents = [];
       if (Array.isArray(history) && history.length > 0) {
@@ -312,9 +303,140 @@ async function callGoogleModelWithKey(apiKey, { prompt, systemInstruction, histo
         if (text && text.trim()) {
           return { text: text.trim(), model: `${modelName}-rest` };
         }
+      } else {
+        const errJson = await restRes.json().catch(() => ({}));
+        const errStr = JSON.stringify(errJson);
+        if (restRes.status === 404) {
+          DEPRECATED_GOOGLE_MODELS.add(modelName);
+        } else if (restRes.status === 429 || errStr.includes('Quota exceeded') || errStr.includes('429')) {
+          recordGoogleModelCooldown(modelName, 45);
+        } else if (restRes.status === 400 && errStr.includes('API key not valid')) {
+          INVALID_GOOGLE_KEYS.add(apiKey);
+          return null;
+        }
       }
     } catch (restErr) {
       console.warn(`[Google REST ${modelName}]:`, restErr.message);
+    }
+  }
+
+  // 2. Direct High-Speed Google Generative AI SDK (Fallback)
+  if (GoogleGenerativeAI) {
+    for (const modelName of GOOGLE_CANDIDATE_MODELS) {
+      if (DEPRECATED_GOOGLE_MODELS.has(modelName) || isGoogleModelInCooldown(modelName)) continue;
+
+      try {
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const modelConfig = {
+          model: modelName,
+          generationConfig: {
+            temperature: temperature,
+            responseMimeType: jsonMode ? 'application/json' : undefined
+          }
+        };
+        if (systemInstruction) {
+          modelConfig.systemInstruction = { parts: [{ text: systemInstruction }] };
+        }
+        const model = genAI.getGenerativeModel(modelConfig);
+
+        let responseText = null;
+        let timerId;
+        const timeoutPromise = new Promise((_, r) => {
+          timerId = setTimeout(() => r(new Error(`SDK timeout on ${modelName}`)), 3500);
+        });
+
+        try {
+          let opPromise;
+          if (Array.isArray(history) && history.length > 0) {
+            const formattedHistory = history
+              .filter(h => h.role && (h.text || h.content))
+              .map(h => ({
+                role: h.role === 'user' ? 'user' : 'model',
+                parts: [{ text: h.text || h.content }]
+              }));
+
+            const chat = model.startChat({ history: formattedHistory });
+            opPromise = chat.sendMessage(prompt);
+          } else {
+            opPromise = model.generateContent(prompt);
+          }
+
+          const result = await Promise.race([opPromise, timeoutPromise]);
+          responseText = result.response.text();
+        } finally {
+          clearTimeout(timerId);
+        }
+
+        if (responseText && responseText.trim()) {
+          return { text: responseText.trim(), model: modelName };
+        }
+      } catch (sdkErr) {
+        if (sdkErr.message.includes('API key not valid') || sdkErr.message.includes('INVALID_ARGUMENT')) {
+          INVALID_GOOGLE_KEYS.add(apiKey);
+          console.warn('[Google AI Studio]: API key invalid. Bypassing Google provider for this key.');
+          return null;
+        }
+        if (sdkErr.message.includes('429') || sdkErr.message.includes('Quota exceeded')) {
+          recordGoogleModelCooldown(modelName, 45);
+        }
+        if (sdkErr.message.includes('404') || sdkErr.message.includes('no longer available')) {
+          DEPRECATED_GOOGLE_MODELS.add(modelName);
+        }
+        console.warn(`[Google SDK ${modelName}]:`, sdkErr.message);
+      }
+    }
+  }
+
+  // 3. LangChain ChatGoogleGenerativeAI (Fallback)
+  if (ChatGoogleGenerativeAI && HumanMessage) {
+    for (const modelName of GOOGLE_CANDIDATE_MODELS) {
+      if (DEPRECATED_GOOGLE_MODELS.has(modelName) || isGoogleModelInCooldown(modelName)) continue;
+
+      try {
+        const chat = new ChatGoogleGenerativeAI({
+          apiKey: apiKey,
+          model: modelName,
+          temperature: temperature,
+          maxRetries: 0
+        });
+
+        const messages = [];
+        if (systemInstruction && SystemMessage) {
+          messages.push(new SystemMessage(systemInstruction));
+        }
+        if (Array.isArray(history) && history.length > 0) {
+          history.forEach(h => {
+            const textContent = h.text || h.content;
+            if (!textContent) return;
+            if (h.role === 'user') messages.push(new HumanMessage(textContent));
+            else if (AIMessage) messages.push(new AIMessage(textContent));
+          });
+        }
+        messages.push(new HumanMessage(prompt));
+
+        let lcTimerId;
+        const lcTimeout = new Promise((_, reject) => {
+          lcTimerId = setTimeout(() => reject(new Error(`LangChain ${modelName} timeout`)), 3500);
+        });
+
+        try {
+          const response = await Promise.race([chat.invoke(messages), lcTimeout]);
+          const text = typeof response.content === 'string' ? response.content : JSON.stringify(response.content);
+          if (text && text.trim()) {
+            return { text: text.trim(), model: `langchain-${modelName}` };
+          }
+        } finally {
+          clearTimeout(lcTimerId);
+        }
+      } catch (lcErr) {
+        if (lcErr.message.includes('429') || lcErr.message.includes('Quota exceeded')) {
+          recordGoogleModelCooldown(modelName, 45);
+        }
+        if (lcErr.message.includes('404') || lcErr.message.includes('no longer available')) {
+          DEPRECATED_GOOGLE_MODELS.add(modelName);
+        }
+        console.warn(`[LangChain ${modelName}]:`, lcErr.message);
+      }
     }
   }
 
@@ -498,17 +620,8 @@ async function generateWithFailover({ prompt, systemInstruction = '', history = 
     } catch (graphErr) {
       console.warn('[LangGraph Orchestrator Execution Failure]:', graphErr.message);
     }
-  }
-
-  // 2. Direct Sequential Execution Fallback
-  // Tier 1: NVIDIA NIM
-  if (hasNvidia) {
-    try {
-      const nvidiaRes = await callNvidiaModel({ prompt, systemInstruction, history, temperature });
-      if (nvidiaRes && nvidiaRes.text) return nvidiaRes;
-    } catch (e) {
-      console.warn('[Direct NVIDIA Failure]:', e.message);
-    }
+    // Multi-provider graph has already exhausted configured tiers
+    return null;
   }
 
   // Tier 2: Google Main Key
@@ -547,5 +660,19 @@ module.exports = {
   isGoogleApiConfigured,
   callNvidiaModel,
   callGoogleModelWithKey,
-  generateWithFailover
+  generateWithFailover,
+  NVIDIA_CASCADE_MODELS,
+  NVIDIA_MODELS_CASCADE: NVIDIA_CASCADE_MODELS,
+  NVIDIA_CIRCUIT_BREAKER: {
+    recordFailure: recordModelFailure,
+    recordSuccess: recordModelSuccess,
+    isOpen: isModelTripped,
+    map: NVIDIA_CIRCUIT_BREAKER
+  },
+  googleRateLimiter: {
+    canRequest: canMakeGoogleRequest,
+    recordRequest: recordGoogleRequest,
+    maxRpm: GOOGLE_MAX_RPM,
+    timestamps: GOOGLE_REQUEST_TIMESTAMPS
+  }
 };

@@ -200,6 +200,23 @@
         </div>
       </section>
 
+      <!-- Industry Feedback Signals Section (Plan 02) -->
+      <section id="industry-feedback-section" class="border border-[#E7E4DC] dark:border-white/10 rounded-lg bg-white dark:bg-white/[0.03] shadow-sm p-6 space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#E7E4DC] dark:border-white/10">
+          <div>
+            <h2 class="text-xl font-bold text-[#1C1917] dark:text-white">Industry Feedback Signals</h2>
+            <p class="text-xs text-[#6E6962] dark:text-gray-400">Real-time corporate syllabus reviews & BoS adoption tracking</p>
+          </div>
+          <span class="inline-flex items-center px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-mono text-xs font-bold border border-amber-200 dark:border-amber-800/60">
+            Live from Industry Partners
+          </span>
+        </div>
+
+        <div id="industry-feedback-signals-container" class="space-y-4">
+          <!-- Populated by academy-ui.js renderSyllabusReviews() -->
+        </div>
+      </section>
+
       <section class="border border-[#E7E4DC] dark:border-white/10 rounded-lg bg-white dark:bg-white/[0.03] shadow-sm p-6 space-y-5">
         <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-[#E7E4DC] dark:border-white/10 pb-4">
           <div>
@@ -257,6 +274,14 @@
   <script src="/js/frontend/api-client.js"></script>
   <script src="/js/frontend/notifications.js"></script>
   <script src="/js/frontend/academy-ui.js"></script>
+  <script>
+    // Render Industry Feedback Signals section on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof renderSyllabusReviews === 'function') {
+        renderSyllabusReviews();
+      }
+    });
+  </script>
 <script src="../../js/frontend/animations.js"></script>
 </body>
 </html>

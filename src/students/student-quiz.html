@@ -252,12 +252,28 @@
         </div>
       </div>
 
-      <!-- QUIZ ARENA CONTAINER -->
-      <div class="rounded-2xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-white/[0.03] p-6 sm:p-8 shadow-sm">
-        <div id="quiz-arena-container">
-          <!-- Rendered dynamically by student-ui.js -->
-        </div>
-      </div>
+<!-- QUIZ ARENA TABS -->
+<div class="mb-6">
+  <div class="flex border-b border-[#E7E4DC] dark:border-white/10">
+    <button id="quiz-arena-tab"
+            onclick="switchQuizTab('arena')"
+            class="quiz-tab-active px-4 py-3 text-center font-medium text-[#0F172A] dark:text-white border-b-2 border-purple-600 dark:border-purple-400">
+      Adaptive Quiz Arena
+    </button>
+    <button id="screening-exams-tab"
+            onclick="switchQuizTab('screening')"
+            class="quiz-tab px-4 py-3 text-center font-medium text-[#6E6962] dark:text-gray-400 hover:text-[#0F172A] dark:hover:text-white">
+      Enterprise Screening Exams
+    </button>
+  </div>
+</div>
+
+<!-- QUIZ ARENA CONTAINER -->
+<div class="rounded-2xl border border-[#E7E4DC] dark:border-white/10 bg-white dark:bg-white/[0.03] p-6 sm:p-8 shadow-sm">
+  <div id="quiz-arena-container">
+    <!-- Rendered dynamically by student-ui.js -->
+  </div>
+</div>
     
     </div>
 

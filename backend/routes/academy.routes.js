@@ -664,5 +664,190 @@ router.post('/mou/negotiate', async (req, res) => {
   }
 });
 
+// ============================================================================
+// FEATURE 2: University Syllabus Review & Bilateral MoU Engine (SIH 26044) - Academy Routes
+// ============================================================================
+
+// GET /api/academy/syllabus-reviews - View all corporate reviews submitted by companies for the institution's syllabi
+router.get('/syllabus-reviews', async (req, res) => {
+  try {
+    const institution = req.query.institution || 'All India Institute of Ayurveda';
+
+    // Get curriculums for this institution
+    const curriculums = (DB.curriculums || []).filter(c => c.institution === institution);
+
+    // Get all reviews for these curriculums
+    const reviews = (DB.syllabus_reviews || []).filter(r =>
+      curriculums.some(c => c.id === r.curriculum_id)
+    );
+
+    // Enhance reviews with curriculum details
+    const enhancedReviews = reviews.map(review => {
+      const curriculum = curriculums.find(c => c.id === review.curriculum_id);
+      return {
+        ...review,
+        curriculum: curriculum ? {
+          id: curriculum.id,
+          department: curriculum.department,
+          degree: curriculum.degree,
+          academic_year: curriculum.academic_year
+        } : null
+      };
+    });
+
+    // Sort by date (newest first)
+    enhancedReviews.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    return res.json({
+      success: true,
+      institution,
+      totalReviews: enhancedReviews.length,
+      reviews: enhancedReviews,
+      summary: {
+        departmentsReviewed: [...new Set(enhancedReviews.map(r => r.curriculum?.department).filter(Boolean))],
+        companiesReviewed: [...new Set(enhancedReviews.map(r => r.company_name))],
+        averageRating: enhancedReviews.length > 0
+          ? (enhancedReviews.reduce((sum, r) => sum + r.relevance_rating, 0) / enhancedReviews.length).toFixed(1)
+          : null,
+        topGaps: [...new Set(enhancedReviews.flatMap(r => r.identified_gaps))].slice(0, 10),
+        topRecommendations: [...new Set(enhancedReviews.flatMap(r => r.recommended_technologies))].slice(0, 10)
+      }
+    });
+  } catch (err) {
+    console.error('[Academy Syllabus Reviews Error]:', err);
+    return res.status(500).json({ success: false, error: 'Unable to retrieve syllabus reviews.' });
+  }
+});
+
+// GET /api/academy/mous/inbound - Retrieve incoming and active bilateral MoU proposals
+router.get('/mous/inbound', async (req, res) => {
+  try {
+    const institution = req.query.institution || 'All India Institute of Ayurveda';
+
+    let mous = [];
+
+    if (isConfigured && supabase) {
+      try {
+        const { data, error } = await supabase.from('mou_partnerships').select('*').eq('institution', institution).order('created_at', { ascending: false });
+        if (!error && data) {
+          mous = data;
+        }
+      } catch (err) {
+        console.warn('[Academy MoUs] Supabase warning:', err.message);
+      }
+    }
+
+    // Fallback to local DB
+    if (mous.length === 0) {
+      mous = (DB.mou_partnerships || []).filter(m => m.institution === institution);
+    }
+
+    return res.json({ success: true, institution, mouPartnerships: mous });
+  } catch (err) {
+    console.error('[Academy Inbound MoUs Error]:', err);
+    return res.status(500).json({ success: false, error: 'Unable to retrieve inbound MoU proposals.' });
+  }
+});
+
+// POST /api/academy/mous/:id/respond - Academic dean accepts, requests modifications, or ratifies an MoU
+router.post('/mous/:id/respond', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, signatoryAcademy = 'Prof. R.K. Sharma', notes = '' } = req.body || {};
+
+    const validStatuses = ['Draft', 'Under BoS Review', 'Negotiating', 'Ratified', 'Rejected'];
+    if (!status || !validStatuses.includes(status)) {
+      return res.status(400).json({ success: false, error: 'Valid status is required: Draft, Under BoS Review, Negotiating, Ratified, Rejected' });
+    }
+
+    const mous = DB.mou_partnerships || [];
+    const mouIndex = mous.findIndex(m => m.id === id);
+
+    if (mouIndex === -1) {
+      return res.status(404).json({ success: false, error: 'MoU proposal not found.' });
+    }
+
+    const mou = mous[mouIndex];
+
+    // Update MoU
+    mou.status = status;
+    if (status === 'Ratified') {
+      mou.signatory_academy = signatoryAcademy;
+      mou.effective_date = new Date().toISOString().split('T')[0];
+    }
+    if (notes) {
+      if (!mou.negotiationHistory) mou.negotiationHistory = [];
+      mou.negotiationHistory.unshift({
+        clauseTitle: 'Status Update',
+        proposedChange: notes,
+        proposedBy: signatoryAcademy,
+        timestamp: new Date().toISOString(),
+        status
+      });
+    }
+
+    // Save to database
+    if (isConfigured && supabase) {
+      try {
+        await supabase.from('mou_partnerships').update({
+          status: mou.status,
+          signatory_academy: mou.signatory_academy,
+          effective_date: mou.effective_date
+        }).eq('id', id);
+      } catch (err) {
+        console.warn('[Academy MoU Respond] Supabase warning:', err.message);
+      }
+    }
+
+    // Notify Industry Partner
+    if (!DB.inPortalNotifications) DB.inPortalNotifications = [];
+    const companyId = mou.company === 'Dabur India Ltd.' ? 'usr-industry-01' : 'usr-industry-01';
+
+    const statusMessages = {
+      'Ratified': 'approved and ratified',
+      'Under BoS Review': 'sent to Board of Studies for review',
+      'Negotiating': 'requested modifications to',
+      'Rejected': 'declined'
+    };
+
+    DB.inPortalNotifications.unshift({
+      id: `notif-${Date.now().toString(36)}`,
+      recipientId: companyId,
+      senderId: 'usr-academy-01',
+      title: `MoU Proposal ${status}`,
+      message: `Academic Dean has ${statusMessages[status] || status.toLowerCase()} the MoU proposal for "${mou.institution}" - ${mou.department}.${notes ? ` Notes: ${notes}` : ''}`,
+      actionUrl: '/industry.html#mous',
+      category: 'system_alert',
+      isRead: false,
+      createdAt: new Date().toISOString()
+    });
+
+    // If ratified, also notify students about new partnership opportunities
+    if (status === 'Ratified') {
+      if (!DB.inPortalNotifications) DB.inPortalNotifications = [];
+      DB.inPortalNotifications.unshift({
+        id: `notif-${Date.now().toString(36)}`,
+        recipientId: 'usr-student-01',
+        senderId: 'usr-academy-01',
+        title: 'New MoU Partnership Ratified!',
+        message: `A new bilateral MoU with ${mou.company} has been ratified. Scope: ${mou.scope_tracks.join(', ')}. New opportunities coming soon!`,
+        actionUrl: '/student.html#opportunities',
+        category: 'system_alert',
+        isRead: false,
+        createdAt: new Date().toISOString()
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: `MoU proposal ${status.toLowerCase()} successfully!`,
+      mou
+    });
+  } catch (err) {
+    console.error('[Academy MoU Respond Error]:', err);
+    return res.status(500).json({ success: false, error: 'Unable to respond to MoU proposal.' });
+  }
+});
+
 module.exports = router;
 

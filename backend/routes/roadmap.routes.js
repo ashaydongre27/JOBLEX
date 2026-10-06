@@ -4,6 +4,8 @@ const { supabase, isConfigured } = require('../config/supabase');
 const DB = require('../data/database');
 const { authenticateToken, requireRole } = require('../middleware/auth.middleware');
 const { generateWithFailover } = require('../services/ai.service');
+const { SKILL_ONTOLOGY, ROLE_BENCHMARK_PROFILES } = require('../data/skillOntology');
+const { evaluateDecisionTree } = require('../services/roadmap-decision-tree.service');
 
 router.use(authenticateToken, requireRole(['student']));
 
@@ -299,6 +301,51 @@ router.get('/sectors/:id', async (req, res) => {
     success: true,
     roadmap
   });
+});
+
+// POST /api/roadmap/decision-tree (Decision Tree Engine: Evaluate student profile and generate personalized roadmap)
+router.post('/decision-tree', async (req, res) => {
+  try {
+    const studentInput = req.body || {};
+    const user = req.user;
+
+    // Validate required fields
+    if (!studentInput.careerAmbition || !studentInput.academicDepartment) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields: careerAmbition and academicDepartment are required.'
+      });
+    }
+
+    // Merge user profile data if available
+    const enrichedInput = {
+      ...studentInput,
+      existingSkills: studentInput.existingSkills || user?.verified_skills || [],
+      studentId: user?.id || user?.email
+    };
+
+    const result = await evaluateDecisionTree(enrichedInput);
+
+    // Store the generated roadmap in student's roadmap record
+    if (result.success && isConfigured && supabase) {
+      try {
+        await supabase
+          .from('student_roadmaps')
+          .upsert({
+            student_id: user?.id || user?.email,
+            roadmap_data: result,
+            updated_at: new Date().toISOString()
+          });
+      } catch (dbErr) {
+        console.warn('[Decision Tree] Supabase sync warning:', dbErr.message);
+      }
+    }
+
+    res.json(result);
+  } catch (err) {
+    console.error('[Roadmap Decision Tree Error]:', err);
+    res.status(500).json({ success: false, error: 'Failed to evaluate decision tree: ' + err.message });
+  }
 });
 
 // POST /api/roadmap/customize (LangGraph Failover: Modify roadmap based on user prompt)
