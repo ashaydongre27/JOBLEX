@@ -55,7 +55,58 @@ function searchColleges(query = '', limit = 8) {
   ).slice(0, limit);
 }
 
+const INSTITUTION_SYNONYMS = [
+  ['aiia', 'all india institute of ayurveda', 'all india institute of ayurveda aiia', 'aiia new delhi'],
+  ['iit', 'indian institute of technology'],
+  ['nit', 'national institute of technology'],
+  ['iiit', 'international institute of information technology'],
+  ['aiims', 'all india institute of medical sciences'],
+  ['nia', 'national institute of ayurveda'],
+  ['itra', 'institute of teaching and research in ayurveda'],
+  ['bhu', 'banaras hindu university', 'institute of medical sciences bhu'],
+  ['niper', 'national institute of pharmaceutical education and research'],
+  ['du', 'delhi university', 'university of delhi'],
+  ['bits', 'birla institute of technology and science', 'bits pilani'],
+  ['dtu', 'delhi technological university'],
+  ['nsut', 'netaji subhas university of technology'],
+  ['vit', 'vellore institute of technology']
+];
+
+function normalizeInstitutionName(name) {
+  if (!name || typeof name !== 'string') return '';
+  return name.toLowerCase().replace(/[^a-z0-9]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function textMatchesAlias(normText, alias) {
+  if (!normText || !alias) return false;
+  if (normText === alias) return true;
+  if (alias.length <= 5 || !alias.includes(' ')) {
+    const words = normText.split(/\s+/);
+    return words.includes(alias);
+  }
+  return normText.includes(alias) || alias.includes(normText);
+}
+
+function matchInstitutions(instA, instB) {
+  if (!instA || !instB) return false;
+  const aNorm = normalizeInstitutionName(instA);
+  const bNorm = normalizeInstitutionName(instB);
+  if (!aNorm || !bNorm) return false;
+  if (aNorm === bNorm) return true;
+  if (Math.min(aNorm.length, bNorm.length) >= 8 && (aNorm.includes(bNorm) || bNorm.includes(aNorm))) return true;
+
+  for (const group of INSTITUTION_SYNONYMS) {
+    const aMatches = group.some(alias => textMatchesAlias(aNorm, alias));
+    const bMatches = group.some(alias => textMatchesAlias(bNorm, alias));
+    if (aMatches && bMatches) return true;
+  }
+  return false;
+}
+
 module.exports = {
   COLLEGES_DIRECTORY,
-  searchColleges
+  searchColleges,
+  normalizeInstitutionName,
+  matchInstitutions
 };
+

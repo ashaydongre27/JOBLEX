@@ -41,6 +41,22 @@
   <style>
     .glass-card { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(16px); border: 1px solid rgba(139, 92, 246, 0.2); }
   </style>
+
+  <!-- Immediate Authentication & Onboarding Gating Guard -->
+  <script src="/js/frontend/api-client.js"></script>
+  <script>
+    (function() {
+      try {
+        const user = JoblexApiClient.getCurrentUser();
+        const token = typeof localStorage !== 'undefined' ? localStorage.getItem('joblex_token') : null;
+        if (!user || !token) {
+          window.location.replace('/auth.html?role=student&redirect=' + encodeURIComponent(window.location.pathname));
+        } else if (user.role === 'student' && !(user.isOnboardingCompleted ?? user.onboarding_completed)) {
+          window.location.replace('/onboarding');
+        }
+      } catch(e) {}
+    })();
+  </script>
 </head>
 <body class="bg-[#FAF8F5] dark:bg-[#070709] text-[#1C1917] dark:text-[#F4F4F6] font-sans h-screen flex flex-col overflow-hidden portal-body antialiased transition-colors duration-200">
 

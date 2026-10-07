@@ -7,6 +7,7 @@
 
 const express = require('express');
 const router = express.Router();
+const DB = require('../data/database');
 const { generateWithFailover, isGoogleApiConfigured, getMainApiKey, getBackupApiKey, getNvidiaApiKey, callNvidiaModel } = require('../services/ai.service');
 const zuluChatService = require('../services/zuluChat.service');
 const { authenticateToken, requireRole } = require('../middleware/auth.middleware');
@@ -51,16 +52,22 @@ async function generateWithZuluAI(userMessage, conversationHistory = [], student
 function generateSmartZuluResponse(message, studentContext = {}) {
   const query = (message || '').toLowerCase();
   const name = studentContext.studentName || studentContext.name || 'Scholar';
-  const adaptive = studentContext.adaptiveQuizPerformance;
+  const roadmapPhase = studentContext.roadmapPhase || studentContext.careerPhase || (studentContext.year ? `${studentContext.year} Development Track` : 'Phase 2: Competency Verification');
+  const targetRole = studentContext.targetRole || 'Herbal Formulation & Tech Specialist';
+  const skillsList = Array.isArray(studentContext.verifiedSkills) && studentContext.verifiedSkills.length
+    ? studentContext.verifiedSkills.slice(0, 3).join(', ')
+    : (Array.isArray(studentContext.skills) && studentContext.skills.length ? studentContext.skills.slice(0, 3).join(', ') : 'Applied Core Competencies');
+
+  const adaptive = studentContext.adaptiveQuizPerformance || studentContext.quizStats;
   const quizSummary = adaptive && adaptive.totalAnswered
-    ? `\n\nYour adaptive quiz profile currently shows ${Math.round((adaptive.totalCorrect / adaptive.totalAnswered) * 100)}% accuracy across ${adaptive.totalAnswered} answers. I will use the lower-scoring skills to shape your next practice set.`
-    : '';
+    ? `\n> **Active Competency Telemetry**: ${Math.round(((adaptive.totalCorrect || 0) / adaptive.totalAnswered) * 100)}% accuracy across ${adaptive.totalAnswered} questions. Anti-decay freeze active for 72 hours.`
+    : '\n> **Anti-Decay Status**: Active (complete Quiz Arena modules to maintain streak protection).';
+
+  const contextHeader = `> **Roadmap Phase**: ${roadmapPhase} | **Target Role**: ${targetRole}\n> **Verified Skills**: ${skillsList}${quizSummary}\n\n`;
 
   // 1. Tech, Software Engineering, AI & Web Development
   if (query.includes('software') || query.includes('coding') || query.includes('python') || query.includes('javascript') || query.includes('react') || query.includes('node') || query.includes('developer') || query.includes('engineer') || query.includes('ai') || query.includes('machine learning') || query.includes('data science') || query.includes('web')) {
-    return `### Tech & Engineering Career Guidance
-
-Hello **${name}**! Here is strategic guidance for technical and software development pathways:
+    return `### Tech & Engineering Career Guidance\n\n${contextHeader}Hello **${name}**! Here is strategic guidance for technical and software development pathways:
 
 1. **High-Demand Core Competencies**:
    - **Data Structures & Algorithms**: Fundamental for technical interviews and scalable system design.
@@ -70,27 +77,23 @@ Hello **${name}**! Here is strategic guidance for technical and software develop
 2. **Actionable Roadmap**:
    - Build a portfolio of 2-3 production-grade projects demonstrating end-to-end system architecture.
    - Explore active technical requisitions and hackathons on the **Opportunities Board**.
-   - Check the **Career Roadmap** to log your verified coding assessments and earn XP!`;
+   - Check the **Career Roadmap** (${roadmapPhase}) to log your verified coding assessments and earn XP!`;
   }
 
   // 2. Anti-Decay & Quiz Arena Mechanics
   if (query.includes('decay') || query.includes('freeze') || query.includes('xp') || query.includes('streak') || query.includes('point') || query.includes('quiz')) {
-    return `### Anti-Decay XP & Competency Freeze Engine
-
-Greetings **${name}**! Here is how your skill verification freeze works:
+    return `### Anti-Decay XP & Competency Freeze Engine\n\n${contextHeader}Greetings **${name}**! Here is how your skill verification freeze works:
 
 - **72-Hour Freeze Window**: Every completed Quiz Arena module or daily check-in freezes your competency score for 72 hours, preventing skill decay.
 - **Streak Multiplier**: Maintaining your active streak provides a 1.5x XP boost across all micro-gigs and placement applications.
 - **Recruiter Priority**: Students with active freeze status appear in the **Top 5% Inbound Candidate Pool** for industry partners.
 
-*Tip*: Complete a quick 3-minute quiz in the **Quiz Arena** now to protect your current XP streak!${quizSummary}`;
+*Tip*: Complete a quick 3-minute quiz in the **Quiz Arena** now to protect your current XP streak!`;
   }
 
   // 3. Research, Fellowships, Grants & Academia
   if (query.includes('fellowship') || query.includes('grant') || query.includes('mou') || query.includes('research') || query.includes('paper') || query.includes('publication')) {
-    return `### Research Fellowships & Institutional MoU Pathways
-
-Hello **${name}**! Here are actionable research and fellowship opportunities:
+    return `### Research Fellowships & Institutional MoU Pathways\n\n${contextHeader}Hello **${name}**! Here are actionable research and fellowship opportunities for your current ${roadmapPhase}:
 
 - **Institutional Research Grants**: Under accreditation criteria (NAAC / NIRF), students participating in sponsored research are eligible for project travel allowances and lab stipends.
 - **Active Corporate MoUs**: University agreements with industry research labs enable shared access to high-performance instrumentation, supercomputing clusters, and dataset repositories.
@@ -101,9 +104,7 @@ Let me know if you would like help drafting an abstract or project proposal!`;
 
   // 4. Industry, Jobs & Internships
   if (query.includes('internship') || query.includes('job') || query.includes('company') || query.includes('placement') || query.includes('recruit') || query.includes('interview') || query.includes('career')) {
-    return `### Industry Placement & Internship Roadmap
-
-Hello **${name}**! Here are targeted strategies to accelerate corporate placements:
+    return `### Industry Placement & Internship Roadmap\n\n${contextHeader}Hello **${name}**! Here are targeted strategies to accelerate corporate placements for ${targetRole}:
 
 1. **Recruiter Evaluation Benchmarks**:
    - **Verified Skill Dossiers**: Employers prioritize candidates with verified project credentials over unverified resume bullet points.
@@ -117,9 +118,7 @@ Hello **${name}**! Here are targeted strategies to accelerate corporate placemen
 
   // 5. Default General Response
   const topicWords = message.split(' ').slice(0, 5).join(' ');
-  return `### Zulu AI Guidance: "${topicWords}..."
-
-Hello **${name}**! Here is strategic guidance regarding your inquiry:
+  return `### Zulu AI Guidance: "${topicWords}..."\n\n${contextHeader}Hello **${name}**! Here is strategic guidance regarding your inquiry:
 
 - **Strategic Overview**: Navigating **"${message.trim()}"** successfully requires pairing foundational domain knowledge with applied practical experience.
 - **Key Recommendation**: Focus on strengthening your verified skill vectors in your portal profile and completing practical projects that demonstrate end-to-end execution.
@@ -224,15 +223,29 @@ router.post('/chat', authenticateToken, requireRole(['student']), async (req, re
     await zuluChatService.addMessageToSession(targetSessionId, userId, 'user', cleanMessage, null);
 
     // 3. Attempt Live AI Generation (NVIDIA Nemotron -> Failover) or Smart Response Engine
+    let userObj = (DB.users || []).find(u => (userId && u.id === userId) || (u.email && u.email.toLowerCase() === (req.user?.email || '').toLowerCase()));
+    const enrichedContext = {
+      studentName: context.studentName || req.user?.name || userObj?.name || 'Scholar',
+      department: context.department || userObj?.department || userObj?.student_profile?.department || 'General',
+      institution: context.institution || userObj?.institution || userObj?.student_profile?.institution || 'All India Institute of Ayurveda',
+      year: context.year || userObj?.year || userObj?.student_profile?.year || 'Final Year',
+      careerPhase: context.careerPhase || userObj?.careerPhase || userObj?.student_profile?.careerPhase || 'Phase 2: Competency Verification',
+      roadmapPhase: context.roadmapPhase || userObj?.roadmapPhase || userObj?.student_profile?.roadmapPhase || 'Phase 2: Core Practical Specialization',
+      targetRole: context.targetRole || userObj?.targetRole || userObj?.student_profile?.targetRole || 'Herbal Formulation & Tech Specialist',
+      verifiedSkills: context.verifiedSkills || userObj?.verified_skills || userObj?.student_profile?.verified_skills || userObj?.skills || [],
+      adaptiveQuizPerformance: context.adaptiveQuizPerformance || userObj?.adaptiveQuizPerformance || userObj?.quizStats || null,
+      ...context
+    };
+
     let replyText = '';
     let providerName = 'zulu-nemotron-engine';
 
-    const aiResult = await generateWithZuluAI(cleanMessage, history, context);
+    const aiResult = await generateWithZuluAI(cleanMessage, history, enrichedContext);
     if (aiResult && aiResult.text) {
       replyText = aiResult.text;
       providerName = aiResult.model || 'nvidia/nemotron-3-ultra-550b-a55b';
     } else {
-      replyText = generateSmartZuluResponse(cleanMessage, context);
+      replyText = generateSmartZuluResponse(cleanMessage, enrichedContext);
     }
 
     // 4. Persist Zulu AI response message to session history

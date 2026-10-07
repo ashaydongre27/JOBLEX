@@ -8,9 +8,8 @@ const API_BASE = (typeof window !== 'undefined' && window.JOBLEX_API_URL) || '/a
 if (typeof window !== 'undefined') window.JOBLEX_API_BASE = API_BASE;
 
 const JoblexApiClient = {
-  // Session / User Storage
   getCurrentUser() {
-    const data = localStorage.getItem('joblex_user');
+    const data = typeof localStorage !== 'undefined' ? (localStorage.getItem('joblex_user') || localStorage.getItem('joblex_auth_user')) : null;
     if (data) {
       try { return JSON.parse(data); } catch(e) {}
     }
@@ -469,17 +468,74 @@ const JoblexApiClient = {
     window.location.reload();
   },
 
+  _isShowingAuthModal: false,
+
+  _handleUnauthorized(res, data = null) {
+    if (this._isShowingAuthModal) return;
+    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+
+    const pathname = window.location.pathname || '';
+    if (pathname.includes('auth.html') || pathname.includes('onboarding.html') || pathname.includes('login.html')) return;
+
+    this._isShowingAuthModal = true;
+    console.warn('[JoblexApiClient] Session expired or unauthorized (401).');
+
+    // Auto-clear stale session
+    try {
+      localStorage.removeItem('joblex_user');
+      localStorage.removeItem('joblex_auth_user');
+      localStorage.removeItem('joblex_token');
+    } catch (_) {}
+
+    this.showNoticeModal({
+      badge: 'Session Expired',
+      title: 'Please Sign In Again',
+      icon: 'lock',
+      iconColor: 'text-rose-400',
+      iconBg: 'bg-rose-500/10 border-rose-500/20',
+      message: (data && data.message) || 'Your active session has expired for security. Please sign in to resume.',
+      confirmText: 'Sign In',
+      cancelText: 'Stay on Page',
+      onConfirm: () => {
+        this._isShowingAuthModal = false;
+        const redirect = encodeURIComponent(window.location.pathname + window.location.search + window.location.hash);
+        window.location.href = '/auth.html?redirect=' + redirect;
+      },
+      onCancel: () => {
+        this._isShowingAuthModal = false;
+      }
+    });
+  },
+
+  async ensureValidSession() {
+    if (typeof window !== 'undefined' && window.supabase && window.supabase.auth) {
+      try {
+        const { data } = await window.supabase.auth.getSession();
+        if (data?.session?.access_token) {
+          localStorage.setItem('joblex_token', data.session.access_token);
+        }
+      } catch (err) {
+        console.warn('[JoblexApiClient] Supabase session check warning:', err);
+      }
+    }
+  },
+
   // Safe fetch helper that handles non-JSON / HTML 404 / network errors without throwing SyntaxError
   async _parseFetch(res) {
     if (!res) return { ok: false, status: 0, data: null };
     try {
       const text = await res.text();
+      let data = null;
+      let isHtml = false;
       try {
-        const data = JSON.parse(text);
-        return { ok: res.ok, status: res.status, data };
+        data = JSON.parse(text);
       } catch (_) {
-        return { ok: res.ok, status: res.status, data: null, isHtml: true };
+        isHtml = true;
       }
+      if (res.status === 401) {
+        this._handleUnauthorized(res, data);
+      }
+      return { ok: res.ok, status: res.status, data, isHtml };
     } catch (e) {
       return { ok: false, status: 0, data: null, error: e.message };
     }
@@ -3064,6 +3120,24 @@ if (typeof document !== 'undefined') {
       cancelText: null
     });
   };
+
+  // Global fetch interceptor for 401 unauthorized / expired session recovery
+  if (typeof window.fetch === 'function' && !window.__joblex_fetch_intercepted__) {
+    window.__joblex_fetch_intercepted__ = true;
+    const _origFetch = window.fetch;
+    window.fetch = async function(...args) {
+      const res = await _origFetch.apply(this, args);
+      try {
+        if (res && res.status === 401) {
+          const urlStr = typeof args[0] === 'string' ? args[0] : (args[0]?.url || '');
+          if (urlStr.includes('/api/') && !urlStr.includes('/auth/login') && !urlStr.includes('/auth/register') && !urlStr.includes('/auth/signup')) {
+            JoblexApiClient._handleUnauthorized(res);
+          }
+        }
+      } catch (_) {}
+      return res;
+    };
+  }
 }
 
 

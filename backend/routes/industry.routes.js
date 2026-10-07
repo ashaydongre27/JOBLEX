@@ -12,8 +12,61 @@ const router = express.Router();
 const { supabase, isConfigured } = require('../config/supabase');
 const DB = require('../data/database');
 const { authenticateToken, requireRole } = require('../middleware/auth.middleware');
+const { matchInstitutions, normalizeInstitutionName } = require('../data/colleges');
 
 router.use(authenticateToken, requireRole(['industry']));
+
+function normalizeApplication(app) {
+  if (!app || typeof app !== 'object') return app;
+  return {
+    ...app,
+    studentName: app.studentName || app.student_name || 'Candidate',
+    student_name: app.student_name || app.studentName || 'Candidate',
+    studentEmail: app.studentEmail || app.student_email || '',
+    student_email: app.student_email || app.studentEmail || '',
+    opportunityTitle: app.opportunityTitle || app.opportunity_title || 'Position',
+    opportunity_title: app.opportunity_title || app.opportunityTitle || 'Position',
+    opportunityId: app.opportunityId || app.opportunity_id || '',
+    opportunity_id: app.opportunity_id || app.opportunity_id || '',
+    appliedDate: app.appliedDate || app.applied_date || '',
+    applied_date: app.applied_date || app.appliedDate || '',
+    interviewSlot: app.interviewSlot || app.interview_slot || null,
+    interview_slot: app.interview_slot || app.interviewSlot || null,
+    coverNote: app.coverNote || app.cover_note || '',
+    cover_note: app.cover_note || app.coverNote || '',
+    verifiedBadge: app.verifiedBadge ?? app.verified_badge ?? false,
+    verified_badge: app.verified_badge ?? app.verifiedBadge ?? false,
+    updatedAt: app.updatedAt || app.updated_at || new Date().toISOString(),
+    updated_at: app.updated_at || app.updatedAt || new Date().toISOString()
+  };
+}
+
+async function safeUpdateApplication(id, payload) {
+  if (!isConfigured || !supabase) {
+    return { data: null, error: new Error('Database not configured') };
+  }
+  // Try primary update with all fields
+  let { data, error } = await supabase
+    .from('applications')
+    .update(payload)
+    .eq('id', id)
+    .select()
+    .maybeSingle();
+
+  if (error && error.code === 'PGRST204') {
+    // Strip non-core columns and update essential fields: status, updated_at
+    const corePayload = { status: payload.status };
+    if (payload.updated_at) corePayload.updated_at = payload.updated_at;
+    const retry = await supabase
+      .from('applications')
+      .update(corePayload)
+      .eq('id', id)
+      .select()
+      .maybeSingle();
+    return retry;
+  }
+  return { data, error };
+}
 
 // GET /api/industry, /api/industry/all-data, /api/industry/overview, /api/industry/analytics
 router.get(['/', '/all-data', '/overview', '/stats', '/analytics'], async (req, res) => {
@@ -178,25 +231,38 @@ router.get('/requisitions', async (req, res) => {
   }
 });
 
-// GET /api/industry/applications (Real-time student applicants stream from Supabase)
+// GET /api/industry/applications (Real-time student applicants stream with dual store fallback)
 router.get('/applications', async (req, res) => {
   const { company, type } = req.query;
 
-  if (!isConfigured || !supabase) {
-    return res.status(503).json({ success: false, error: 'Application database is not configured.' });
+  if (isConfigured && supabase) {
+    try {
+      let query = supabase.from('applications').select('*').order('created_at', { ascending: false });
+      if (company && company !== 'All') query = query.ilike('company', `%${company}%`);
+      if (type && type !== 'All') query = query.ilike('type', type);
+      const { data, error } = await query;
+      if (!error && Array.isArray(data)) {
+        const appMap = new Map();
+        (DB.applications || []).forEach(a => { if (a && a.id) appMap.set(a.id, normalizeApplication(a)); });
+        data.forEach(a => { if (a && a.id) appMap.set(a.id, normalizeApplication(a)); });
+        let combined = Array.from(appMap.values());
+        if (company && company !== 'All') combined = combined.filter(a => a.company && a.company.toLowerCase().includes(company.toLowerCase()));
+        if (type && type !== 'All') combined = combined.filter(a => a.type && a.type.toLowerCase() === type.toLowerCase());
+        return res.json({ success: true, totalApplications: combined.length, applications: combined });
+      }
+    } catch (err) {
+      console.warn('[Industry applications] Supabase query warning:', err.message);
+    }
   }
 
-  try {
-    let query = supabase.from('applications').select('*').order('created_at', { ascending: false });
-    if (company && company !== 'All') query = query.ilike('company', `%${company}%`);
-    if (type && type !== 'All') query = query.ilike('type', type);
-    const { data, error } = await query;
-    if (error) throw error;
-    return res.json({ success: true, totalApplications: data.length, applications: data });
-  } catch (err) {
-    console.warn('[Industry applications] Supabase query warning:', err.message);
-    return res.status(500).json({ success: false, error: 'Unable to load applications from the database.' });
+  let list = (DB.applications || []).map(normalizeApplication);
+  if (company && company !== 'All') {
+    list = list.filter(a => a.company && a.company.toLowerCase().includes(company.toLowerCase()));
   }
+  if (type && type !== 'All') {
+    list = list.filter(a => a.type && a.type.toLowerCase() === type.toLowerCase());
+  }
+  return res.json({ success: true, totalApplications: list.length, applications: list });
 });
 
 // Legacy status implementation retained for reference; the complete handler is defined below.
@@ -494,14 +560,16 @@ router.post('/applications/:id/status', async (req, res) => {
 
   let app = null;
 
-  try {
-    const { data, error } = await supabase
-      .from('applications')
-      .update({ status: updatedStatus, interview_slot: interviewSlot })
-      .eq('id', id)
-      .select()
-      .single();
+  const updatePayload = {
+    status: updatedStatus,
+    updated_at: new Date().toISOString()
+  };
+  if (interviewSlot) {
+    updatePayload.interview_slot = interviewSlot;
+  }
 
+  try {
+    const { data, error } = await safeUpdateApplication(id, updatePayload);
     if (!error && data) {
       app = data;
     }
@@ -509,20 +577,31 @@ router.post('/applications/:id/status', async (req, res) => {
     console.warn('[Update app status] Supabase error:', err.message);
   }
 
-  // Graceful fallback to local DB
-  if (!app) {
-    if (!DB.applications) DB.applications = [];
-    const idx = DB.applications.findIndex(a => a.id === id);
-    if (idx !== -1) {
-      DB.applications[idx].status = updatedStatus;
-      if (interviewSlot) DB.applications[idx].interview_slot = interviewSlot;
-      app = DB.applications[idx];
-    }
+  // Dual store sync: Always update local DB.applications
+  if (!DB.applications) DB.applications = [];
+  const idx = DB.applications.findIndex(a => a.id === id);
+  if (idx !== -1) {
+    DB.applications[idx].status = updatedStatus;
+    if (interviewSlot) DB.applications[idx].interview_slot = interviewSlot;
+    if (app) DB.applications[idx] = { ...DB.applications[idx], ...app };
+    else app = DB.applications[idx];
+  } else if (app) {
+    DB.applications.unshift(app);
+  } else {
+    // If not found in DB or remote, create placeholder to preserve session state
+    app = {
+      id,
+      status: updatedStatus,
+      interview_slot: interviewSlot
+    };
+    DB.applications.unshift(app);
   }
 
   if (!app) {
     return res.status(404).json({ success: false, message: 'Application not found in the database.' });
   }
+
+  app = normalizeApplication(app);
 
   const studentId = 'usr-student-01';
   const studentName = (app && (app.studentName || app.student_name)) || 'Candidate';
@@ -1132,22 +1211,37 @@ router.post('/syllabi/:id/review', async (req, res) => {
       }
     }
 
-    // Fallback to local DB
-    if (!savedReview) {
-      if (!DB.syllabus_reviews) DB.syllabus_reviews = [];
-      DB.syllabus_reviews.unshift(newReview);
-      savedReview = newReview;
+    // Synchronously mirror to in-memory store
+    if (!DB.syllabus_reviews) DB.syllabus_reviews = [];
+    const existingRevIdx = DB.syllabus_reviews.findIndex(r => r.id === newReview.id);
+    if (existingRevIdx >= 0) {
+      DB.syllabus_reviews[existingRevIdx] = { ...newReview, ...(savedReview || {}) };
+    } else {
+      DB.syllabus_reviews.unshift({ ...newReview, ...(savedReview || {}) });
     }
+    if (!savedReview) savedReview = newReview;
 
-    // Notify Academy Dean of new review
+    // Bilateral notifications: Notify Academy Dean and Industry Reviewer
     if (!DB.inPortalNotifications) DB.inPortalNotifications = [];
     DB.inPortalNotifications.unshift({
-      id: `notif-${Date.now().toString(36)}`,
+      id: `notif-${Date.now().toString(36)}-dea`,
       recipientId: 'usr-academy-01',
       senderId: 'usr-industry-01',
       title: 'New Industry Curriculum Review Received',
       message: `${companyName} submitted a review for "${curriculum.department}" (Rating: ${relevanceRating}/5.0).`,
       actionUrl: '/academy.html#syllabus-reviews',
+      category: 'system_alert',
+      isRead: false,
+      createdAt: new Date().toISOString()
+    });
+
+    DB.inPortalNotifications.unshift({
+      id: `notif-${Date.now().toString(36)}-ind`,
+      recipientId: 'usr-industry-01',
+      senderId: 'usr-academy-01',
+      title: 'Curriculum Review Transmitted',
+      message: `Your evaluation for "${curriculum.department}" was submitted to the Academic Board of Studies.`,
+      actionUrl: '/industry.html#syllabus',
       category: 'system_alert',
       isRead: false,
       createdAt: new Date().toISOString()
@@ -1224,22 +1318,38 @@ router.post('/mou/initiate', async (req, res) => {
       }
     }
 
-    // Fallback to local DB
-    if (!savedMou) {
-      if (!DB.mou_partnerships) DB.mou_partnerships = [];
-      DB.mou_partnerships.unshift(newMou);
-      savedMou = newMou;
+    // Synchronously mirror to local DB
+    const effectiveMou = savedMou || newMou;
+    if (!DB.mou_partnerships) DB.mou_partnerships = [];
+    const existingMouIdx = DB.mou_partnerships.findIndex(m => m.id === newMou.id);
+    if (existingMouIdx >= 0) {
+      DB.mou_partnerships[existingMouIdx] = { ...newMou, ...effectiveMou };
+    } else {
+      DB.mou_partnerships.unshift({ ...newMou, ...effectiveMou });
     }
+    if (!savedMou) savedMou = newMou;
 
-    // Notify Academy Dean of new MoU proposal
+    // Bilateral notifications: notify Academy Dean & Industry initiator
     if (!DB.inPortalNotifications) DB.inPortalNotifications = [];
     DB.inPortalNotifications.unshift({
-      id: `notif-${Date.now().toString(36)}`,
+      id: `notif-${Date.now().toString(36)}-dea`,
       recipientId: 'usr-academy-01',
       senderId: companyId,
       title: 'New Bilateral MoU Proposal Received',
       message: `${companyName} proposed a MoU for "${institution}" - ${department}. Scope: ${scopeTracks.join(', ')}.`,
       actionUrl: '/academy.html#mous',
+      category: 'system_alert',
+      isRead: false,
+      createdAt: new Date().toISOString()
+    });
+
+    DB.inPortalNotifications.unshift({
+      id: `notif-${Date.now().toString(36)}-ind`,
+      recipientId: companyId,
+      senderId: 'usr-academy-01',
+      title: 'MoU Proposal Submitted',
+      message: `Your Bilateral MoU proposal for "${institution}" - ${department} has been transmitted to the Academic Dean.`,
+      actionUrl: '/industry.html#mous',
       category: 'system_alert',
       isRead: false,
       createdAt: new Date().toISOString()

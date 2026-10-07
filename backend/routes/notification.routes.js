@@ -21,13 +21,39 @@ function ensureNotifications() {
   return DB.inPortalNotifications;
 }
 
+function getNormalizedRecipientIds(user, queryRecipientId) {
+  const base = [
+    user?.id,
+    user?.email,
+    user?.name,
+    queryRecipientId
+  ].filter(Boolean);
+
+  const set = new Set();
+  base.forEach(b => {
+    const s = String(b).trim();
+    if (s) {
+      set.add(s);
+      set.add(s.toLowerCase());
+      set.add(s.toUpperCase());
+    }
+  });
+  return Array.from(set);
+}
+
+function matchesRecipient(notifRecipientId, candidateIds) {
+  if (!notifRecipientId) return false;
+  const n = String(notifRecipientId).trim().toLowerCase();
+  return candidateIds.some(c => String(c).trim().toLowerCase() === n);
+}
+
 /**
  * GET /api/notifications
  * Retrieves unread and read notifications for current recipient
  */
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const recipientIds = [req.user.id, req.user.email].filter(Boolean);
+    const recipientIds = getNormalizedRecipientIds(req.user, req.query.recipientId);
 
     if (isConfigured && supabase) {
       try {
@@ -39,7 +65,7 @@ router.get('/', authenticateToken, async (req, res) => {
 
         if (!error && data) {
           const memoryNotifications = ensureNotifications()
-            .filter(n => recipientIds.includes(n.recipientId))
+            .filter(n => matchesRecipient(n.recipientId, recipientIds))
             .filter(n => !data.some(dbNotification => dbNotification.id === n.id));
           const notifications = [...data, ...memoryNotifications]
             .sort((a, b) => new Date(b.created_at || b.createdAt) - new Date(a.created_at || a.createdAt));
@@ -53,7 +79,7 @@ router.get('/', authenticateToken, async (req, res) => {
 
     const notifications = recipientIds.length
       ? ensureNotifications()
-          .filter(n => recipientIds.includes(n.recipientId))
+          .filter(n => matchesRecipient(n.recipientId, recipientIds))
           .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
       : [];
 
@@ -75,10 +101,11 @@ router.all(['/:id/read'], authenticateToken, async (req, res) => {
   }
   try {
     const { id } = req.params;
+    const recipientIds = getNormalizedRecipientIds(req.user);
     const notifs = ensureNotifications();
     const notif = notifs.find(n => n.id === id);
 
-    if (notif && notif.recipientId !== req.user.id && notif.recipientId !== req.user.email) {
+    if (notif && !matchesRecipient(notif.recipientId, recipientIds) && req.user.role !== 'admin') {
       return res.status(403).json({ success: false, error: 'You cannot modify another user\'s notification.' });
     }
 
@@ -107,11 +134,11 @@ router.all(['/:id/read'], authenticateToken, async (req, res) => {
  */
 router.post('/read-all', authenticateToken, async (req, res) => {
   try {
-    const recipientIds = [req.user.id, req.user.email].filter(Boolean);
+    const recipientIds = getNormalizedRecipientIds(req.user);
     const notifs = ensureNotifications();
 
     notifs.forEach(n => {
-      if (recipientIds.includes(n.recipientId)) {
+      if (matchesRecipient(n.recipientId, recipientIds)) {
         n.isRead = true;
       }
     });
@@ -182,15 +209,18 @@ router.post('/dispatch', authenticateToken, requireRole(['academy', 'industry'])
     }
 
     // Push to active SSE connections if connected
-    if (sseClients.has(recipientId)) {
-      const payload = `data: ${JSON.stringify(newNotif)}\n\n`;
-      sseClients.get(recipientId).forEach(clientRes => {
-        try {
-          clientRes.write(payload);
-        } catch (e) {
-          // Client disconnected
-        }
-      });
+    const normalizedRecip = String(recipientId).toLowerCase();
+    for (const [clientId, clientSet] of sseClients.entries()) {
+      if (String(clientId).toLowerCase() === normalizedRecip) {
+        const payload = `data: ${JSON.stringify(newNotif)}\n\n`;
+        clientSet.forEach(clientRes => {
+          try {
+            clientRes.write(payload);
+          } catch (e) {
+            // Client disconnected
+          }
+        });
+      }
     }
 
     return res.status(201).json({ success: true, notification: newNotif });

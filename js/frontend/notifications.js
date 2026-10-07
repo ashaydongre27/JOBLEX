@@ -291,17 +291,23 @@
       item.unread = false;
       saveNotifications();
       updateBadgeUI();
+      renderNotificationList();
     }
     try {
       const apiBase = window.JOBLEX_API_BASE || window.JOBLEX_API_URL || '/api';
-      await fetch(`${apiBase}/notifications/${encodeURIComponent(id)}/read`, {
+      const token = typeof localStorage !== 'undefined' ? localStorage.getItem('joblex_token') : null;
+      fetch(`${apiBase}/notifications/${encodeURIComponent(id)}/read`, {
         method: 'PATCH',
-        headers: localStorage.getItem('joblex_token') ? { Authorization: `Bearer ${localStorage.getItem('joblex_token')}` } : {}
-      });
+        headers: token ? { Authorization: `Bearer ${token}` } : {}
+      }).catch(() => {});
     } catch (e) {}
     closeDropdown();
-    if (link && link !== '#' && window.location.pathname.indexOf(link) === -1) {
-      window.location.href = link;
+    if (link && link !== '#') {
+      if (link.startsWith('#')) {
+        window.location.hash = link;
+      } else {
+        window.location.href = link;
+      }
     }
   }
 

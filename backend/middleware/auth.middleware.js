@@ -44,9 +44,14 @@ async function authenticateToken(req, res, next) {
 
   // 2. Fallback local token verification for demo sessions (only for known demo accounts)
   if ((token.startsWith('jwt-') || token.startsWith('demo-')) && Array.isArray(DB.users)) {
+    const tokenLower = token.toLowerCase();
     const matchedUser = DB.users.find(u => {
       const emailPrefix = u.email ? u.email.split('@')[0].toLowerCase() : '';
-      return (u.id && token.includes(u.id)) || (emailPrefix && token.toLowerCase().includes(emailPrefix));
+      const uid = u.id ? String(u.id).toLowerCase() : '';
+      return (uid && tokenLower.includes(uid)) ||
+             (emailPrefix && tokenLower.includes(emailPrefix)) ||
+             (u.email && tokenLower.includes(u.email.toLowerCase())) ||
+             (u.role && tokenLower.includes(u.role.toLowerCase()));
     });
 
     if (matchedUser) {

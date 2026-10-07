@@ -17,55 +17,115 @@ const {
 const { supabase, isConfigured } = require('../config/supabase');
 const { authenticateToken } = require('../middleware/auth.middleware');
 
-router.use(authenticateToken);
+async function optionalAuthenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'] || '';
+  if (!authHeader) return next();
+  try {
+    const dummyRes = {
+      status() { return { json() { next(); } }; },
+      json() { next(); }
+    };
+    return authenticateToken(req, dummyRes, () => next());
+  } catch (_) {
+    return next();
+  }
+}
 
 /**
  * GET /api/recommendations/student
  * Returns ranked opportunities with explainable breakdown for a student
  */
-router.get(['/', '/student'], async (req, res) => {
+router.get(['/', '/student'], optionalAuthenticateToken, async (req, res) => {
   try {
     const {
       type = 'All',
       minMatch = 0,
       search = '',
       refresh = 'false',
-      userId: _ignoredUserId,
+      userId: queryUserId,
       targetRole = 'Herbal Formulation Scientist'
     } = req.query;
 
     const bypassCache = refresh === 'true' || refresh === true;
 
-    const userId = req.user?.id || req.user?.email;
+    const candidateEmail = (req.user?.email || (typeof queryUserId === 'string' && queryUserId.includes('@') ? queryUserId : '')).trim();
+    const candidateId = req.user?.id || queryUserId || 'usr-student-01';
+    const userId = candidateId;
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(candidateId || '');
 
-    if (!isConfigured || !supabase) {
-      return res.status(503).json({ success: false, error: 'Recommendation database is not configured.' });
+    let userProfile = null;
+    let allOpps = [];
+
+    // 1. Supabase Query if configured
+    if (isConfigured && supabase) {
+      try {
+        let profileQuery = null;
+        if (isUuid && candidateEmail) {
+          profileQuery = supabase.from('profiles').select('*').or(`id.eq.${candidateId},email.ilike.${candidateEmail}`).limit(1);
+        } else if (isUuid) {
+          profileQuery = supabase.from('profiles').select('*').eq('id', candidateId).limit(1);
+        } else if (candidateEmail) {
+          profileQuery = supabase.from('profiles').select('*').ilike('email', candidateEmail).limit(1);
+        }
+
+        const queries = [
+          profileQuery ? profileQuery : Promise.resolve({ data: null, error: null }),
+          supabase.from('opportunities').select('*')
+        ];
+
+        const [{ data: users, error: userError }, { data: opps, error: oppError }] = await Promise.all(queries);
+        if (!userError && Array.isArray(users) && users.length > 0) {
+          userProfile = users[0];
+        }
+        if (!oppError && Array.isArray(opps)) {
+          allOpps = opps;
+        }
+      } catch (sbErr) {
+        console.warn('[Recommendations] Supabase query warning:', sbErr.message);
+      }
     }
 
-    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId || '');
-    const profileQuery = isUuid
-      ? supabase.from('profiles').select('*').or(`id.eq.${userId},email.eq.${userId}`).limit(1)
-      : supabase.from('profiles').select('*').eq('email', userId).limit(1);
-
-    const [{ data: users, error: userError }, { data: allOpps, error: opportunityError }] = await Promise.all([
-      profileQuery,
-      supabase.from('opportunities').select('*')
-    ]);
-    if (userError) {
-      console.warn('[Recommendations] Supabase profile fetch warning:', userError.message);
+    // 2. Local DB Store Fallback
+    if (!userProfile) {
+      const searchId = String(candidateId || '').toLowerCase();
+      const searchEmail = String(candidateEmail || '').toLowerCase();
+      userProfile = (DB.users || []).find(u =>
+        (searchId && u.id && String(u.id).toLowerCase() === searchId) ||
+        (searchEmail && u.email && String(u.email).toLowerCase() === searchEmail)
+      );
+      if (!userProfile) {
+        userProfile = (DB.candidates || []).find(c =>
+          (searchId && c.id && String(c.id).toLowerCase() === searchId) ||
+          (searchEmail && c.email && String(c.email).toLowerCase() === searchEmail)
+        );
+      }
     }
-    if (opportunityError) {
-      console.warn('[Recommendations] Supabase opportunities fetch warning:', opportunityError.message);
-    }
 
-    const studentProfile = users?.[0] || {
+    const studentProfile = userProfile ? { ...userProfile } : {
       id: userId,
       name: req.user?.name || userId,
-      verified_skills: [],
+      email: req.user?.email || userId,
       targetRole
     };
 
-    const recommended = recommendOpportunitiesForStudent(studentProfile, allOpps, {
+    // 3. Dynamic Skill Vector Alignment
+    const verified = Array.isArray(studentProfile.verified_skills) ? studentProfile.verified_skills : [];
+    const skills = Array.isArray(studentProfile.skills) ? studentProfile.skills : [];
+    const profileJsonSkills = Array.isArray(studentProfile.student_profile?.skills)
+      ? studentProfile.student_profile.skills
+      : (Array.isArray(studentProfile.student_profile?.verifiedSkills) ? studentProfile.student_profile.verifiedSkills : []);
+    const extracted = Array.isArray(studentProfile.extractedSkills) ? studentProfile.extractedSkills : [];
+
+    const mergedSkills = Array.from(new Set([...verified, ...skills, ...profileJsonSkills, ...extracted].filter(Boolean)));
+    studentProfile.verified_skills = mergedSkills;
+
+    // 4. Combined Opportunities with deduplication by ID
+    const oppMap = new Map();
+    (DB.opportunities || []).forEach(opp => { if (opp && opp.id) oppMap.set(opp.id, opp); });
+    (allOpps || []).forEach(opp => { if (opp && opp.id) oppMap.set(opp.id, { ...(oppMap.get(opp.id) || {}), ...opp }); });
+    const combinedOpps = Array.from(oppMap.values());
+
+    const recommended = recommendOpportunitiesForStudent(studentProfile, combinedOpps, {
       type,
       minMatch: parseInt(minMatch, 10) || 0,
       search,
@@ -99,7 +159,7 @@ router.get(['/', '/student'], async (req, res) => {
  * GET /api/recommendations/industry
  * Recommends and ranks candidate scholars for an opportunity or job requisition
  */
-router.get('/industry', async (req, res) => {
+router.get('/industry', authenticateToken, async (req, res) => {
   try {
     if (!['industry', 'admin'].includes((req.user?.role || '').toLowerCase())) {
       return res.status(403).json({ success: false, error: 'Industry role required.' });
@@ -109,6 +169,14 @@ router.get('/industry', async (req, res) => {
     let targetOpp = null;
     if (opportunityId) {
       targetOpp = (DB.opportunities || []).find(o => o.id === opportunityId);
+      if (!targetOpp && isConfigured && supabase) {
+        try {
+          const { data: sbOpp } = await supabase.from('opportunities').select('*').eq('id', opportunityId).maybeSingle();
+          if (sbOpp) targetOpp = sbOpp;
+        } catch (e) {
+          console.warn('[Recommendations Industry] Supabase opp query:', e.message);
+        }
+      }
     }
 
     if (!targetOpp) {
@@ -119,7 +187,47 @@ router.get('/industry', async (req, res) => {
       };
     }
 
-    const candidates = DB.candidates || [];
+    // Merge candidates across DB.candidates, DB.users (student), and Supabase profiles
+    const candidateMap = new Map();
+    (DB.candidates || []).forEach(c => { if (c && (c.id || c.email)) candidateMap.set(c.id || c.email, c); });
+    (DB.users || []).filter(u => u.role === 'student').forEach(u => {
+      const key = u.id || u.email;
+      if (!candidateMap.has(key)) {
+        candidateMap.set(key, {
+          id: u.id,
+          name: u.name,
+          email: u.email,
+          skills: u.verified_skills || u.skills || [],
+          institution: u.institution,
+          department: u.department
+        });
+      }
+    });
+
+    if (isConfigured && supabase) {
+      try {
+        const { data: sbStudents } = await supabase.from('profiles').select('*').eq('role', 'student');
+        if (Array.isArray(sbStudents)) {
+          sbStudents.forEach(s => {
+            const key = s.id || s.email;
+            const existing = candidateMap.get(key) || {};
+            candidateMap.set(key, {
+              ...existing,
+              id: s.id || existing.id,
+              name: s.name || existing.name,
+              email: s.email || existing.email,
+              skills: Array.from(new Set([...(existing.skills || []), ...(s.verified_skills || []), ...(s.skills || [])])),
+              institution: s.institution || existing.institution,
+              department: s.department || existing.department
+            });
+          });
+        }
+      } catch (e) {
+        console.warn('[Recommendations Industry] Supabase candidates query:', e.message);
+      }
+    }
+
+    const candidates = Array.from(candidateMap.values());
     const rankedCandidates = recommendCandidatesForOpportunity(targetOpp, candidates);
 
     return res.json({
@@ -140,7 +248,7 @@ router.get('/industry', async (req, res) => {
  * GET /api/recommendations/academician
  * Recommends FDPs, research grants, and student mentees for faculty
  */
-router.get('/academician', async (req, res) => {
+router.get('/academician', authenticateToken, async (req, res) => {
   try {
     if (!['academy', 'academician', 'faculty', 'admin'].includes((req.user?.role || '').toLowerCase())) {
       return res.status(403).json({ success: false, error: 'Academy role required.' });
@@ -188,7 +296,7 @@ router.get('/academician', async (req, res) => {
  * GET /api/recommendations/institution
  * Analyzes systemic student skill gaps and recommends bilateral collaborations
  */
-router.get('/institution', async (req, res) => {
+router.get('/institution', authenticateToken, async (req, res) => {
   try {
     if (!['academy', 'academician', 'faculty', 'admin'].includes((req.user?.role || '').toLowerCase())) {
       return res.status(403).json({ success: false, error: 'Academy role required.' });
@@ -232,7 +340,7 @@ router.get('/institution', async (req, res) => {
  * POST /api/recommendations/wishlist
  * Toggle wishlist bookmark on an opportunity
  */
-router.post('/wishlist', (req, res) => {
+router.post('/wishlist', authenticateToken, (req, res) => {
   try {
     if (!['student', 'admin'].includes((req.user?.role || '').toLowerCase())) {
       return res.status(403).json({ success: false, error: 'Student role required.' });
@@ -277,7 +385,7 @@ router.post('/wishlist', (req, res) => {
  * GET /api/recommendations/wishlist
  * Fetch all wishlisted opportunities for the current student
  */
-router.get('/wishlist', (req, res) => {
+router.get('/wishlist', authenticateToken, (req, res) => {
   try {
     if (!['student', 'admin'].includes((req.user?.role || '').toLowerCase())) {
       return res.status(403).json({ success: false, error: 'Student role required.' });

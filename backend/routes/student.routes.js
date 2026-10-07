@@ -243,19 +243,24 @@ router.post('/onboarding', async (req, res) => {
     if (isConfigured && supabase) {
       try {
         const query = userId ? { id: userId } : { email: normalizedEmail };
+        const profileUpdates = {
+          isOnboardingCompleted: true,
+          onboarding_completed: true,
+          is_onboarding_completed: true,
+          institution: collegeName,
+          department: specialization,
+          year: currentSemester,
+          onboarding_data: studentProfile,
+          student_profile: studentProfile,
+          social_links: socialLinks,
+          verified_skills: skills
+        };
+        if (data.fullName || data.name) {
+          profileUpdates.name = (data.fullName || data.name).trim();
+        }
         await supabase
           .from('profiles')
-          .update({
-            isOnboardingCompleted: true,
-            onboarding_completed: true,
-            is_onboarding_completed: true,
-            institution: collegeName,
-            department: specialization,
-            year: currentSemester,
-            onboarding_data: studentProfile,
-            social_links: socialLinks,
-            verified_skills: skills
-          })
+          .update(profileUpdates)
           .match(query);
 
         // Try upserting to dedicated student_profiles table if created
@@ -304,6 +309,9 @@ router.post('/onboarding', async (req, res) => {
       userObj.institution = collegeName;
       userObj.department = specialization;
       userObj.year = currentSemester;
+      if (data.fullName || data.name) {
+        userObj.name = (data.fullName || data.name).trim();
+      }
       userObj.student_profile = studentProfile;
       userObj.onboarding_data = studentProfile;
       userObj.social_links = { ...(userObj.social_links || {}), ...socialLinks };
@@ -311,7 +319,7 @@ router.post('/onboarding', async (req, res) => {
     } else {
       userObj = {
         id: resolvedUserId,
-        name: normalizedEmail ? normalizedEmail.split('@')[0] : 'Student Scholar',
+        name: (data.fullName || data.name || (normalizedEmail ? normalizedEmail.split('@')[0] : 'Student Scholar')).trim(),
         email: normalizedEmail || `${resolvedUserId}@joblex.edu`,
         role: 'student',
         isOnboardingCompleted: true,

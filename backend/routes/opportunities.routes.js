@@ -12,6 +12,31 @@ const { authenticateToken, requireRole } = require('../middleware/auth.middlewar
 const { clearRecommendationCache } = require('../services/matching.service');
 const DB = require('../data/database');
 
+function normalizeApplication(app) {
+  if (!app || typeof app !== 'object') return app;
+  return {
+    ...app,
+    studentName: app.studentName || app.student_name || 'Candidate',
+    student_name: app.student_name || app.studentName || 'Candidate',
+    studentEmail: app.studentEmail || app.student_email || '',
+    student_email: app.student_email || app.studentEmail || '',
+    opportunityTitle: app.opportunityTitle || app.opportunity_title || 'Position',
+    opportunity_title: app.opportunity_title || app.opportunityTitle || 'Position',
+    opportunityId: app.opportunityId || app.opportunity_id || '',
+    opportunity_id: app.opportunity_id || app.opportunityId || '',
+    appliedDate: app.appliedDate || app.applied_date || '',
+    applied_date: app.applied_date || app.appliedDate || '',
+    interviewSlot: app.interviewSlot || app.interview_slot || null,
+    interview_slot: app.interview_slot || app.interviewSlot || null,
+    coverNote: app.coverNote || app.cover_note || '',
+    cover_note: app.cover_note || app.coverNote || '',
+    verifiedBadge: app.verifiedBadge ?? app.verified_badge ?? false,
+    verified_badge: app.verified_badge ?? app.verifiedBadge ?? false,
+    updatedAt: app.updatedAt || app.updated_at || new Date().toISOString(),
+    updated_at: app.updated_at || app.updatedAt || new Date().toISOString()
+  };
+}
+
 // GET /api/opportunities
 router.get('/', async (req, res) => {
   const { type } = req.query;
@@ -76,30 +101,49 @@ router.post('/apply', authenticateToken, requireRole(['student']), async (req, r
   let newApp;
   let savedToSupabase = false;
 
+  let opportunity = null;
+
   if (isConfigured && supabase) {
     try {
-      const { data: opportunity, error: opportunityError } = await supabase
+      const { data, error: opportunityError } = await supabase
         .from('opportunities')
         .select('*')
         .eq('id', opportunityId)
         .maybeSingle();
-      if (opportunityError) throw opportunityError;
-      if (!opportunity) return res.status(404).json({ success: false, error: 'Opportunity was not found in the database.' });
+      if (!opportunityError && data) {
+        opportunity = data;
+      }
+    } catch (err) {
+      console.warn('[Opportunities Apply] Supabase opportunity lookup warning:', err.message);
+    }
+  }
 
-      const application = {
-        opportunity_id: opportunity.id,
-        opportunity_title: opportunity.title,
-        company: opportunity.company,
-        type: opportunity.type,
-        student_name: authenticatedName,
-        student_email: authenticatedEmail,
-        college,
-        skills: Array.isArray(skills) ? skills : [],
-        match: Number.isFinite(Number(match)) ? Number(match) : null,
-        applied_date: new Date().toISOString().split('T')[0],
-        status: 'Pending Review',
-        cover_note: coverNote || null
-      };
+  // Graceful local store lookup if not found in Supabase
+  if (!opportunity) {
+    opportunity = (DB.opportunities || []).find(o => o.id === opportunityId);
+  }
+
+  if (!opportunity) {
+    return res.status(404).json({ success: false, error: 'Opportunity was not found in the database.' });
+  }
+
+  const application = {
+    opportunity_id: opportunity.id,
+    opportunity_title: opportunity.title,
+    company: opportunity.company,
+    type: opportunity.type,
+    student_name: authenticatedName,
+    student_email: authenticatedEmail,
+    college,
+    skills: Array.isArray(skills) ? skills : [],
+    match: Number.isFinite(Number(match)) ? Number(match) : null,
+    applied_date: new Date().toISOString().split('T')[0],
+    status: 'Pending Review',
+    cover_note: coverNote || null
+  };
+
+  if (isConfigured && supabase) {
+    try {
       const { data, error } = await supabase.from('applications').insert([application]).select().single();
       if (error) throw error;
       newApp = data;
@@ -113,41 +157,24 @@ router.post('/apply', authenticateToken, requireRole(['student']), async (req, r
   // Graceful local repository fallback - never show 500 to student
   if (!savedToSupabase) {
     console.log('[DEBUG] Using local DB fallback');
-    // Find opportunity in local DB
-    const opportunity = (DB.opportunities || []).find(o => o.id === opportunityId);
-    if (!opportunity) return res.status(404).json({ success: false, error: 'Opportunity was not found in the database.' });
-
-    const application = {
-      id: `app-local-${Date.now()}`,
-      opportunity_id: opportunity.id,
-      opportunity_title: opportunity.title,
-      company: opportunity.company,
-      type: opportunity.type,
-      student_name: authenticatedName,
-      student_email: authenticatedEmail,
-      college,
-      skills: Array.isArray(skills) ? skills : [],
-      match: Number.isFinite(Number(match)) ? Number(match) : null,
-      applied_date: new Date().toISOString().split('T')[0],
-      status: 'Pending Review',
-      cover_note: coverNote || null
+    const localApplication = {
+      ...application,
+      id: `app-local-${Date.now()}`
     };
 
     // Store in local DB applications array
     if (!DB.applications) DB.applications = [];
-    DB.applications.unshift(application);
-    newApp = application;
+    DB.applications.unshift(localApplication);
+    newApp = localApplication;
     console.log('[DEBUG] Saved to local DB');
   }
 
-  // Ensure camelCase aliases for client backwards compatibility
-  newApp.opportunityId = newApp.opportunity_id;
-  newApp.opportunityTitle = newApp.opportunity_title;
-  newApp.studentName = studentName || newApp.student_name;  // Use body studentName if provided
-  newApp.studentEmail = newApp.student_email;
-  newApp.appliedDate = newApp.applied_date;
-  newApp.verifiedBadge = newApp.verified_badge;
-  newApp.coverNote = newApp.cover_note;
+  // Ensure normalized dual camelCase/snake_case representation
+  newApp = normalizeApplication(newApp);
+  if (studentName) {
+    newApp.studentName = studentName;
+    newApp.student_name = studentName;
+  }
 
   // Auto-dispatch in-portal notification to recruiter (industry user)
   console.log('[DEBUG] Creating notification for recruiter...');
@@ -204,7 +231,7 @@ router.get('/my-applications', async (req, res) => {
     );
   }
 
-  return res.json({ applications });
+  return res.json({ applications: (applications || []).map(normalizeApplication) });
 });
 
 // POST /api/opportunities (Post an opportunity)

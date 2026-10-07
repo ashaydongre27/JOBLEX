@@ -248,6 +248,12 @@ router.post('/login', async (req, res) => {
         } catch(e) {}
 
         const userRole = userProfile.role || role || 'student';
+        if (role && userRole.toLowerCase() !== role.toLowerCase()) {
+          return res.status(400).json({
+            success: false,
+            error: `Account Role Mismatch: This account is registered as a ${userRole.toUpperCase()} account, not a ${role.toUpperCase()} account.`
+          });
+        }
         const isStudent = userRole === 'student';
         const isOnboarded = !isStudent || Boolean(userProfile.isOnboardingCompleted ?? userProfile.onboarding_completed ?? userProfile.is_onboarding_completed);
 
@@ -306,6 +312,12 @@ router.post('/login', async (req, res) => {
               } catch(e) {}
 
               const userRole = userProfile.role || role || 'student';
+              if (role && userRole.toLowerCase() !== role.toLowerCase()) {
+                return res.status(400).json({
+                  success: false,
+                  error: `Account Role Mismatch: This account is registered as a ${userRole.toUpperCase()} account, not a ${role.toUpperCase()} account.`
+                });
+              }
               const isStudent = userRole === 'student';
               const isOnboarded = !isStudent || Boolean(userProfile.isOnboardingCompleted ?? userProfile.onboarding_completed ?? userProfile.is_onboarding_completed);
 
@@ -422,6 +434,20 @@ router.get('/profile', async (req, res) => {
   const email = (req.query.email || '').trim().toLowerCase();
   const id = req.query.id;
 
+  const syncProfileStudentDossier = (prof) => {
+    if (!prof) return prof;
+    const sp = prof.student_profile || prof.onboarding_data;
+    if (sp && typeof sp === 'object') {
+      if (prof.name && (!sp.fullName || sp.fullName !== prof.name)) sp.fullName = prof.name;
+      if (prof.institution && (!sp.college || sp.college !== prof.institution)) sp.college = prof.institution;
+      if (prof.department && (!sp.specialization || sp.specialization !== prof.department)) sp.specialization = prof.department;
+      if (prof.year && (!sp.currentSemester || sp.currentSemester !== prof.year)) sp.currentSemester = prof.year;
+      prof.student_profile = sp;
+      prof.onboarding_data = sp;
+    }
+    return prof;
+  };
+
   if (isConfigured && supabase) {
     try {
       let query = supabase.from('profiles').select('*');
@@ -434,7 +460,7 @@ router.get('/profile', async (req, res) => {
         const isOnboarded = !isStudent || Boolean(profile.isOnboardingCompleted ?? profile.onboarding_completed ?? profile.is_onboarding_completed);
         profile.isOnboardingCompleted = isOnboarded;
         profile.onboarding_completed = isOnboarded;
-        return res.json({ success: true, profile });
+        return res.json({ success: true, profile: syncProfileStudentDossier(profile) });
       }
     } catch (e) {}
   }
@@ -442,7 +468,7 @@ router.get('/profile', async (req, res) => {
   const user = DB.users.find(u => (id && u.id === id) || (email && u.email.toLowerCase() === email));
   if (user) {
     const { password: _, ...safeProfile } = user;
-    return res.json({ success: true, profile: safeProfile });
+    return res.json({ success: true, profile: syncProfileStudentDossier(safeProfile) });
   }
   return res.json({ success: true, profile: null });
 });
@@ -452,7 +478,7 @@ router.get('/profile', async (req, res) => {
  * Updates user profile details in public.profiles
  */
 router.put('/profile', async (req, res) => {
-  const { id, email, name, institution, company, department, designation, year, verified_skills, avatar_url } = req.body || {};
+  const { id, email, name, institution, company, department, designation, year, verified_skills, avatar_url, student_profile } = req.body || {};
 
   if (!id && !email) {
     return res.status(400).json({ success: false, error: 'User ID or Email required to update profile.' });
@@ -469,6 +495,42 @@ router.put('/profile', async (req, res) => {
   if (avatar_url !== undefined) updates.avatar_url = avatar_url;
   updates.updated_at = new Date().toISOString();
 
+  // Find local user for bidirectional sync
+  const user = DB.users.find(u => (id && u.id === id) || (email && u.email.toLowerCase() === email.trim().toLowerCase()));
+
+  // Mirror root-level profile changes into student_profile jsonb object
+  let currentStudentProfile = user?.student_profile || user?.onboarding_data || {};
+  if (typeof currentStudentProfile !== 'object' || currentStudentProfile === null) {
+    currentStudentProfile = {};
+  }
+  let spChanged = false;
+  if (updates.name) {
+    currentStudentProfile = { ...currentStudentProfile, fullName: updates.name, name: updates.name };
+    spChanged = true;
+  }
+  if (updates.institution) {
+    currentStudentProfile = { ...currentStudentProfile, college: updates.institution, collegeName: updates.institution };
+    spChanged = true;
+  }
+  if (updates.department) {
+    currentStudentProfile = { ...currentStudentProfile, specialization: updates.department, department: updates.department };
+    spChanged = true;
+  }
+  if (updates.year) {
+    currentStudentProfile = { ...currentStudentProfile, currentSemester: updates.year, year: updates.year };
+    spChanged = true;
+  }
+  if (updates.verified_skills) {
+    currentStudentProfile = { ...currentStudentProfile, skills: updates.verified_skills, verifiedSkills: updates.verified_skills };
+    spChanged = true;
+  }
+
+  if (spChanged || student_profile) {
+    const mergedSp = { ...currentStudentProfile, ...(student_profile || {}) };
+    updates.student_profile = mergedSp;
+    updates.onboarding_data = mergedSp;
+  }
+
   if (isConfigured && supabase) {
     try {
       let query = supabase.from('profiles').update(updates);
@@ -477,12 +539,14 @@ router.put('/profile', async (req, res) => {
 
       const { data, error } = await query.select().single();
       if (!error && data) {
+        if (user) {
+          Object.assign(user, updates);
+        }
         return res.json({ success: true, message: 'Profile updated successfully!', profile: data });
       }
     } catch (e) {}
   }
 
-  const user = DB.users.find(u => (id && u.id === id) || (email && u.email.toLowerCase() === email.trim().toLowerCase()));
   if (user) {
     Object.assign(user, updates);
     const { password: _, ...safeProfile } = user;

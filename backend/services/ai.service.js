@@ -117,7 +117,7 @@ const NVIDIA_CASCADE_MODELS = [
   'moonshotai/kimi-k3'
 ];
 
-async function callNvidiaModel({ prompt, systemInstruction = '', history = [], temperature = 0.7, maxTokens = 2048, enableThinking = false, timeoutMs = 6000, jsonMode = false }) {
+async function callNvidiaModel({ prompt, systemInstruction = '', history = [], temperature = 0.7, maxTokens = 2048, enableThinking = false, timeoutMs = 12000, jsonMode = false }) {
   const apiKey = getNvidiaApiKey();
   if (!apiKey) return null;
 
@@ -156,35 +156,42 @@ async function callNvidiaModel({ prompt, systemInstruction = '', history = [], t
         payload.chat_template_kwargs = { enable_thinking: true };
       }
 
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload),
-        signal: AbortSignal.timeout(timeoutMs)
-      });
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs || 12000);
 
-      if (!res.ok) {
-        recordModelFailure(model);
-        continue;
-      }
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload),
+          signal: controller.signal
+        });
 
-      const data = await res.json();
-      const choice = data?.choices?.[0]?.message;
-      const text = choice?.content || choice?.reasoning || choice?.reasoning_content;
+        if (!res.ok) {
+          recordModelFailure(model);
+          continue;
+        }
 
-      if (text && text.trim()) {
-        recordModelSuccess(model);
-        return {
-          text: text.trim(),
-          reasoning: choice?.reasoning_content || choice?.reasoning || null,
-          provider: model,
-          keyType: 'nvidia-nim'
-        };
-      } else {
-        recordModelFailure(model);
+        const data = await res.json();
+        const choice = data?.choices?.[0]?.message;
+        const text = choice?.content || choice?.reasoning || choice?.reasoning_content;
+
+        if (text && text.trim()) {
+          recordModelSuccess(model);
+          return {
+            text: text.trim(),
+            reasoning: choice?.reasoning_content || choice?.reasoning || null,
+            provider: model,
+            keyType: 'nvidia-nim'
+          };
+        } else {
+          recordModelFailure(model);
+        }
+      } finally {
+        clearTimeout(timeoutId);
       }
     } catch (err) {
       recordModelFailure(model);
